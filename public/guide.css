@@ -1,0 +1,288 @@
+/* 引導式進站（guide.js）：① 鴻綸特效歡迎頁 ② 選身分 ③ 老師一步一頁出題。
+   index.html 已經五千多行，新樣式一律放這裡，不再塞進去。 */
+
+/* ---------- ① 歡迎特效頁 ---------- */
+.lg-welcome {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 2rem 1rem;
+    overflow: hidden;
+    color: #fff;
+    background: radial-gradient(ellipse at 50% 40%, #12306b 0%, #071431 55%, #030914 100%);
+    transition: opacity 0.6s ease;
+}
+.lg-welcome[hidden] { display: none; }
+.lg-welcome.is-leaving { opacity: 0; pointer-events: none; }
+
+/* Google 四色光帶：四團模糊的色塊在背景慢慢飄 */
+.lg-aurora { position: absolute; inset: -20%; pointer-events: none; filter: blur(70px); opacity: 0.55; }
+.lg-aurora span {
+    position: absolute;
+    width: 42vmax;
+    height: 42vmax;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    animation: lg-drift 9s ease-in-out infinite alternate;
+}
+.lg-aurora span:nth-child(1) { background: var(--hl-blue, #1A73E8); left: 5%; top: 10%; }
+.lg-aurora span:nth-child(2) { background: var(--hl-red, #EA4335); right: 5%; top: 5%; animation-delay: -2s; width: 30vmax; height: 30vmax; }
+.lg-aurora span:nth-child(3) { background: var(--hl-yellow, #FBBC04); left: 20%; bottom: 0; animation-delay: -4s; width: 28vmax; height: 28vmax; }
+.lg-aurora span:nth-child(4) { background: var(--hl-green, #34A853); right: 15%; bottom: 5%; animation-delay: -6s; }
+@keyframes lg-drift {
+    from { transform: translate(0, 0) scale(1); }
+    to { transform: translate(6vmax, -4vmax) scale(1.15); }
+}
+
+.lg-particles { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+.lg-welcome-badge {
+    position: relative;
+    width: 9.5rem;
+    height: 9.5rem;
+    animation: lg-pop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.lg-welcome-badge img {
+    position: absolute;
+    inset: 0.9rem;
+    width: calc(100% - 1.8rem);
+    height: calc(100% - 1.8rem);
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 40px rgba(26, 115, 232, 0.55);
+}
+/* 外圈四色光環，慢慢轉 */
+.lg-welcome-badge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(var(--hl-blue, #1A73E8), var(--hl-red, #EA4335), var(--hl-yellow, #FBBC04), var(--hl-green, #34A853), var(--hl-blue, #1A73E8));
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3px));
+    animation: lg-spin 6s linear infinite;
+}
+@keyframes lg-spin { to { transform: rotate(360deg); } }
+@keyframes lg-pop {
+    from { opacity: 0; transform: scale(0.6); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.lg-welcome-brand {
+    position: relative;
+    margin: 0;
+    font-size: clamp(2rem, 7vw, 3.25rem);
+    font-weight: 900;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em; /* 補回最後一個字的字距，視覺上才置中 */
+    animation: lg-reveal 1s ease 0.35s both;
+}
+.lg-welcome-en {
+    position: relative;
+    margin: -0.5rem 0 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.45em;
+    text-indent: 0.45em;
+    opacity: 0.7;
+    animation: lg-fade-up 0.8s ease 0.8s both;
+}
+.lg-welcome-app {
+    position: relative;
+    margin: 0.75rem 0 0;
+    font-size: clamp(1.1rem, 4vw, 1.4rem);
+    font-weight: 700;
+    animation: lg-fade-up 0.8s ease 1.2s both;
+}
+.lg-welcome-logo {
+    position: relative;
+    width: min(16rem, 70vw);
+    margin-top: 0.5rem;
+    animation: lg-fade-up 0.8s ease 1.5s both;
+}
+@keyframes lg-reveal {
+    from { opacity: 0; letter-spacing: 0.9em; filter: blur(8px); }
+    to { opacity: 1; letter-spacing: 0.3em; filter: blur(0); }
+}
+@keyframes lg-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* 底部進度線：讓人知道會自己往下走，不用找按鈕 */
+.lg-welcome-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 100%;
+    transform-origin: left;
+    background: linear-gradient(90deg, var(--hl-blue, #1A73E8), var(--hl-red, #EA4335), var(--hl-yellow, #FBBC04), var(--hl-green, #34A853));
+    animation: lg-bar 2600ms linear both; /* 跟 guide.js 的 WELCOME_MS 一致 */
+}
+@keyframes lg-bar { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+.lg-skip {
+    position: absolute;
+    right: 1rem;
+    bottom: 1.25rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+.lg-skip:hover, .lg-skip:focus-visible { background: rgba(255, 255, 255, 0.2); outline: 2px solid #fff; outline-offset: 2px; }
+
+/* ---------- ② 選身分 ---------- */
+.lg-identity { width: 100%; max-width: 40rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.lg-identity-q { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--hl-text); }
+
+.lg-continue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.25rem;
+    border: 2px solid var(--hl-blue, #1A73E8);
+    border-radius: 999px;
+    background: #e8f0fe;
+    color: var(--hl-blue, #1A73E8);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.lg-continue:hover, .lg-continue:focus-visible { background: var(--hl-blue, #1A73E8); color: #fff; outline: none; }
+
+.lg-role-cards { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.lg-role-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 1.5rem 1rem 1.25rem;
+    border: 2px solid var(--hl-border);
+    border-radius: 1.25rem;
+    background: var(--hl-card-bg);
+    color: var(--hl-text);
+    font: inherit;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.lg-role-card:hover, .lg-role-card:focus-visible {
+    transform: translateY(-3px);
+    border-color: var(--lg-accent);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+    outline: none;
+}
+.lg-role-card.is-teacher { --lg-accent: var(--hl-blue, #1A73E8); }
+.lg-role-card.is-student { --lg-accent: var(--hl-green, #34A853); }
+.lg-role-icon {
+    display: grid;
+    place-items: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1.1rem;
+    background: color-mix(in srgb, var(--lg-accent) 14%, transparent);
+    color: var(--lg-accent);
+    font-size: 2.25rem;
+}
+.lg-role-name { font-size: 1.25rem; font-weight: 900; }
+.lg-role-desc { font-size: 0.85rem; color: var(--hl-text-secondary); line-height: 1.5; }
+
+.lg-role-more { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem 1rem; font-size: 0.9rem; }
+.lg-role-more button {
+    padding: 0.4rem 0.25rem;
+    border: none;
+    background: none;
+    color: var(--hl-text-secondary);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+.lg-role-more button:hover, .lg-role-more button:focus-visible { color: var(--hl-blue, #1A73E8); }
+
+@media (max-width: 420px) {
+    .lg-role-cards { gap: 0.6rem; }
+    .lg-role-card { padding: 1.1rem 0.5rem 1rem; }
+    .lg-role-icon { width: 3.25rem; height: 3.25rem; font-size: 1.8rem; }
+    .lg-role-name { font-size: 1.1rem; }
+}
+
+/* ---------- ③ 老師一步一頁 ---------- */
+/* 引導模式下：大橫幅與舊的三步說明列收起來，一頁只留這一步要做的事 */
+#inputForm.lg-wizard-on .lq-hero,
+#inputForm.lg-wizard-on .lq-steps { display: none; }
+.lg-off { display: none !important; }
+
+.lg-wiz-head { margin-bottom: 1.5rem; }
+.lg-dots { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.75rem; }
+.lg-dot {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    border: 2px solid var(--hl-border);
+    background: var(--hl-card-bg);
+    color: var(--hl-text-secondary);
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+.lg-dot.is-done { border-color: var(--hl-blue, #1A73E8); color: var(--hl-blue, #1A73E8); }
+.lg-dot.is-cur { border-color: var(--hl-blue, #1A73E8); background: var(--hl-blue, #1A73E8); color: #fff; }
+.lg-dot-line { flex: 1; max-width: 3rem; height: 2px; background: var(--hl-border); }
+.lg-dot-line.is-done { background: var(--hl-blue, #1A73E8); }
+.lg-step-title { margin: 0; font-size: 1.35rem; font-weight: 900; color: var(--hl-text); }
+.lg-step-hint { margin: 0.25rem 0 0; font-size: 0.9rem; color: var(--hl-text-secondary); }
+
+.lg-quick {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    padding: 0.9rem 1rem;
+    border: 2px dashed var(--hl-blue, #1A73E8);
+    border-radius: 1rem;
+    background: #e8f0fe;
+    color: var(--hl-text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.lg-quick:hover, .lg-quick:focus-visible { border-style: solid; outline: none; }
+.lg-quick b { color: var(--hl-blue, #1A73E8); }
+.lg-quick small { display: block; color: var(--hl-text-secondary); }
+
+.lg-summary {
+    margin-bottom: 1.25rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    background: var(--hl-light-gray, #F8F9FA);
+    color: var(--hl-text);
+    font-weight: 700;
+}
+.lg-summary span { color: var(--hl-text-secondary); font-weight: 400; }
+
+.lg-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1.5rem; }
+.lg-nav .lg-grow { flex: 1; }
+.lg-msg { width: 100%; margin: 0; color: var(--hl-red, #EA4335); font-weight: 700; font-size: 0.9rem; }
+
+@media (prefers-reduced-motion: reduce) {
+    .lg-aurora span, .lg-welcome-badge, .lg-welcome-badge::before,
+    .lg-welcome-brand, .lg-welcome-en, .lg-welcome-app, .lg-welcome-logo, .lg-welcome-bar { animation: none !important; }
+    .lg-particles { display: none; }
+    .lg-role-card { transition: none; }
+}
+
+/* 引導模式下，每一步上方已經有「第 N 步：…」標題，原本的區塊小標題就不重複出現 */
+#inputForm.lg-wizard-on .section-title { display: none; }

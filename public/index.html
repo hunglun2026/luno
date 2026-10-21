@@ -16,6 +16,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
+    <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
+    <link rel="stylesheet" href="guide.css?v=1">
     <style>
         /* 全域設定 */
         /* 底色用淺灰白,不要用 PDF 閱讀器那種深灰(#525659)——
@@ -699,6 +701,35 @@
 </head>
 <body class="text-slate-800">
 
+    <!-- ① 鴻綸特效歡迎頁：每個分頁第一次進來播一次，約 2.5 秒自動進到選身分（guide.js） -->
+    <section id="lqWelcome" class="lg-welcome no-print" hidden aria-label="鴻綸科技歡迎頁">
+        <div class="lg-aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+        <canvas id="lqParticles" class="lg-particles" aria-hidden="true"></canvas>
+        <div class="lg-welcome-badge">
+            <img src="assets/badge-medallion.png" alt="鴻綸科技 圓形品牌徽章">
+        </div>
+        <h1 class="lg-welcome-brand">鴻綸科技</h1>
+        <p class="lg-welcome-en">HUNGLUN TECHNOLOGY</p>
+        <p class="lg-welcome-app">Luno 綸諾・互動式評量</p>
+        <img src="assets/logo-dark.png" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
+        <button type="button" id="lqWelcomeSkip" class="lg-skip" onclick="this.dataset.clicked = '1'">略過 →</button>
+        <div class="lg-welcome-bar" aria-hidden="true"></div>
+    </section>
+    <script>
+        // 歡迎頁要「一開始」就蓋上去，不能等 window.onload：網路慢時，底下的選身分頁會先露出來還能點，
+        // 等整頁載完歡迎頁才跳出來，順序就反了。分享／監看／設定連結（網址帶參數）和這個分頁看過的，不播。
+        (function () {
+            try {
+                // 只認這個站自己用的參數；FB／LINE 自動加的 fbclid 這類不算，照樣播歡迎頁
+                var q = new URLSearchParams(location.search);
+                var isLink = ['share', 'live', 'result', 'paper', 'grade'].some(function (k) { return q.has(k); });
+                if (!isLink && !sessionStorage.getItem('lun_welcome_seen')) {
+                    document.getElementById('lqWelcome').hidden = false;
+                }
+            } catch (e) {}
+        })();
+    </script>
+
     <section id="hlSplash" class="hl-splash no-print">
         <div class="hl-work-card hl-splash-card hl-scrollbar">
             <div class="hl-badge-ring" style="margin-bottom:2rem;">
@@ -712,36 +743,30 @@
             <h1 class="hl-splash-title">Luno 綸諾</h1>
             <h2 class="hl-splash-subtitle">互動式評量</h2>
 
+            <!-- ② 選身分（guide.js）：老師、學生兩張大卡；家長、帳號登入、管理員人少，收成下面的小連結。
+                 老師卡不用登入就直接進一步一頁的出題流程（7 月拿掉舊進場頁的原因就是「點三層才看得到出題」，不能再變回去） -->
             <div id="hlStepIdentity" class="hl-identity-step">
-                <button type="button" class="hl-enter-btn hl-clickable" style="max-width:22rem;" onclick="splashSelectIdentity('guest')">
-                    <span>免登入，直接出題</span>
-                    <span class="ph-duotone ph-rocket-launch" style="font-size:1.75rem;"></span>
-                </button>
-                <p class="hl-cta-note">不用帳號，選好年級和範圍就開始</p>
-
-                <div class="hl-or-divider">或用帳號登入</div>
-
-                <!-- 三個身分平等並列、一行一個：這一步只問「你是誰」，登入能得到什麼留到
-                     使用者真的碰到那個功能時再講（在進場頁堆功能清單只會讓人跳過不看） -->
-                <div class="hl-role-list">
-                    <button type="button" class="hl-role-row role-student" onclick="splashSelectIdentity('student')">
-                        <span class="hl-identity-chip"><span class="ph-duotone ph-student"></span></span>
-                        <span class="hl-role-row-text">我是學生</span>
-                        <span class="hl-role-row-arrow ph-duotone ph-caret-right"></span>
-                    </button>
-                    <button type="button" class="hl-role-row role-teacher" onclick="splashSelectIdentity('teacher')">
-                        <span class="hl-identity-chip"><span class="ph-duotone ph-presentation"></span></span>
-                        <span class="hl-role-row-text">我是老師</span>
-                        <span class="hl-role-row-arrow ph-duotone ph-caret-right"></span>
-                    </button>
-                    <button type="button" class="hl-role-row role-parent" onclick="splashSelectIdentity('parent')">
-                        <span class="hl-identity-chip"><span class="ph-duotone ph-users-three"></span></span>
-                        <span class="hl-role-row-text">我是家長</span>
-                        <span class="hl-role-row-arrow ph-duotone ph-caret-right"></span>
-                    </button>
+                <div class="lg-identity">
+                    <button type="button" id="lgContinue" class="lg-continue" hidden onclick="Guide.continueLast()"></button>
+                    <p class="lg-identity-q">你是老師還是學生？</p>
+                    <div class="lg-role-cards">
+                        <button type="button" class="lg-role-card is-teacher" onclick="Guide.pick('teacher')">
+                            <span class="lg-role-icon"><span class="ph-duotone ph-presentation"></span></span>
+                            <span class="lg-role-name">我是老師</span>
+                            <span class="lg-role-desc">出題、發測驗<br>看全班進度</span>
+                        </button>
+                        <button type="button" class="lg-role-card is-student" onclick="Guide.pick('student')">
+                            <span class="lg-role-icon"><span class="ph-duotone ph-student"></span></span>
+                            <span class="lg-role-name">我是學生</span>
+                            <span class="lg-role-desc">輸入測驗代碼<br>或自己練習</span>
+                        </button>
+                    </div>
+                    <div class="lg-role-more">
+                        <button type="button" onclick="Guide.pick('parent')">我是家長</button>
+                        <button type="button" onclick="Guide.pick('teacherLogin')">老師帳號登入</button>
+                        <button type="button" onclick="Guide.pick('admin')">管理員登入</button>
+                    </div>
                 </div>
-
-                <button type="button" class="hl-admin-link" onclick="splashSelectIdentity('admin')">管理員登入</button>
             </div>
 
             <div id="hlStepAuth" class="hl-identity-step hidden">
@@ -852,7 +877,7 @@
                 <button onclick="clearAllSettings()" class="lq-steps-reset">重置表單</button>
             </div>
 
-            <div id="apiKeyBox" class="mb-8 bg-emerald-50/70 p-4 sm:p-5 rounded-xl border border-emerald-100">
+            <div id="apiKeyBox" data-gstep="4" class="mb-8 bg-emerald-50/70 p-4 sm:p-5 rounded-xl border border-emerald-100">
                 <label class="block font-bold mb-2 text-lg text-emerald-800">🔑 你自己的 Google API Key（選填）</label>
                 <div class="flex gap-2">
                     <input type="password" id="userKey" onchange="localStorage.setItem('lun_key',this.value)" class="lq-input" placeholder="貼上您的 AIza... 金鑰（不填則使用Luno 內建額度）">
@@ -867,9 +892,9 @@
                     <button onclick="window.forgetKey()" class="lq-btn lq-btn-danger text-xs px-3 py-1.5">🗑️ 清除記憶 / 登出</button>
                 </div>
             </div>
-            <button type="button" id="showKeyBoxLink" onclick="showApiKeyBox()" class="hidden lq-btn lq-btn-ghost text-xs mb-8">🔑 其實我有自己的 API Key，改用這個</button>
+            <button type="button" id="showKeyBoxLink" data-gstep="4" onclick="showApiKeyBox()" class="hidden lq-btn lq-btn-ghost text-xs mb-8">🔑 其實我有自己的 API Key，改用這個</button>
 
-            <div class="mb-8">
+            <div class="mb-8" data-gstep="1">
                 <h3 class="section-title">選擇出題模式</h3>
                 <!-- 三選一改成卡片：插圖＋一句說明。原本三顆同寬的方框只有文字，
                      第一次來的人看不出「上傳檔案」跟「現成卷子」差在哪 -->
@@ -907,7 +932,7 @@
                  下拉/輸入框本體保留（只是隱藏），繼續當值的來源，
                  startGen / getFormSettingsSnapshot / applySettings / clearAllSettings 全部不用改 -->
             <div id="aiInputs" class="mb-4">
-                <div class="mb-4">
+                <div class="mb-4" data-gstep="2">
                     <label class="font-bold text-sm">年級</label>
                     <div id="gradeChips" class="lq-chip-wrap mt-1"></div>
                     <select id="grade" onchange="checkCustom(this, 'c_grade')" class="lq-input hidden">
@@ -919,12 +944,12 @@
                     </select>
                     <input type="text" id="c_grade" class="input-custom" placeholder="請輸入年級">
                 </div>
-                <div class="mb-4">
+                <div class="mb-4" data-gstep="2">
                     <label class="font-bold text-sm">科目</label>
                     <div id="subjectChips" class="lq-chip-wrap mt-1"></div>
                     <input type="text" id="subject" class="lq-input hidden" placeholder="例：自然">
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-gstep="3">
                 <div>
                     <label class="font-bold text-sm">版本</label>
                     <select id="publisher" onchange="checkCustom(this, 'c_publisher')" class="lq-input">
@@ -941,7 +966,7 @@
                 </div>
             </div>
 
-            <div id="fileInputs" style="display:none;" class="mb-6">
+            <div id="fileInputs" style="display:none;" class="mb-6" data-gstep="2">
                 <div onclick="document.getElementById('fUp').click()" class="border-2 border-dashed border-emerald-300 p-8 text-center cursor-pointer hover:bg-emerald-50 hover:border-emerald-400 rounded-xl mb-3 transition">
                     <p class="text-xl text-emerald-600 font-bold">📂 點此選擇檔案 / 圖片</p>
                     <input type="file" id="fUp" multiple style="display:none;" onchange="handleFiles(this)">
@@ -950,7 +975,7 @@
                 <textarea id="uTxt" rows="3" class="lq-input mt-4" placeholder="或者在此貼上補充文字..."></textarea>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8" data-gstep="4">
                 <div>
                     <label class="font-bold text-sm">題數</label>
                     <select id="count" onchange="checkCustom(this, 'c_count')" class="lq-input">
@@ -979,10 +1004,10 @@
                          不是題目難度，跟「進階/挑戰」語意重疊，老師看不出高低順序。收斂成四階並各附情境說明。
                          （getDifficultyRubric() 仍保留「熟練」的定義，舊的儲存設定與分享連結不受影響） -->
                     <select id="difficulty" onchange="checkCustom(this, 'c_diff')" class="lq-input">
-                        <option value="基礎">🐣 基礎 — 課本原文、觀念複習</option>
-                        <option value="普通" selected>⚖️ 普通 — 標準段考難度</option>
-                        <option value="進階">🚀 進階 — 跨概念、需要推理</option>
-                        <option value="挑戰">🏆 挑戰 — 多步驟思考、情境轉換</option>
+                        <option value="基礎">🐣 基礎：課本原文、觀念複習</option>
+                        <option value="普通" selected>⚖️ 普通：標準段考難度</option>
+                        <option value="進階">🚀 進階：跨概念、需要推理</option>
+                        <option value="挑戰">🏆 挑戰：多步驟思考、情境轉換</option>
                         <option value="Custom">✍️ 自定義</option>
                     </select>
                     <input type="text" id="c_diff" class="input-custom" placeholder="例: 進階">
@@ -998,8 +1023,8 @@
 
             <!-- 主 CTA 獨佔一排。原本正下方並排三顆同樣醒目的按鈕在跟它搶焦點，
                  其中「清除所有條件」還是破壞性操作卻放在最順手的位置，已移到卡片右上角 -->
-            <button onclick="startGen()" id="btnGo" class="lq-btn lq-cta lq-btn-primary w-full py-4 rounded-xl text-xl">🚀 Luno 開始出題</button>
-            <div class="flex justify-center gap-4 mt-3">
+            <button onclick="startGen()" id="btnGo" data-gstep="4" class="lq-btn lq-cta lq-btn-primary w-full py-4 rounded-xl text-xl">🚀 Luno 開始出題</button>
+            <div class="flex justify-center gap-4 mt-3" data-gstep="4">
                 <button onclick="saveDefaultSettings()" class="lq-btn lq-btn-ghost text-sm px-3 py-2"><span class="ph-duotone ph-floppy-disk lq-icon-chip"></span> 記住這些條件</button>
                 <button onclick="copySettingsLink()" class="lq-btn lq-btn-ghost text-sm px-3 py-2"><span class="ph-duotone ph-link-simple lq-icon-chip"></span> 複製設定連結</button>
             </div>
@@ -1011,7 +1036,7 @@
 
             <!-- 免責聲明摺疊起來：該講的一句都沒少，但它不需要每次出題都佔掉整個頁尾。
                  第一句(試題要自己校對)最重要，留在摺疊標題上，不點開也看得到 -->
-            <details class="lq-disclaimer mt-10 pt-6 border-t border-gray-200">
+            <details data-gstep="4" class="lq-disclaimer mt-10 pt-6 border-t border-gray-200">
                 <summary>
                     <span>試題由 AI 產生，<strong>送出前請自行校對</strong></span>
                     <span class="lq-disclaimer-more">使用規範</span>
@@ -1401,19 +1426,24 @@
                 return;
             }
 
-            // 一進站就是出題表單。原本要點三層(選身分 → 免登入 → 直接進入)才看得到,
-            // 而其中兩層畫面幾乎一樣、也沒有真的問到什麼——老師來這裡就是要出題。
-            // 登入／學生／家長入口改放在頂部列,需要的人點得到,不需要的人不必先過三道門。
-            enterMainApp();
             useBuiltinQuota();
 
-            if ([...new URLSearchParams(location.search).keys()].length > 0) {
+            // 「複製設定連結」一定帶 grade 和 qType。原本是「網址有任何參數就當設定連結」，
+            // FB／LINE 分享時自動加的 fbclid 這類參數會被誤認，條件被套成空白
+            const urlParams = new URLSearchParams(location.search);
+            const fromSettingsLink = urlParams.has('grade') && urlParams.has('qType');
+            if (fromSettingsLink) {
                 // 網址帶了設定參數(複製設定連結分享來的)，優先用連結裡的設定
                 applySettingsFromURL();
             } else {
                 // 沒有帶連結參數，才套用這台裝置自己儲存的預設出題條件
                 loadSavedSettingsIfAny();
             }
+
+            // 引導式進站（2026-10-21 Steve 指定）：鴻綸特效歡迎頁 → 選老師／學生 → 老師一步一頁出題。
+            // 7 月曾把進場頁拿掉，原因是「要點三層才看得到出題」；這次老師卡直接進出題，
+            // 回訪的人有「繼續當老師」「用上次的條件直接出題」兩個捷徑。細節在 guide.js。
+            Guide.start({ fromSettingsLink: fromSettingsLink });
         };
 
         // --- 品牌進場頁：身分選擇(快速使用/學生/家長/老師/管理員) → 登入或註冊(快速使用略過) → API Key選擇 ---
@@ -5719,6 +5749,8 @@ async function ppSaveGrade() {
     }
 }
 </script>
+    <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
+    <script src="guide.js?v=1"></script>
 
 </body>
 </html>
