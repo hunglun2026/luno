@@ -3945,6 +3945,18 @@
         // 導致同時跑好幾份匯出。用一個旗標擋住重入。
         window._exporting = false;
 
+        // 元素相對某個祖先的layout距離(累加offsetTop)。中途若跳出祖先範圍就回傳null，
+        // 讓呼叫端知道量不到、不要拿錯的數字當切點。
+        // (2026-10-21 補回：9779b2174 移除純文字下載時被連帶刪掉，PDF 匯出一直報「offsetTopWithin is not defined」)
+        function offsetTopWithin(el, ancestor) {
+            let y = 0, n = el;
+            while (n && n !== ancestor) {
+                y += n.offsetTop;
+                n = n.offsetParent;
+            }
+            return n === ancestor ? y : null;
+        }
+
         async function dlPDF() {
             if (window._exporting) return;
             window._exporting = true;
