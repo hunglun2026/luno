@@ -1,0 +1,117 @@
+/* Luno 使用說明書（manual.html）。跟網站共用 assets/brand.css 的品牌色，字型 Noto Sans TC */
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+body {
+    margin: 0;
+    background: var(--hl-light-gray, #F8F9FA);
+    color: #1f2937;
+    font-family: 'Noto Sans TC', sans-serif;
+    font-size: 16px;
+    line-height: 1.8;
+}
+a { color: var(--hl-blue, #1A73E8); }
+img { max-width: 100%; height: auto; }
+
+/* ---------- 頂部列 ---------- */
+.m-top {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 1rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid #e5e7eb;
+}
+.m-top img { width: 2rem; height: 2rem; border-radius: 50%; }
+.m-top b { font-size: 1.05rem; white-space: nowrap; }
+.m-top span { color: #5F6368; font-size: 0.9rem; }
+.m-top .m-grow { flex: 1; }
+.m-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--hl-blue, #1A73E8);
+    color: var(--hl-blue, #1A73E8);
+    background: #fff;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.m-btn.is-primary { background: var(--hl-blue, #1A73E8); color: #fff; }
+.m-btn:focus-visible { outline: 3px solid #8ab4f8; outline-offset: 2px; }
+
+/* ---------- 版面：左目錄、右內文 ---------- */
+.m-wrap { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.m-toc { position: sticky; top: 4.5rem; align-self: start; max-height: calc(100vh - 6rem); overflow: auto; font-size: 0.92rem; }
+.m-toc summary { font-weight: 700; cursor: pointer; padding: 0.4rem 0; }
+.m-toc ol { margin: 0.25rem 0 0; padding-left: 1.4rem; }
+.m-toc li { margin: 0.2rem 0; }
+.m-toc a { color: #374151; text-decoration: none; }
+.m-toc a:hover, .m-toc a:focus-visible { color: var(--hl-blue, #1A73E8); text-decoration: underline; }
+
+.m-main { min-width: 0; }
+.m-hero { padding: 2rem; border-radius: 1.25rem; background: #fff; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
+.m-hero h1 { margin: 0 0 0.25rem; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.3; }
+.m-hero p { margin: 0.4rem 0 0; color: #4b5563; }
+
+.m-chapter { padding: 1.75rem 2rem; border-radius: 1.25rem; background: #fff; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
+.m-chapter h2 { margin: 0 0 0.75rem; font-size: 1.45rem; line-height: 1.4; }
+.m-chapter h2 .m-no { display: inline-grid; place-items: center; width: 2rem; height: 2rem; margin-right: 0.5rem; border-radius: 50%; background: var(--hl-blue, #1A73E8); color: #fff; font-size: 1rem; vertical-align: 0.15rem; }
+.m-chapter h3 { margin: 1.75rem 0 0.5rem; font-size: 1.15rem; }
+.m-chapter p { margin: 0.5rem 0; }
+.m-chapter ol, .m-chapter ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+.m-chapter li { margin: 0.3rem 0; }
+.m-chapter b { color: #111827; }
+
+.m-fig { margin: 1rem 0 1.25rem; }
+.m-fig img { display: block; border: 1px solid #e5e7eb; border-radius: 0.75rem; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06); }
+.m-fig.is-phone img { max-width: 300px; }
+.m-fig figcaption { margin-top: 0.4rem; color: #5F6368; font-size: 0.88rem; }
+.m-figs { display: flex; flex-wrap: wrap; gap: 1rem; }
+.m-figs .m-fig { flex: 1 1 260px; margin: 0.5rem 0; }
+
+.m-note, .m-warn, .m-tip { margin: 1rem 0; padding: 0.85rem 1rem; border-radius: 0.75rem; }
+.m-note { background: #e8f0fe; }
+.m-tip { background: #e6f4ea; }
+.m-warn { background: #fef7e0; }
+.m-note b:first-child, .m-tip b:first-child, .m-warn b:first-child { margin-right: 0.25rem; }
+
+.m-table { width: 100%; border-collapse: collapse; margin: 0.75rem 0; font-size: 0.95rem; }
+.m-table th, .m-table td { border: 1px solid #e5e7eb; padding: 0.5rem 0.65rem; text-align: left; vertical-align: top; }
+.m-table th { background: #f3f4f6; white-space: nowrap; }
+.m-table td:first-child { white-space: nowrap; font-weight: 700; }
+.m-table-wrap { overflow-x: auto; }
+
+.m-faq details { border-bottom: 1px solid #e5e7eb; padding: 0.6rem 0; }
+.m-faq summary { font-weight: 700; cursor: pointer; }
+.m-faq p { margin: 0.4rem 0 0.2rem; }
+
+.m-foot { text-align: center; color: #5F6368; font-size: 0.9rem; margin-top: 2rem; }
+
+/* ---------- 手機：目錄改到上方，可收合 ---------- */
+@media (max-width: 860px) {
+    .m-wrap { grid-template-columns: 1fr; gap: 1rem; }
+    .m-toc { position: static; max-height: none; padding: 0.75rem 1rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem; }
+    .m-hero, .m-chapter { padding: 1.25rem 1.1rem; }
+    .m-top span, .m-top .m-print-hide { display: none; }
+}
+
+/* ---------- 列印：拿掉目錄與頂部列，每章換頁 ---------- */
+@media print {
+    @page { margin: 15mm; }
+    body { background: #fff; font-size: 11pt; }
+    .m-top, .m-toc, .m-print-hide { display: none !important; }
+    .m-wrap { display: block; padding: 0; }
+    .m-hero, .m-chapter { border: none; padding: 0; margin: 0 0 1rem; }
+    .m-chapter { break-before: page; }
+    .m-fig { break-inside: avoid; }
+    .m-fig img { box-shadow: none; max-height: 120mm; width: auto; }
+    a { color: inherit; text-decoration: none; }
+}

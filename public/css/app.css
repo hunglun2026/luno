@@ -1,0 +1,465 @@
+/* Luno 綸諾｜全站外觀：配色、表單、卡片、頂部列、進場頁。2026-10-21 從 index.html 原樣拆出，檔案順序見 index.html 底部 */
+
+        /* 全域設定 */
+        /* 底色用淺灰白,不要用 PDF 閱讀器那種深灰(#525659)——
+           那個深灰只適合「整片都是紙」的試卷預覽,套在表單頁會讓整個工具看起來又暗又舊。
+           試卷預覽區(#resultSection)自己帶 bg-gray-600,紙張對比不受影響 */
+        body {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+            background-color: #f6f7f9;
+            margin: 0;
+            padding-bottom: 50px;
+            overflow-x: hidden;
+        }
+
+        /* 嚴格控制 box-sizing */
+        .a4-page, .a4-page * { box-sizing: border-box; }
+
+        /* ============================================================
+           質感UI Design Tokens — 沿用 brand.css 的 Google 四色系統(--hl-blue/red/yellow/green)，
+           統一全站按鈕的「語意配色」：主要動作一律hl-blue、分享一律hl-green、
+           刪除/清除一律hl-red、中性次要動作用灰階外框，取代原本紅橙紫粉靛各按鈕各用一色的混亂配色
+           ============================================================ */
+        :root {
+            --lq-radius-sm: 0.625rem;
+            --lq-radius: 1rem;
+            --lq-shadow-sm: 0 1px 3px rgba(15,23,42,0.08);
+            --lq-shadow: 0 6px 20px rgba(15,23,42,0.10);
+            --lq-shadow-lg: 0 16px 40px rgba(15,23,42,0.16);
+        }
+
+        /* ── 頂部導覽列 ────────────────────────────────────────────────
+           原本品牌只出現在進場頁,一進到表單就整個消失,工具看起來像另一個網站。
+           這條 sticky 列讓 logo 與帳號入口全程都在,同時把原本散在卡片裡的
+           使用說明／出題紀錄／管理者那排收上來,表單本身只留「填東西」這件事 */
+        .lq-appbar {
+            position: sticky; top: 0; z-index: 40;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--hl-border, #e5e7eb);
+        }
+        .lq-appbar-inner {
+            max-width: 64rem; margin: 0 auto; padding: 0.625rem 1rem;
+            display: flex; align-items: center; gap: 0.75rem;
+        }
+        .lq-appbar-brand { display: flex; align-items: center; gap: 0.5rem; min-width: 0; }
+        .lq-appbar-mark { width: 2rem; height: 2rem; border-radius: 50%; flex: none; }
+        .lq-appbar-name {
+            font-weight: 900; font-size: 1rem; color: #1f2937;
+            letter-spacing: -0.01em; white-space: nowrap;
+        }
+        .lq-appbar-tag {
+            font-size: 0.75rem; color: #6b7280; font-weight: 700;
+            padding-left: 0.5rem; margin-left: 0.125rem; border-left: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+        .lq-appbar-actions { margin-left: auto; display: flex; align-items: center; gap: 0.375rem; }
+        .lq-appbar-btn {
+            display: inline-flex; align-items: center; gap: 0.3rem;
+            font-size: 0.8125rem; font-weight: 700; color: #4b5563;
+            padding: 0.4rem 0.6rem; border-radius: 0.5rem;
+            border: 1px solid transparent; background: transparent;
+            cursor: pointer; white-space: nowrap;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+        .lq-appbar-btn:hover { background: #f3f4f6; color: #111827; }
+        .lq-appbar-btn.is-primary {
+            color: #fff; background: var(--hl-blue, #1a73e8); border-color: var(--hl-blue, #1a73e8);
+        }
+        .lq-appbar-btn.is-primary:hover { background: var(--hl-blue-hover, #1557b0); color: #fff; }
+        .lq-appbar-visits { font-size: 0.75rem; color: #6b7280; font-weight: 700; white-space: nowrap; }
+        /* 手機：只留 logo、登入與一顆「更多」，其餘收起來，避免擠成兩三行 */
+        @media (max-width: 640px) {
+            .lq-appbar-tag, .lq-appbar-visits, .lq-appbar-btn.is-optional { display: none; }
+            .lq-appbar-inner { padding: 0.5rem 0.75rem; gap: 0.5rem; }
+        }
+
+        /* ── 首屏 ──────────────────────────────────────────────────
+           左文右圖。圖是 16:9 的教室情境插圖,不搶標題的視覺重量;
+           窄螢幕圖收到文字下方,而不是被壓成一條 */
+        .lq-hero {
+            display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            align-items: center; gap: 1.5rem;
+            background: #fff; border: 1px solid #edf0f3; border-radius: 1.25rem;
+            padding: 1.75rem; margin-bottom: 1.25rem;
+            box-shadow: 0 1px 3px rgba(15,23,42,0.04);
+        }
+        .lq-hero-title {
+            font-size: 1.5rem; font-weight: 900; color: #111827;
+            letter-spacing: -0.02em; line-height: 1.35; margin: 0 0 0.5rem;
+        }
+        .lq-hero-sub { font-size: 0.9375rem; color: #4b5563; line-height: 1.7; margin: 0 0 0.875rem; }
+        .lq-hero-points { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.375rem; }
+        .lq-hero-points li {
+            position: relative; padding-left: 1.375rem;
+            font-size: 0.875rem; color: #374151; font-weight: 600;
+        }
+        .lq-hero-points li::before {
+            content: ""; position: absolute; left: 0; top: 0.45em;
+            width: 0.5rem; height: 0.5rem; border-radius: 50%;
+            background: var(--hl-blue, #1a73e8); opacity: 0.55;
+        }
+        .lq-hero-art {
+            width: 100%; height: auto; border-radius: 0.875rem; display: block;
+        }
+        @media (max-width: 860px) {
+            .lq-hero { grid-template-columns: 1fr; padding: 1.25rem; gap: 1.125rem; }
+            .lq-hero-title { font-size: 1.25rem; }
+            .lq-hero-art { order: -1; }
+        }
+
+        /* ── 出題模式三選一 ─────────────────────────────────────── */
+        .lq-modes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.75rem; }
+        .lq-mode {
+            border: 1.5px solid #e5e7eb; border-radius: 0.875rem; background: #fff;
+            padding: 1rem 0.875rem; cursor: pointer; text-align: center;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.12s ease, background-color 0.15s ease;
+        }
+        .lq-mode:hover { border-color: #c7d2fe; transform: translateY(-2px); box-shadow: 0 6px 18px rgba(15,23,42,0.07); }
+        .lq-mode:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(26,115,232,0.35); }
+        .lq-mode.is-active {
+            border-color: var(--hl-blue, #1a73e8); background: #f5f9ff;
+            box-shadow: 0 0 0 1px var(--hl-blue, #1a73e8) inset;
+        }
+        .lq-mode-art {
+            width: 100%; max-width: 8.5rem; aspect-ratio: 1 / 1; object-fit: contain;
+            margin: 0 auto 0.5rem; display: block;
+        }
+        .lq-mode-name { font-weight: 800; font-size: 0.9375rem; color: #1f2937; margin-bottom: 0.25rem; }
+        .lq-mode-desc { font-size: 0.75rem; color: #6b7280; line-height: 1.5; }
+        @media (max-width: 640px) {
+            /* 手機：橫向排一列會擠到看不懂，改成一行一個、圖縮到左邊。
+               文字一定要包在 .lq-mode-text 裡——圖、標題、說明如果各自是 grid item，
+               說明會被排到第二列第一欄，變成一行兩三個字的窄柱 */
+            .lq-modes { grid-template-columns: 1fr; }
+            .lq-mode {
+                display: grid; grid-template-columns: 3.5rem minmax(0, 1fr); align-items: center;
+                gap: 0.75rem; text-align: left; padding: 0.75rem;
+            }
+            .lq-mode-art { max-width: 3.5rem; margin: 0; }
+            .lq-mode-text { min-width: 0; }
+            .lq-mode-desc { font-size: 0.75rem; }
+        }
+
+        /* 空狀態：插圖＋一句說明，取代單獨一行灰字 */
+        .lq-empty { text-align: center; padding: 1.5rem 1rem 2rem; }
+        .lq-empty-art { width: 10rem; max-width: 60%; height: auto; margin: 0 auto 0.75rem; display: block; opacity: 0.95; }
+        .lq-empty-title { font-weight: 800; color: #4b5563; margin-bottom: 0.25rem; }
+        .lq-empty-sub { font-size: 0.8125rem; color: #9ca3af; }
+
+        /* 免責聲明（摺疊） */
+        .lq-disclaimer summary {
+            display: flex; align-items: center; gap: 0.5rem; cursor: pointer;
+            font-size: 0.8125rem; color: #6b7280; list-style: none;
+        }
+        .lq-disclaimer summary::-webkit-details-marker { display: none; }
+        .lq-disclaimer summary strong { color: #b45309; }
+        .lq-disclaimer-more {
+            margin-left: auto; font-size: 0.75rem; color: #9ca3af;
+            border: 1px solid #e5e7eb; border-radius: 9999px; padding: 0.125rem 0.625rem;
+            white-space: nowrap;
+        }
+        .lq-disclaimer[open] .lq-disclaimer-more { color: var(--hl-blue, #1a73e8); border-color: #c7d2fe; }
+
+        /* 三步流程說明列 */
+        .lq-steps {
+            display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem;
+            font-size: 0.8125rem; color: #6b7280; margin-bottom: 1.75rem;
+            padding-bottom: 1rem; border-bottom: 1px solid #f1f3f5;
+        }
+        .lq-step { display: inline-flex; align-items: center; gap: 0.375rem; font-weight: 600; }
+        .lq-step b {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.25rem; height: 1.25rem; border-radius: 50%;
+            background: #eef2ff; color: var(--hl-blue, #1a73e8); font-size: 0.6875rem; font-weight: 900;
+        }
+        .lq-step-arrow { color: #d1d5db; }
+        .lq-steps-reset {
+            margin-left: auto; font-size: 0.75rem; color: #9ca3af;
+            text-decoration: underline; background: none; border: none; cursor: pointer;
+        }
+        .lq-steps-reset:hover { color: var(--hl-red, #ea4335); }
+
+        .lq-btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.4em;
+            font-weight: 700; border-radius: var(--lq-radius-sm);
+            border: 1.5px solid transparent;
+            transition: transform 0.12s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+            cursor: pointer;
+        }
+        /* hover一律有「上浮」位移，讓所有變體(不管背景色差多大)都有一致、明顯看得出來的滑鼠移入回饋，
+           不要只靠每個變體各自的顏色變化(之前danger整塊變紅很明顯、secondary只是邊框變深很容易被忽略,
+           同一排按鈕看起來像「只有一個有效果」) */
+        .lq-btn:hover:not(:disabled) { transform: translateY(-1.5px); }
+        .lq-btn:active { transform: scale(0.97); }
+        .lq-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(26,115,232,0.35); }
+        .lq-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .lq-icon { font-size: 1.2em; line-height: 1; }
+
+        .lq-btn-primary { background: var(--hl-blue); color: #fff; box-shadow: var(--lq-shadow-sm); }
+        .lq-btn-primary:hover:not(:disabled) { background: var(--hl-blue-hover); box-shadow: var(--lq-shadow); }
+
+        .lq-btn-share { background: var(--hl-green); color: #fff; box-shadow: var(--lq-shadow-sm); }
+        .lq-btn-share:hover:not(:disabled) { background: var(--hl-green-hover); box-shadow: var(--lq-shadow); }
+
+        .lq-btn-danger { background: #fff; color: var(--hl-red); border-color: #fecaca; box-shadow: var(--lq-shadow-sm); }
+        .lq-btn-danger:hover:not(:disabled) { background: var(--hl-red); color: #fff; border-color: var(--hl-red); box-shadow: var(--lq-shadow); }
+
+        .lq-btn-secondary { background: #fff; color: #475569; border-color: #cbd5e1; box-shadow: var(--lq-shadow-sm); }
+        .lq-btn-secondary:hover:not(:disabled) { background: #f8fafc; border-color: #94a3b8; color: #1e293b; box-shadow: var(--lq-shadow); }
+
+        .lq-btn-ghost { background: transparent; color: #64748b; border-color: transparent; font-weight: 600; }
+        .lq-btn-ghost:hover:not(:disabled) { color: #1e293b; background: rgba(0,0,0,0.04); transform: none; }
+
+        /* 工具列按鈕（例：儲存/清除/複製設定連結）：左側圓形色塊icon + hover時色塊灌滿實色，
+           取代原本純文字+細邊框的樸素樣式，質感層次更明顯 */
+        .lq-icon-chip {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 1.7em; height: 1.7em; border-radius: 9999px; font-size: 1rem; flex-shrink: 0;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+        .lq-btn-tool { background: #fff; color: #334155; border-color: #e2e8f0; box-shadow: var(--lq-shadow-sm); }
+        .lq-btn-tool .lq-icon-chip { background: rgba(26,115,232,0.1); color: var(--hl-blue); }
+        .lq-btn-tool:hover:not(:disabled) { background: #eff6ff; border-color: #bfdbfe; color: #1e3a5f; box-shadow: var(--lq-shadow); }
+        .lq-btn-tool:hover:not(:disabled) .lq-icon-chip { background: var(--hl-blue); color: #fff; }
+
+        .lq-btn-tool-danger { border-color: #fecaca; }
+        .lq-btn-tool-danger .lq-icon-chip { background: rgba(217,48,37,0.1); color: var(--hl-red); }
+        .lq-btn-tool-danger:hover:not(:disabled) { background: #fef2f2; border-color: #fca5a5; color: #7f1d1d; }
+        .lq-btn-tool-danger:hover:not(:disabled) .lq-icon-chip { background: var(--hl-red); color: #fff; }
+
+        .lq-btn-tool-share .lq-icon-chip { background: rgba(52,168,83,0.12); color: var(--hl-green); }
+        .lq-btn-tool-share:hover:not(:disabled) { background: #f0fdf4; border-color: #bbf7d0; color: #14532d; }
+        .lq-btn-tool-share:hover:not(:disabled) .lq-icon-chip { background: var(--hl-green); color: #fff; }
+
+        /* 深色版：sticky header 用（背景是深色，白按鈕反而刺眼，改用半透明白疊層） */
+        .lq-btn-dark { background: rgba(255,255,255,0.07); color: #e2e8f0; border-color: rgba(255,255,255,0.1); }
+        .lq-btn-dark:hover:not(:disabled) { background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.2); box-shadow: 0 4px 14px rgba(0,0,0,0.3); }
+        .lq-btn-dark.is-active { background: var(--hl-blue); color: #fff; border-color: var(--hl-blue); box-shadow: 0 4px 14px rgba(26,115,232,0.4); }
+
+        /* sticky header 質感升級：深色漸層取代平板單色 + 底部品牌四色粗線呼應進度條/CTA光暈，
+           是全站少數幾處刻意使用品牌色的地方；分隔線與icon配色刻意加重對比，
+           避免像上一版一樣太細緻反而完全看不出來有改過 */
+        .sticky-header {
+            position: relative;
+            background: linear-gradient(135deg, rgba(11,17,32,0.85) 0%, rgba(30,43,71,0.85) 50%, rgba(11,17,32,0.85) 100%);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .sticky-header::after {
+            content: ''; position: absolute; left: 0; right: 0; bottom: -2px; height: 3px;
+            background: linear-gradient(90deg, var(--hl-blue), var(--hl-red), var(--hl-yellow), var(--hl-green));
+            opacity: 0.9;
+        }
+        .lq-header-divider { width: 1px; align-self: stretch; min-height: 1.75rem; background: rgba(255,255,255,0.22); }
+        .lq-icon-amber { color: #fbbf24; }
+        .lq-icon-sky { color: #38bdf8; }
+        .lq-icon-blue { color: #60a5fa; }
+
+        /* 主要出題CTA：呼應進場頁徽章的品牌四色光暈，是全頁唯一使用這個signature動效的地方 */
+        .lq-cta { position: relative; isolation: isolate; }
+        .lq-cta::before {
+            content: ''; position: absolute; inset: -3px; border-radius: calc(var(--lq-radius) + 3px);
+            background: conic-gradient(from var(--hl-angle), var(--hl-blue), var(--hl-red), var(--hl-yellow), var(--hl-green), var(--hl-blue));
+            opacity: 0; transition: opacity 0.35s ease; z-index: -1;
+            animation: hl-rotate-border 5s linear infinite;
+        }
+        .lq-cta:hover::before, .lq-cta:focus-visible::before, .lq-cta.is-working::before { opacity: 1; }
+
+        /* 進場頁：告訴使用者登入拿得到什麼，不登入也能用但功能較少 */
+        /* 返回鈕固定在左下角：頂部是sticky工具列(題目卷/答案卷/下載/分享)，放上面會互相擋到 */
+        #btnGlobalBack {
+            position: fixed; left: 0.9rem; bottom: 0.9rem; z-index: 90;
+            background: #fff; color: var(--hl-text); border: 1.5px solid var(--hl-border);
+            border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.85rem; font-weight: 700;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.18); cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        #btnGlobalBack:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(0,0,0,0.24); }
+
+        .lq-card { background: #fff; border-radius: var(--lq-radius); box-shadow: var(--lq-shadow-sm); border: 1px solid #eef0f3; }
+
+        /* 身分列（學生首頁最上方）：解決「不知道自己在哪個身分的頁面、也找不到登出」的問題。
+           sticky 釘在頂端，捲到哪都看得到自己是誰、隨時可以離開。 */
+        .lq-appbar {
+            position: sticky; top: 0.5rem; z-index: 40;
+            display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(255,255,255,0.92);
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            border: 1px solid #e8ebef; border-radius: var(--lq-radius);
+            box-shadow: var(--lq-shadow-sm);
+            margin-bottom: 1rem;
+        }
+        .lq-appbar-avatar {
+            width: 2.4rem; height: 2.4rem; border-radius: 999px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 1.05rem; color: #fff;
+            background: linear-gradient(135deg, var(--hl-blue) 0%, #6d5bd0 100%);
+        }
+        .lq-appbar-avatar.is-guest { background: linear-gradient(135deg, #94a3b8 0%, #64748b 100%); }
+        .lq-appbar-id { min-width: 0; flex: 1; }
+        .lq-appbar-name {
+            font-weight: 800; font-size: 0.95rem; color: #0f172a; line-height: 1.25;
+            display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;
+        }
+        .lq-appbar-sub {
+            font-size: 0.72rem; color: #94a3b8; line-height: 1.3; margin-top: 0.1rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .lq-appbar-actions { display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
+        /* 身分標籤：藍＝已登入的學生身分，琥珀＝未登入（只存在這台裝置） */
+        .lq-role-chip {
+            font-size: 0.68rem; font-weight: 800; letter-spacing: 0.02em;
+            padding: 0.1rem 0.45rem; border-radius: 999px; line-height: 1.5; white-space: nowrap;
+            background: rgba(26,115,232,0.1); color: var(--hl-blue); border: 1px solid rgba(26,115,232,0.22);
+        }
+        .lq-role-chip.is-guest { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+        @media (max-width: 420px) {
+            .lq-appbar { gap: 0.5rem; padding: 0.55rem 0.6rem; }
+            .lq-appbar-actions .lq-btn { padding-left: 0.5rem; padding-right: 0.5rem; }
+        }
+
+        /* .hl-line-hint / .hl-line-id（電腦版 LINE ID 提示）已收進 assets/brand.css，這裡不重複定義 */
+
+        .lq-input {
+            width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid #e2e8f0; border-radius: var(--lq-radius-sm);
+            background: #fff; transition: border-color 0.15s ease, box-shadow 0.15s ease; font-size: 0.95rem;
+        }
+        .lq-input:hover { border-color: #cbd5e1; }
+        .lq-input:focus { outline: none; border-color: var(--hl-blue); box-shadow: 0 0 0 3px rgba(26,115,232,0.14); }
+
+        /* 進場頁身分選擇：快速使用(不登入) / 學生 / 家長 / 老師 / 管理員，
+           選了非快速使用的身分要先登入/註冊帳號密碼，才會進到「API Key選擇」那一步 */
+        .hl-identity-step { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        /* 身分入口改成「每個身分一個專屬顏色＋專屬圖示」的扁平徽章(參考ClassDojo/Seesaw的身分選擇列)。
+           原本4張都是同一隻吉祥物換道具的插畫，四個按鈕看起來幾乎一樣、辨識不出差別；
+           這裡把顏色(--role)掛在 role-* 類別上，chip底色/圖示色/hover邊框全部吃同一個變數，加身分只要多一條role-*即可 */
+        .role-student { --role: var(--hl-blue);         --role-soft: rgba(26,115,232,0.12); }
+        .role-parent  { --role: var(--hl-green);        --role-soft: rgba(52,168,83,0.12); }
+        .role-teacher { --role: var(--hl-yellow-hover); --role-soft: rgba(251,188,4,0.20); }
+        .role-admin   { --role: var(--hl-red);          --role-soft: rgba(234,67,53,0.12); }
+        .hl-identity-chip {
+            display: flex; align-items: center; justify-content: center;
+            width: 3rem; height: 3rem; border-radius: 999px; font-size: 1.65rem;
+            background: var(--role-soft); color: var(--role);
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        /* 進場頁只做兩件事：要不要登入（上方 CTA）→ 你是誰（分隔線下的三個身分）。
+           功能清單/好處說明都拿掉了，那些話要在使用者真的碰到該功能時才講才有用 */
+        .hl-or-divider {
+            width: 100%; max-width: 22rem; display: flex; align-items: center; gap: 0.75rem;
+            font-size: 0.78rem; font-weight: 700; color: var(--hl-text-secondary); white-space: nowrap;
+        }
+        .hl-or-divider::before, .hl-or-divider::after {
+            content: ""; flex: 1; height: 1px; background: var(--hl-border);
+        }
+        .hl-cta-note { font-size: 0.75rem; color: var(--hl-text-secondary); margin: -0.5rem 0 0; }
+
+        /* 身分入口：一行一個、三個等重。左邊是身分專屬色的 icon，右邊箭頭表示「還有下一步」 */
+        .hl-role-list { width: 100%; max-width: 22rem; display: grid; gap: 0.6rem; }
+        .hl-role-row {
+            display: flex; align-items: center; gap: 0.8rem; width: 100%;
+            padding: 0.8rem 1rem; border-radius: 1rem; cursor: pointer;
+            border: 2px solid var(--hl-border); background: #fff;
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .hl-role-row:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); border-color: var(--role); }
+        .hl-role-row:hover .hl-identity-chip { background: var(--role); color: #fff; }
+        .hl-role-row:focus-visible { outline: none; border-color: var(--role); box-shadow: 0 0 0 3px var(--role-soft); }
+        .hl-role-row .hl-identity-chip { width: 2.4rem; height: 2.4rem; font-size: 1.3rem; }
+        .hl-role-row-text { flex: 1; text-align: left; font-weight: 800; font-size: 1rem; color: var(--hl-text); }
+        .hl-role-row-arrow { color: #c4c7c5; font-size: 1rem; }
+        .hl-role-row:hover .hl-role-row-arrow { color: var(--role); }
+        /* 小手機上 1.25rem 的按鈕字加左右 2rem padding 會把「免登入，直接出題」折成兩行，縮字級與內距讓它保持一行 */
+        @media (max-width: 420px) {
+            .hl-enter-btn { font-size: 1.05rem; padding: 1rem 1.25rem; gap: 0.5rem; }
+        }
+
+        /* 學生出題等待畫面 */
+        #practiceLoading {
+            position: fixed; inset: 0; z-index: 120;
+            display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+            background: rgba(15,23,42,0.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+        }
+        #practiceLoading.hidden { display: none; }
+        .lq-practice-loading-card {
+            background: #fff; border-radius: var(--lq-radius); box-shadow: var(--lq-shadow-lg);
+            padding: 2rem 1.75rem; width: 100%; max-width: 20rem; text-align: center;
+        }
+        .lq-practice-spinner {
+            width: 2.75rem; height: 2.75rem; margin: 0 auto 1rem;
+            border: 4px solid rgba(26,115,232,0.15); border-top-color: var(--hl-blue);
+            border-radius: 999px; animation: lq-spin 0.9s linear infinite;
+        }
+        @keyframes lq-spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { .lq-practice-spinner { animation-duration: 3s; } }
+        .lq-practice-loading-title { font-weight: 800; font-size: 1.05rem; color: var(--hl-text); }
+        .lq-practice-loading-sub { font-size: 0.78rem; color: var(--hl-text-secondary); margin-top: 0.25rem; }
+        .lq-practice-bar { height: 6px; border-radius: 999px; background: #eef0f3; overflow: hidden; margin-top: 1rem; }
+        .lq-practice-bar-fill { height: 100%; width: 0%; background: var(--hl-blue); transition: width 0.25s ease; }
+
+        .hl-admin-link {
+            background: none; border: none; cursor: pointer; padding: 0.25rem 0.5rem;
+            font-size: 0.75rem; color: #9aa0a6; text-decoration: underline; text-underline-offset: 3px;
+        }
+        .hl-admin-link:hover { color: var(--hl-red); }
+
+        /* 表單頁banner：原本放AI生成的吉祥物插畫，占滿首屏卻沒說明這工具能做什麼。
+           改成「產品畫面」路線(同Wayground/MagicSchool)——直接讓使用者看到產出的考卷長什麼樣。
+           純CSS拼的示意稿，不是圖片，換文案/配色不用重生圖 */
+        .lq-hero-visual {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: center;
+            padding: 1.75rem; border-radius: var(--lq-radius); border: 1px solid var(--hl-border);
+            background: linear-gradient(135deg, rgba(26,115,232,0.08), rgba(52,168,83,0.08));
+            text-align: left;
+        }
+        @media (max-width: 640px) { .lq-hero-visual { grid-template-columns: 1fr; padding: 1.25rem; } }
+        .lq-hero-title { font-size: 1.25rem; font-weight: 800; color: var(--hl-text); margin-bottom: 0.5rem; line-height: 1.4; }
+        .lq-hero-sub { font-size: 0.875rem; color: var(--hl-text-secondary); line-height: 1.7; }
+        .lq-hero-paper {
+            background: #fffdf3; border-radius: 0.75rem; padding: 1rem 1.15rem;
+            box-shadow: var(--lq-shadow-lg); transform: rotate(-1.5deg);
+        }
+        .lq-hero-paper-head {
+            display: flex; justify-content: space-between; align-items: baseline;
+            border-bottom: 2px solid #1f2937; padding-bottom: 0.4rem; margin-bottom: 0.7rem;
+        }
+        .lq-hero-paper-title { font-size: 0.8125rem; font-weight: 800; color: #1f2937; }
+        .lq-hero-paper-meta { font-size: 0.625rem; color: #6b7280; }
+        .lq-hero-q { font-size: 0.6875rem; color: #1f2937; font-weight: 700; margin-bottom: 0.35rem; }
+        .lq-hero-opt { font-size: 0.625rem; color: #4b5563; margin-bottom: 0.15rem; }
+        .lq-hero-line { height: 0.4rem; border-radius: 999px; background: #e5e7eb; margin-bottom: 0.35rem; }
+        .hl-back-link {
+            align-self: flex-start; background: none; border: none; color: var(--hl-text-secondary);
+            font-weight: 700; font-size: 0.85rem; cursor: pointer; padding: 0.25rem 0;
+        }
+        .hl-back-link:hover { color: var(--hl-blue); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .lq-cta::before, .hl-spin-slow, .hl-spin-slow-reverse,
+            .ans-card.ans-correct, .ans-card.ans-wrong, .ans-badge, .ans-score-pop { animation: none !important; }
+        }
+
+        /* UI 樣式 */
+        /* 段落標題：原本是一顆實心藍圓點(裡面沒有東西)，看起來像沒載入完的圖示。
+           改成把步驟數字放進圓圈裡，數字本身就是資訊 */
+        .section-title {
+            font-weight: 800; font-size: 1.05rem; color: #1e293b; margin: 1.75rem 0 1rem;
+            display: flex; align-items: center; gap: 0.6rem;
+            counter-increment: lq-section;
+        }
+        .section-title::before {
+            content: counter(lq-section);
+            width: 1.5rem; height: 1.5rem; border-radius: 9999px;
+            background: var(--hl-blue, #1a73e8); color: #fff;
+            font-size: 0.8125rem; font-weight: 900; line-height: 1;
+            display: inline-flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+        #inputForm { counter-reset: lq-section; }
+        .input-custom { display: none; margin-top: 8px; width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid #a5b4fc; border-radius: var(--lq-radius-sm); background-color: #eef2ff; }
+        .source-btn { flex: 1; padding: 15px; border: 2px solid #e5e7eb; border-radius: var(--lq-radius); text-align: center; cursor: pointer; font-weight: bold; transition: all 0.2s ease; font-size: 1.05em; }
+        .source-btn:hover { transform: translateY(-1px); box-shadow: var(--lq-shadow-sm); }
+

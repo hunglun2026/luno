@@ -198,7 +198,7 @@
 .lg-role-desc { font-size: 0.85rem; color: var(--hl-text-secondary); line-height: 1.5; }
 
 .lg-role-more { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25rem 1rem; font-size: 0.9rem; }
-.lg-role-more button {
+.lg-role-more button, .lg-role-more a {
     padding: 0.4rem 0.25rem;
     border: none;
     background: none;
@@ -208,7 +208,7 @@
     text-underline-offset: 3px;
     cursor: pointer;
 }
-.lg-role-more button:hover, .lg-role-more button:focus-visible { color: var(--hl-blue, #1A73E8); }
+.lg-role-more button:hover, .lg-role-more button:focus-visible, .lg-role-more a:hover, .lg-role-more a:focus-visible { color: var(--hl-blue, #1A73E8); }
 
 @media (max-width: 420px) {
     .lg-role-cards { gap: 0.6rem; }

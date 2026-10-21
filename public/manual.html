@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luno 綸諾 使用說明書｜鴻綸科技</title>
+    <meta name="description" content="Luno 綸諾互動式評量的完整使用說明：老師出題、發測驗、看全班進度，學生作答與練習，家長查看，一步一步配實際畫面。">
+    <link rel="icon" href="assets/badge-medallion.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/brand.css">
+    <!-- 改 manual.css 時 ?v= 一起升 -->
+    <link rel="stylesheet" href="css/manual.css?v=1">
+</head>
+<body>
+
+<header class="m-top">
+    <img src="assets/badge-medallion.png" alt="">
+    <b>Luno 綸諾</b><span>使用說明書</span>
+    <span class="m-grow"></span>
+    <button type="button" class="m-btn m-print-hide" onclick="window.print()">列印／存成 PDF</button>
+    <a class="m-btn is-primary" href="./">回到 Luno</a>
+</header>
+
+<div class="m-wrap">
+<nav class="m-toc" aria-label="目錄">
+    <details open>
+        <summary>目錄</summary>
+        <ol>
+            <li><a href="#about">認識 Luno</a></li>
+            <li><a href="#start">開始使用</a></li>
+            <li><a href="#make">老師：出一份考卷</a></li>
+            <li><a href="#after">老師：出完題之後</a></li>
+            <li><a href="#send">老師：讓學生作答</a></li>
+            <li><a href="#paper">老師：派現成的紙本卷</a></li>
+            <li><a href="#teacher-account">老師帳號與班級</a></li>
+            <li><a href="#student">學生</a></li>
+            <li><a href="#parent">家長</a></li>
+            <li><a href="#admin">管理員</a></li>
+            <li><a href="#faq">常見問題</a></li>
+            <li><a href="#contact">聯絡我們</a></li>
+        </ol>
+    </details>
+</nav>
+
+<main class="m-main">
+<section class="m-hero">
+    <h1>Luno 綸諾 使用說明書</h1>
+    <p>Luno 是鴻綸科技的互動式評量網站：老師選好年級、科目、範圍，AI 幾秒鐘出好一份附答案的考卷，可以下載列印，也能直接發給學生線上作答、自動判分，老師和家長即時看到作答進度。</p>
+    <p>網址：<a href="./">luno.hunglun.com</a>。用電腦、平板、手機的瀏覽器打開就能用，不用安裝。這份說明書可以按右上角「列印／存成 PDF」印出來。</p>
+</section>
+
+<!-- ===== 1 ===== -->
+<section class="m-chapter" id="about">
+    <h2><span class="m-no">1</span>認識 Luno</h2>
+    <div class="m-table-wrap"><table class="m-table">
+        <tr><th>身分</th><th>可以做什麼</th><th>要不要帳號</th></tr>
+        <tr><td>老師</td><td>AI 出題、下載 Word／PDF、把現成的紙本卷變成線上作業、發測驗、看全班即時進度</td><td>出題、下載不用；<b>發送測驗要登入</b></td></tr>
+        <tr><td>學生</td><td>輸入老師給的 6 位數代碼或點連結作答、自己練習、看分數與解析</td><td>不用（登入後多一些功能）</td></tr>
+        <tr><td>家長</td><td>看孩子的作答進度、看題目答案與解析</td><td>不用；登入可以一次管多個孩子</td></tr>
+        <tr><td>管理員</td><td>管理全站帳號</td><td>要，帳號由既有管理員建立</td></tr>
+    </table></div>
+    <div class="m-warn"><b>提醒</b>題目由 AI 產生，可能有事實錯誤或超出年級範圍。發給學生前請先看過一遍，有問題的題目直接改字或按「換這題」。</div>
+</section>
+
+<!-- ===== 2 ===== -->
+<section class="m-chapter" id="start">
+    <h2><span class="m-no">2</span>開始使用</h2>
+    <h3>歡迎頁</h3>
+    <p>打開網站會先看到鴻綸科技的歡迎畫面，大約 2 到 3 秒自動往下。不想等可以按右下角「略過」。同一個分頁重新整理不會再播；如果電腦或手機有開「減少動態效果」，會改成不動的畫面。</p>
+    <figure class="m-fig"><img src="manual/img/welcome.webp" alt="鴻綸科技歡迎頁，中間是旋轉徽章和鴻綸科技字樣" loading="lazy" width="1100" height="688"><figcaption>歡迎頁</figcaption></figure>
+    <h3>選身分</h3>
+    <p>接著選「我是老師」或「我是學生」。家長、已經有老師帳號要登入的人、管理員，請點下方的小字連結。</p>
+    <figure class="m-fig"><img src="manual/img/identity.webp" alt="選身分頁，有我是老師、我是學生兩張大卡" loading="lazy" width="960" height="1092"><figcaption>選身分</figcaption></figure>
+    <ul>
+        <li><b>下次再來</b>：這頁最上面會出現「繼續當老師 →」（或學生），按一下直接進去。</li>
+        <li><b>換身分</b>：進去之後，畫面最上方的「換身分」可以隨時回到這一頁。</li>
+        <li>學生、家長點老師傳來的連結進來時，<b>不會</b>經過歡迎頁和選身分，直接打開那份測驗或進度。</li>
+    </ul>
+</section>
+
+<!-- ===== 3 ===== -->
+<section class="m-chapter" id="make">
+    <h2><span class="m-no">3</span>老師：出一份考卷</h2>
+    <p>選「我是老師」後，出題分成四步，每一頁只做一件事。上方的圓點是進度，左下角「上一步」可以回去改，選過的內容都會留著。</p>
+
+    <h3>第 1 步：要怎麼出題</h3>
+    <figure class="m-fig"><img src="manual/img/step1.webp" alt="第 1 步，三種出題方式的卡片" loading="lazy" width="992" height="525"><figcaption>三種出題方式，點一下就到下一步</figcaption></figure>
+    <ul>
+        <li><b>出一份新的</b>：照你選的年級、科目、範圍，由 AI 依課綱出題。</li>
+        <li><b>依課本或講義出</b>：上傳 Word 檔、圖片（可以用手機拍課本）、PDF，或直接貼文字，AI 照這些內容出題。</li>
+        <li><b>派現成的紙本卷</b>：不出新題目，把手邊的卷子掃進來給學生線上作答，見<a href="#paper">第 6 章</a>。</li>
+    </ul>
+
+    <h3>第 2 步：選年級和科目</h3>
+    <figure class="m-fig"><img src="manual/img/step2.webp" alt="第 2 步，年級和科目的按鈕" loading="lazy" width="992" height="556"><figcaption>年級、科目各點一下，兩個都選好會自動到下一步</figcaption></figure>
+    <p>這兩項一定要自己選（選錯整份考卷就不能用，所以不給預設值）。清單裡沒有的，點「其他」或「其他科目」自己打字。選「依課本或講義出」時，這一步會換成上傳檔案。</p>
+
+    <h3>第 3 步：版本和範圍</h3>
+    <figure class="m-fig"><img src="manual/img/step3.webp" alt="第 3 步，版本選單和範圍輸入框" loading="lazy" width="992" height="369"><figcaption>都可以不填</figcaption></figure>
+    <ul>
+        <li><b>版本</b>：預設「由 Luno 自由發揮」，依一般課綱出題；要貼近某家課本，選「依照課本資訊填入」再打上版本與冊別。</li>
+        <li><b>範圍</b>：例如「光的折射」「第一課到第三課」。空白就是整冊。</li>
+    </ul>
+
+    <h3>第 4 步：題數、題型、難度</h3>
+    <figure class="m-fig"><img src="manual/img/step4.webp" alt="第 4 步，條件摘要、題數題型難度語言與開始出題按鈕" loading="lazy" width="992" height="838"><figcaption>上方一行是這次的出題條件，確認後按「Luno 開始出題」</figcaption></figure>
+    <div class="m-table-wrap"><table class="m-table">
+        <tr><th>項目</th><th>選項</th></tr>
+        <tr><td>題數</td><td>5、10、20、25、50、100 題，或自訂</td></tr>
+        <tr><td>題型</td><td>全部單選、全部複選、單選複選各半（照題數對分）、全部填充、全部簡答（計算題），或自訂</td></tr>
+        <tr><td>難度</td><td>基礎（課本原文、觀念複習）、普通（標準段考難度）、進階（跨概念、需要推理）、挑戰（多步驟思考、情境轉換）；不管哪一級，都不會超出該年級的課綱</td></tr>
+        <tr><td>輸出語言</td><td>繁體中文、英文</td></tr>
+    </table></div>
+    <p>按下出題後等十幾秒；題數多會分批出，時間會長一點。</p>
+
+    <h3>省時間的捷徑</h3>
+    <ul>
+        <li><b>用預設條件直接出題</b>：第 2 步選好年級科目後，第 2、3 步都有這個按鈕，其他條件用預設值直接出。</li>
+        <li><b>記住這些條件</b>：第 4 步下方按一下，存在這台裝置。下次進來第 1 步會多一個「用上次的條件直接出題」，一鍵出題。</li>
+        <li><b>複製設定連結</b>：把整組條件做成連結傳給同事，對方打開會直接到第 4 步，條件都帶好。</li>
+    </ul>
+
+    <h3>每次出題間隔 30 秒</h3>
+    <p>使用 Luno 內建的 AI 額度時，同一台裝置每次出題要隔 30 秒。若你有自己的 Google API Key，在第 4 步點「其實我有自己的 API Key，改用這個」貼上，就不受這個限制，用量算在你自己的額度上（Key 可以在 Google AI Studio 免費申請）。</p>
+</section>
+
+<!-- ===== 4 ===== -->
+<section class="m-chapter" id="after">
+    <h2><span class="m-no">4</span>老師：出完題之後</h2>
+    <figure class="m-fig"><img src="manual/img/result.webp" alt="出好的試卷，上方工具列有題目卷、答案卷、直接線上測驗、下載、發送測驗、更多" loading="lazy" width="1100" height="773"><figcaption>出好的考卷與上方工具列</figcaption></figure>
+    <h3>題目卷與答案卷</h3>
+    <p>工具列左邊切換「題目卷」和「答案卷」。答案卷每題都有正確答案和解析。</p>
+    <figure class="m-fig"><img src="manual/img/answer-key.webp" alt="答案卷畫面" loading="lazy" width="1100" height="773"><figcaption>答案卷</figcaption></figure>
+    <h3>直接改字</h3>
+    <p>試卷上的任何文字（題目、選項、標題）都可以直接點下去修改，跟打字一樣。改過的內容會一起帶進下載的 Word／PDF。</p>
+    <h3>只換掉某一題</h3>
+    <figure class="m-fig"><img src="manual/img/regen.webp" alt="題號下方的換這題按鈕" loading="lazy" width="900" height="220"><figcaption>題號下方的「換這題」</figcaption></figure>
+    <p>某一題不滿意，按題號下方的「換這題」，只有這一題重出，其他題目和你改過的字都不會動。換題一樣有 30 秒間隔。要整份重來，在「更多」裡選「重新出整份」（會清掉目前題目）。</p>
+    <h3>下載與列印</h3>
+    <figure class="m-fig"><img src="manual/img/download.webp" alt="下載選單，有 Word 和 PDF" loading="lazy" width="800" height="260"><figcaption>下載選單</figcaption></figure>
+    <ul>
+        <li><b>Word（.docx）</b>：可以再用 Word 或 Google 文件編輯。</li>
+        <li><b>PDF</b>：適合直接列印或傳給別人。</li>
+        <li>用 Chrome 時，可能會跳出視窗問你要存在哪裡，選好位置按「儲存」即可。</li>
+    </ul>
+    <div class="m-tip"><b>列印的正確做法</b>先下載成 PDF，打開 PDF 後用 PDF 閱讀器本身的列印。直接在網頁按列印，瀏覽器會在紙上多印日期、網址和頁碼。</div>
+    <h3>出題紀錄</h3>
+    <p>畫面最上方「出題紀錄」保留這台裝置最近 20 次出過的考卷，可以重新打開。換電腦或清除瀏覽器資料就看不到了；要長期保存請下載，或登入老師帳號存進班級歷史（見<a href="#teacher-account">第 7 章</a>）。</p>
+</section>
+
+<!-- ===== 5 ===== -->
+<section class="m-chapter" id="send">
+    <h2><span class="m-no">5</span>老師：讓學生作答</h2>
+    <div class="m-note"><b>先登入</b>發送測驗需要老師帳號。還沒有帳號，在選身分頁點「老師帳號登入」，再按「還沒有帳號？點此註冊」（見<a href="#teacher-account">第 7 章</a>）。</div>
+    <h3>發送測驗</h3>
+    <p>工具列按綠色「發送測驗」，一次產生四種發法：</p>
+    <figure class="m-fig"><img src="manual/img/send.webp" alt="發送這份測驗視窗：6 位數代碼、學生作答連結、家長答案連結、老師即時進度儀表板" loading="lazy" width="512" height="672"><figcaption>發送測驗</figcaption></figure>
+    <div class="m-table-wrap"><table class="m-table">
+        <tr><th>發法</th><th>給誰</th><th>怎麼用</th></tr>
+        <tr><td>6 位數代碼</td><td>課堂上的學生</td><td>按「投影大字」放到螢幕上，學生在學生首頁輸入代碼就進得去。最快。</td></tr>
+        <tr><td>學生作答連結</td><td>學生</td><td>貼到 LINE 群組或 Google Classroom。學生打開直接作答、自動判分，看不到答案。</td></tr>
+        <tr><td>家長答案連結</td><td>家長</td><td>可以看題目、答案和解析，只能看不能改。</td></tr>
+        <tr><td>老師即時進度儀表板</td><td>老師自己</td><td>不用登入就看得到全班進度，所以<b>不要轉給學生或貼到班級群組</b>。</td></tr>
+    </table></div>
+    <p>代碼和連結都是 30 天內有效。</p>
+    <h3>看全班即時進度</h3>
+    <figure class="m-fig"><img src="manual/img/dashboard.webp" alt="即時進度儀表板，顯示學生座號姓名和已答題數" loading="lazy" width="576" height="224"><figcaption>即時進度儀表板</figcaption></figure>
+    <ul>
+        <li>每 8 到 10 秒自動更新，看得到每位學生寫到第幾題。</li>
+        <li>按學生卡片的「查看詳情」，可以看他每一題實際選了什麼、寫了什麼。</li>
+        <li>「停止監看」會讓這條儀表板連結失效，學生不能自己關掉被監看。</li>
+        <li>作答進度保留 8 小時，課堂上很夠用。</li>
+    </ul>
+    <h3>自己先試寫一次</h3>
+    <p>工具列「直接線上測驗」選「學生」，會開一個新分頁讓你用學生的角度寫一遍，確認題目沒問題再發。</p>
+</section>
+
+<!-- ===== 6 ===== -->
+<section class="m-chapter" id="paper">
+    <h2><span class="m-no">6</span>老師：派現成的紙本卷</h2>
+    <p>手邊已經有出好的卷子（段考卷、講義、習作），不用重打，掃進來就能讓學生在平板或電腦上作答。第 1 步選「派現成的紙本卷」進入，這個功能不用登入。</p>
+    <figure class="m-fig"><img src="manual/img/paper-upload.webp" alt="原卷直上畫面，上傳現成卷子" loading="lazy" width="1100" height="420"><figcaption>派現成的紙本卷</figcaption></figure>
+    <ol>
+        <li><b>上傳現成卷子</b>：掃描檔、手機拍的照片，或直接丟 PDF（會自動轉成圖片）。最多 10 頁、整份 5MB。</li>
+        <li><b>標出作答位置</b>：按「AI 自動抓這一頁」先幫你框一輪，再用滑鼠或手指把框拖到正確位置；沒抓到的按「自己加一個框」，多的選起來按「刪除選取的框」。AI 抓不準很正常，用來省掉從零開始框的時間。</li>
+        <li><b>設定每題的答案</b>：選擇題、填空題填了答案，學生交卷後自動判分；手寫題由你批改，可以按 AI 協助給建議。</li>
+        <li><b>派給學生</b>：按「產生學生作答連結」傳給學生。學生直接在卷子的畫面上作答，可以點選、打字或手寫。</li>
+        <li><b>批改</b>：按「打開批改台」，左邊選一位學生開始批改。</li>
+    </ol>
+    <p>卷子會保留一年。</p>
+</section>
+
+<!-- ===== 7 ===== -->
+<section class="m-chapter" id="teacher-account">
+    <h2><span class="m-no">7</span>老師帳號與班級</h2>
+    <figure class="m-fig"><img src="manual/img/login.webp" alt="老師帳號登入畫面" loading="lazy" width="960" height="1083"><figcaption>選身分頁點「老師帳號登入」</figcaption></figure>
+    <ul>
+        <li><b>註冊</b>：在登入畫面按「還沒有帳號？點此註冊」。老師註冊時要幫班級取名字（例如「六年1班」），全站不能重複，這個名字就是學生加入班級用的班級代碼。</li>
+        <li><b>登入後多的功能</b>：發送測驗；出題後在「更多」裡「存入班級歷史」，全班共用，最多 50 份，超過會自動刪最舊的；即時進度可以看每位學生的作答詳情。</li>
+        <li>登入狀態保留 30 天，之後要重新登入。</li>
+        <li>目前沒有自助重設密碼。忘記密碼請聯絡我們（<a href="#contact">第 12 章</a>）。</li>
+    </ul>
+</section>
+
+<!-- ===== 8 ===== -->
+<section class="m-chapter" id="student">
+    <h2><span class="m-no">8</span>學生</h2>
+    <h3>進入學生首頁</h3>
+    <p>選「我是學生」，第一次會問要「我要練習（不用註冊）」還是登入。不登入的話填一下學校、年級、班級、姓名，資料只存在這台裝置。</p>
+    <figure class="m-fig is-phone"><img src="manual/img/student-home.webp" alt="學生首頁，有進入老師的測驗和我要練習" loading="lazy" width="780" height="2140"><figcaption>學生首頁（手機）</figcaption></figure>
+    <h3>寫老師的測驗</h3>
+    <ol>
+        <li>在「進入老師的測驗」輸入老師報的 6 位數代碼按「進入」；或把老師給的連結貼上按「前往」，也可以直接點老師傳來的連結。</li>
+        <li>開始前可以填年級、班級、座號、姓名（選填，方便老師和家長核對是誰寫的）。</li>
+        <li>選作答方式：「全部寫完再送出」，或「每題即時看結果」（要登入才能用）。即時模式每題要按「確認這題」才算數，避免誤按。</li>
+        <li>寫完按「送出評分」，馬上看到分數，每一題標出答對或答錯、正確答案和解析。</li>
+    </ol>
+    <div class="m-figs">
+        <figure class="m-fig is-phone"><img src="manual/img/student-start.webp" alt="作答前填資料和選作答方式" loading="lazy" width="780" height="1688"><figcaption>開始前</figcaption></figure>
+        <figure class="m-fig is-phone"><img src="manual/img/student-answering.webp" alt="手機上一題一題作答" loading="lazy" width="780" height="1688"><figcaption>作答中</figcaption></figure>
+        <figure class="m-fig is-phone"><img src="manual/img/student-graded.webp" alt="送出後每題顯示答對答錯與解析" loading="lazy" width="780" height="1688"><figcaption>送出後看對錯與解析</figcaption></figure>
+    </div>
+    <p>送出後可以按「分享結果給家長／老師」產生結果連結（30 天有效），或「分享即時監看連結給家長」。</p>
+    <div class="m-note"><b>填充、簡答題</b>是用文字比對判分，寫法不同（例如多一個字）可能被判錯，分數僅供參考，以老師核對為準。</div>
+    <h3>自己練習</h3>
+    <p>學生首頁的「我要練習」：選年級、科目、課本版本（康軒、翰林、南一、部編，或不指定）、想練的範圍、題數（5 到 20 題）和難度，按「開始練習」，Luno 出一份練習卷，寫完自動對答案。每次練習一樣間隔 30 秒，下方「我的練習紀錄」看得到以前的分數。</p>
+    <h3>要不要登入</h3>
+    <p>不登入也能寫測驗和練習。登入才有：每題即時看結果、換手機或電腦也看得到自己的練習紀錄和分數。</p>
+</section>
+
+<!-- ===== 9 ===== -->
+<section class="m-chapter" id="parent">
+    <h2><span class="m-no">9</span>家長</h2>
+    <ul>
+        <li><b>看題目和答案</b>：打開老師給的「家長答案連結」，可以看題目、答案與解析。</li>
+        <li><b>看孩子寫到哪</b>：孩子作答後按「分享即時監看連結給家長」傳給你，打開就看得到進度；孩子寫完也可以傳「結果連結」給你看分數和每題對錯。</li>
+        <li><b>家長帳號</b>：在選身分頁點「我是家長」登入或註冊，登入後在「我的帳號」輸入孩子的帳號名稱連結。連結後不用等孩子傳連結，就能直接查他的即時進度和作答詳情，一次可以管好幾個孩子。</li>
+    </ul>
+</section>
+
+<!-- ===== 10 ===== -->
+<section class="m-chapter" id="admin">
+    <h2><span class="m-no">10</span>管理員</h2>
+    <p>管理員帳號不開放自己註冊，由既有管理員建立。從選身分頁的「管理員登入」進入，畫面右上角會出現「管理後台」，可以：</p>
+    <ul>
+        <li>查看、搜尋全站帳號</li>
+        <li>手動建立帳號</li>
+        <li>修改角色、重設密碼</li>
+        <li>刪除帳號：刪除老師會一併刪除他的班級與班級出題歷史，請先確認</li>
+    </ul>
+</section>
+
+<!-- ===== 11 ===== -->
+<section class="m-chapter m-faq" id="faq">
+    <h2><span class="m-no">11</span>常見問題</h2>
+    <details><summary>為什麼要等 30 秒才能再出題？</summary><p>Luno 內建的 AI 額度是大家共用的，同一台裝置每次出題要間隔 30 秒，避免額度被少數人用光。有自己的 Google API Key 就不受限制（見<a href="#make">第 3 章</a>）。</p></details>
+    <details><summary>AI 出的題目有錯怎麼辦？</summary><p>直接點試卷上的文字改掉，或按該題的「換這題」。發給學生前請一定先看過；AI 偶爾會出現事實錯誤或超出年級的內容。</p></details>
+    <details><summary>填充題學生寫對了卻被判錯？</summary><p>填充和簡答是逐字比對，同義的不同寫法可能被判錯。請以老師核對為準；選擇題的判分不受影響。</p></details>
+    <details><summary>連結打不開了？</summary><p>分享連結、6 位數代碼、結果連結都是 30 天內有效，即時進度保留 8 小時。過期請老師重新按一次「發送測驗」。</p></details>
+    <details><summary>忘記密碼怎麼辦？</summary><p>目前沒有自助重設密碼，請聯絡我們，由管理員幫你重設。</p></details>
+    <details><summary>換電腦後出題紀錄不見了？</summary><p>出題紀錄和「記住這些條件」只存在原本那台裝置的瀏覽器。要跨裝置保留，請下載 Word／PDF，或登入老師帳號存進班級歷史。</p></details>
+    <details><summary>手機、平板可以用嗎？</summary><p>可以。出題、作答、看進度都支援手機和平板；出題建議用電腦，下載和改字比較方便。</p></details>
+    <details><summary>不想每次都看歡迎畫面？</summary><p>按右下角「略過」即可；同一個分頁重新整理不會再播。</p></details>
+</section>
+
+<!-- ===== 12 ===== -->
+<section class="m-chapter" id="contact">
+    <h2><span class="m-no">12</span>聯絡我們</h2>
+    <ul>
+        <!-- Cloudflare 的信箱混淆會把信箱改寫成亂碼（爬蟲與 AI 讀到的是亂碼），這段豁免 -->
+        <!--email_off--><li>作者信箱：<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">gfeh@hunglun.com</a></li><!--/email_off-->
+        <li>作者 LINE：<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">加入好友</a>（電腦版請在 LINE 搜尋 ID：safezone0619）</li>
+        <li>鴻綸科技官方網站：<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">hunglun.com</a></li>
+    </ul>
+    <p class="m-foot">© 鴻綸科技　Luno 綸諾・互動式評量</p>
+</section>
+</main>
+</div>
+</body>
+</html>

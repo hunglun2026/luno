@@ -192,10 +192,16 @@
         return !!lGet('lun_saved_settings') && step2Ok();
     }
 
+    // 引導模式需要的外框：上方步驟標題、快速開始、第 4 步摘要、下方上一步／下一步，再接上事件。只建一次
     function buildChrome() {
         var card = document.querySelector('#inputForm .lq-card');
         if (!card || $('lgWizHead')) return;
+        buildHead(card);
+        buildNav();
+        bindStepEvents();
+    }
 
+    function buildHead(card) {
         var head = document.createElement('div');
         head.id = 'lgWizHead';
         head.className = 'lg-wiz-head';
@@ -223,8 +229,10 @@
             sum.dataset.gstep = '4';
             countGrid.parentNode.insertBefore(sum, countGrid);
         }
+    }
 
-        // 上一步／下一步／用預設條件直接出題，放在出題按鈕上面
+    // 上一步／下一步／用預設條件直接出題
+    function buildNav() {
         var nav = document.createElement('div');
         nav.id = 'lgNav';
         nav.className = 'lg-nav';
@@ -244,7 +252,9 @@
             if (!step2Ok()) { showMsg(sourceType() === '2' ? '請先上傳檔案或貼上文字' : '請先選年級和科目'); return; }
             startGen();
         };
+    }
 
+    function bindStepEvents() {
         // 選出題方式：點完卡片（既有 toggleSource 先跑）直接到下一步；紙本卷會自己切到原卷畫面
         ['btnSourceAI', 'btnSourceFile'].forEach(function (id) {
             var el = $(id);
