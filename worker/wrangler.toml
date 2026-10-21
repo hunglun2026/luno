@@ -1,0 +1,31 @@
+name = "luno-api"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# 2026-10-21 從 steveedu711（linquiz-api）搬到 hunglun2026。
+# 正式網址只用 https://luno-api.hunglun.com（Steve：不要有 dev）。網域不寫 routes：
+# 部署用的 token 沒有 hunglun.com 網域層級權限，改用帳號層級 API 綁一次（PUT /accounts/{id}/workers/domains）。
+workers_dev = false
+preview_urls = false
+
+[[kv_namespaces]]
+binding = "COOLDOWN_KV"
+id = "d4f4ead9946a4fd59ac5d03b2f84c872"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "luno-db"
+database_id = "9fd5a624-1055-445a-8541-80bc614e41ee"
+
+# 原卷直上：老師上傳的考卷影像、學生手寫作答的截圖都放這裡。
+# 影像不進 D1／KV——D1 免費層 5GB 且單列有大小限制，KV 每日只有 1000 次寫入，
+# 一個班考一次就吃光。R2 免費層 10GB、下載不計流量費，才撐得住掃描卷這種尺寸。
+[[r2_buckets]]
+binding = "PAPERS_R2"
+bucket_name = "luno-papers"
+
+# 每天台灣時間 04:20（UTC 20:20）清一次過期卷子：R2 影像＋D1 兩張表一起刪。
+# 不用 R2 bucket 生命週期規則——那個只認物件年齡，而卷子的到期日寫在 D1，
+# 且 D1 的列也要一起清，否則會留下讀不到卻佔位的孤兒資料。
+[triggers]
+crons = ["20 20 * * *"]
