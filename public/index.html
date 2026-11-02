@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luno 綸諾・互動式評量</title>
+    <title>刻度・互動式評量</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
@@ -17,10 +17,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=2">
+    <link rel="stylesheet" href="css/guide.css?v=3">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=2">
-    <link rel="stylesheet" href="css/sheet.css?v=2">
+    <link rel="stylesheet" href="css/app.css?v=3">
+    <link rel="stylesheet" href="css/sheet.css?v=3">
 </head>
 <body class="text-slate-800">
 
@@ -33,7 +33,7 @@
         </div>
         <h1 class="lg-welcome-brand">鴻綸科技</h1>
         <p class="lg-welcome-en">HUNGLUN TECHNOLOGY</p>
-        <p class="lg-welcome-app">Luno 綸諾・互動式評量</p>
+        <p class="lg-welcome-app">刻度・互動式評量</p>
         <img src="assets/logo-dark.png" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
         <button type="button" id="lqWelcomeSkip" class="lg-skip" onclick="this.dataset.clicked = '1'">略過 →</button>
         <div class="lg-welcome-bar" aria-hidden="true"></div>
@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <h1 class="hl-splash-title">Luno 綸諾</h1>
+            <h1 class="hl-splash-title">刻度</h1>
             <h2 class="hl-splash-subtitle">互動式評量</h2>
 
             <!-- ② 選身分（guide.js）：老師、學生兩張大卡；家長、帳號登入、管理員人少，收成下面的小連結。
@@ -144,7 +144,7 @@
     <div id="practiceLoading" class="hidden no-print">
         <div class="lq-practice-loading-card">
             <div class="lq-practice-spinner" aria-hidden="true"></div>
-            <div class="lq-practice-loading-title">Luno 正在出題…</div>
+            <div class="lq-practice-loading-title">刻度正在出題…</div>
             <div id="practiceLoadingSub" class="lq-practice-loading-sub">請稍候，大約十幾秒</div>
             <div class="lq-practice-bar"><div id="practiceBar" class="lq-practice-bar-fill"></div></div>
         </div>
@@ -155,7 +155,7 @@
         <div class="lq-appbar-inner">
             <div class="lq-appbar-brand">
                 <img src="assets/badge-medallion.png" alt="" class="lq-appbar-mark" aria-hidden="true">
-                <span class="lq-appbar-name">Luno 綸諾</span>
+                <span class="lq-appbar-name">刻度</span>
                 <span class="lq-appbar-tag">互動式評量</span>
             </div>
             <div class="lq-appbar-actions">
@@ -204,10 +204,10 @@
             <div id="apiKeyBox" data-gstep="4" class="mb-8 bg-emerald-50/70 p-4 sm:p-5 rounded-xl border border-emerald-100">
                 <label class="block font-bold mb-2 text-lg text-emerald-800">🔑 你自己的 Google API Key（選填）</label>
                 <div class="flex gap-2">
-                    <input type="password" id="userKey" onchange="localStorage.setItem('lun_key',this.value)" class="lq-input" placeholder="貼上您的 AIza... 金鑰（不填則使用Luno 內建額度）">
+                    <input type="password" id="userKey" onchange="localStorage.setItem('lun_key',this.value)" class="lq-input" placeholder="貼上您的 AIza... 金鑰（不填則使用刻度內建額度）">
                     <button onclick="let x=document.getElementById('userKey');x.type=x.type==='password'?'text':'password'" class="lq-btn lq-btn-secondary px-3 text-lg" aria-label="顯示/隱藏金鑰">👁️</button>
                 </div>
-                <p class="text-sm text-emerald-700 mt-2 font-bold">💡 不填：使用Luno 內建額度，每次出題間隔 30 秒冷卻。填入自己的 Key：不受冷卻限制，用量算在自己的額度上。</p>
+                <p class="text-sm text-emerald-700 mt-2 font-bold">💡 不填：使用刻度內建額度，每次出題間隔 30 秒冷卻。填入自己的 Key：不受冷卻限制，用量算在自己的額度上。</p>
                 <div class="flex justify-between items-center mt-3 text-sm flex-wrap gap-2">
                     <div class="flex gap-4">
                         <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-emerald-700 underline font-bold hover:text-emerald-900">👉 申請 Google API Key</a>
@@ -227,7 +227,7 @@
                         <img src="assets/art/mode-ai.png" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
                         <div class="lq-mode-text">
                             <div class="lq-mode-name">出一份新的</div>
-                            <div class="lq-mode-desc">填好年級科目，Luno 直接生出題目</div>
+                            <div class="lq-mode-desc">填好年級科目，刻度直接生出題目</div>
                         </div>
                     </div>
                     <div id="btnSourceFile" class="lq-mode" onclick="toggleSource('2')" role="button" tabindex="0">
@@ -278,7 +278,7 @@
                     <label class="font-bold text-sm">版本</label>
                     <select id="publisher" onchange="checkCustom(this, 'c_publisher')" class="lq-input">
                         <!-- value 是存進 localStorage / 拿去比對的鍵，改名時刻意不動，只改顯示文字 -->
-                        <option value="由小綸自由發揮" selected>由 Luno 自由發揮 (不限版本)</option>
+                        <option value="由小綸自由發揮" selected>由刻度自由發揮 (不限版本)</option>
                         <option value="Custom">✍️ 依照課本資訊填入</option>
                     </select>
                     <input type="text" id="c_publisher" class="input-custom" placeholder="請輸入自定義版本資訊">
@@ -347,7 +347,7 @@
 
             <!-- 主 CTA 獨佔一排。原本正下方並排三顆同樣醒目的按鈕在跟它搶焦點，
                  其中「清除所有條件」還是破壞性操作卻放在最順手的位置，已移到卡片右上角 -->
-            <button onclick="startGen()" id="btnGo" data-gstep="4" class="lq-btn lq-cta lq-btn-primary w-full py-4 rounded-xl text-xl">🚀 Luno 開始出題</button>
+            <button onclick="startGen()" id="btnGo" data-gstep="4" class="lq-btn lq-cta lq-btn-primary w-full py-4 rounded-xl text-xl">🚀 開始出題</button>
             <div class="flex justify-center gap-4 mt-3" data-gstep="4">
                 <button onclick="saveDefaultSettings()" class="lq-btn lq-btn-ghost text-sm px-3 py-2"><span class="ph-duotone ph-floppy-disk lq-icon-chip"></span> 記住這些條件</button>
                 <button onclick="copySettingsLink()" class="lq-btn lq-btn-ghost text-sm px-3 py-2"><span class="ph-duotone ph-link-simple lq-icon-chip"></span> 複製設定連結</button>
@@ -367,7 +367,7 @@
                 </summary>
                 <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 mt-3">
                     <li>請確認擁有上傳教材的合法使用權。本工具不儲存使用者檔案，也不承擔版權責任。</li>
-                    <li>使用 Luno 內建額度時，每次出題間隔 30 秒；填自己的 API Key 就不受這個限制。</li>
+                    <li>使用刻度內建額度時，每次出題間隔 30 秒；填自己的 API Key 就不受這個限制。</li>
                     <li>公用電腦請務必使用「清除記憶 / 登出」。</li>
                 </ul>
             </details>
@@ -545,21 +545,21 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=2"></script>
-    <script src="js/entry.js?v=2"></script>
-    <script src="js/home.js?v=2"></script>
-    <script src="js/share.js?v=2"></script>
-    <script src="js/settings.js?v=2"></script>
-    <script src="js/generate.js?v=2"></script>
-    <script src="js/sheet.js?v=2"></script>
-    <script src="js/answer.js?v=2"></script>
-    <script src="js/export.js?v=2"></script>
-    <script src="js/account.js?v=2"></script>
-    <script src="js/admin.js?v=2"></script>
+    <script src="js/core.js?v=3"></script>
+    <script src="js/entry.js?v=3"></script>
+    <script src="js/home.js?v=3"></script>
+    <script src="js/share.js?v=3"></script>
+    <script src="js/settings.js?v=3"></script>
+    <script src="js/generate.js?v=3"></script>
+    <script src="js/sheet.js?v=3"></script>
+    <script src="js/answer.js?v=3"></script>
+    <script src="js/export.js?v=3"></script>
+    <script src="js/account.js?v=3"></script>
+    <script src="js/admin.js?v=3"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=2">
+<link rel="stylesheet" href="css/paper.css?v=3">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -652,10 +652,10 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=2"></script>
-<script src="js/paper-student.js?v=2"></script>
+<script src="js/paper-teacher.js?v=3"></script>
+<script src="js/paper-student.js?v=3"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=2"></script>
+    <script src="js/guide.js?v=3"></script>
 
 </body>
 </html>

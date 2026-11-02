@@ -1,4 +1,4 @@
-// Luno 綸諾｜依身分進首頁：學生首頁、練習、家長面板、返回鈕。2026-10-21 從 index.html 原樣拆出，檔案順序見 index.html 底部
+// 刻度｜依身分進首頁：學生首頁、練習、家長面板、返回鈕。2026-10-21 從 index.html 原樣拆出，檔案順序見 index.html 底部
         // ==================== 依身分決定進入哪個首頁 ====================
         // 老師/管理員/訪客 → 出題工具(#inputForm)；學生 → 學生首頁(#studentHome)；
         // 家長 → 出題工具，但上方多一塊孩子狀況面板。
@@ -87,7 +87,7 @@
 
             html += "<div class='lq-card p-5 mb-4'>" +
                 "<div class='font-bold text-lg mb-1'>📝 我要練習</div>" +
-                "<div class='text-xs text-gray-500 mb-3'>Luno 幫你出一份練習卷，寫完自動對答案（每次間隔 30 秒）</div>" +
+                "<div class='text-xs text-gray-500 mb-3'>刻度幫你出一份練習卷，寫完自動對答案（每次間隔 30 秒）</div>" +
                 "<div class='grid grid-cols-2 gap-2 mb-2'>" +
                     "<select id='practiceGrade' class='lq-input text-sm'>" + practiceGradeOptions() + "</select>" +
                     "<select id='practiceSubject' class='lq-input text-sm'>" + subjects.map(function (x) { return "<option>" + x + "</option>"; }).join('') + "</select>" +

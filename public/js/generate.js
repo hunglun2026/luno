@@ -1,9 +1,9 @@
-// Luno 綸諾｜冷卻倒數與出題主流程 startGen()。2026-10-21 從 index.html 原樣拆出，檔案順序見 index.html 底部
+// 刻度｜冷卻倒數與出題主流程 startGen()。2026-10-21 從 index.html 原樣拆出，檔案順序見 index.html 底部
         // --- 冷卻倒數 UI ---
         let cooldownTimer = null;
         function startCooldownUI(seconds) {
             const btn = document.getElementById('btnGo');
-            const original = "🚀 Luno 開始出題";
+            const original = "🚀 開始出題";
             let remaining = Math.max(1, Math.ceil(seconds));
             btn.disabled = true;
             document.getElementById('barBox').classList.add('hidden');
@@ -248,7 +248,7 @@
                 hidePracticeLoading();
                 alert("錯誤: " + e.message);
                 document.getElementById('btnGo').disabled = false;
-                document.getElementById('btnGo').innerText = "🚀 Luno 開始出題";
+                document.getElementById('btnGo').innerText = "🚀 開始出題";
                 document.getElementById('btnGo').classList.remove('is-working');
                 document.getElementById('barBox').classList.add('hidden');
                 document.getElementById('loadingAnim').classList.add('hidden');
