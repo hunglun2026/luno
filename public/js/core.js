@@ -51,8 +51,8 @@
         // 只用在「註冊／管理員建帳號／重設密碼」。登入欄不套用：舊帳號可能有中文或更長的名稱
         const CRED_MAX_LEN = 16;
         const CRED_INPUT_ATTRS = " maxlength='16' autocapitalize='off' autocomplete='off' spellcheck='false' oninput='lqCredFilter(this)'";
-        const CRED_USER_HINT = "帳號（英數符號，最多16字）";
-        const CRED_PASS_HINT = "密碼（6～16字，不分大小寫）";
+        const CRED_USER_HINT = "帳號（英文、數字、符號，最多16字，不分大小寫）";
+        const CRED_PASS_HINT = "密碼（6～16字，英文、數字、符號，不分大小寫）";
         function lqCredFilter(el) {
             el.value = el.value.replace(/[^!-~]/g, '').slice(0, CRED_MAX_LEN);
         }
