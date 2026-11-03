@@ -87,62 +87,46 @@
             }
         }
 
+        // 單題重出要送的 parts：提示詞＋（原卷模式的）附件＋參考內容。2026-11-03 從 regenerateQuestion 拆出
+        function buildRegenParts(idx) {
+            const parts = [{ text: buildRegenPrompt(idx) }];
+            const s = window.currentSettings || {};
+            if (s.sType === '2') {
+                uploadItems.filter(item => item.type === 'file').forEach(file => {
+                    parts.push({ inline_data: { mime_type: file.mime, data: file.data } });
+                });
+            }
+            if (s.contentText) parts.push({ text: "\n參考內容:\n" + s.contentText });
+            return parts;
+        }
+
         async function regenerateQuestion(idx, btnEl) {
             if (!window.currentItems || !window.currentItems[idx]) return;
             const originalLabel = btnEl.innerHTML;
             btnEl.disabled = true;
             btnEl.innerText = "⏳ 出題中...";
             try {
-                let parts = [{ text: buildRegenPrompt(idx) }];
-                const s = window.currentSettings || {};
-                if (s.sType === '2') {
-                    uploadItems.filter(item => item.type === 'file').forEach(file => {
-                        parts.push({ inline_data: { mime_type: file.mime, data: file.data } });
-                    });
-                }
-                if (s.contentText) parts.push({ text: "\n參考內容:\n" + s.contentText });
-
-                const adminPass = sessionStorage.getItem('linquiz_admin') || "";
-                const userKey = document.getElementById('userKey').value.trim();
-
-                let res = await fetch(API_BASE + "/api/generate", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Batch-Index': '0',
-                        'X-Admin-Pass': adminPass,
-                        'X-Gemini-Api-Key': userKey,
-                        'X-Client-Id': getClientId()
-                    },
-                    body: JSON.stringify({ contents: [{ parts: parts }] })
-                });
+                const res = await postGenerate(buildRegenParts(idx), 0);
 
                 if (res.status === 429) {
-                    let cd = await res.json().catch(() => ({}));
-                    let remaining = (cd.error && cd.error.remaining) || 30;
+                    const cd = await res.json().catch(() => ({}));
+                    const remaining = (cd.error && cd.error.remaining) || 30;
                     lqAlert("⏳ 目前冷卻中，請等待 " + remaining + " 秒後再試一次單題重出");
                     startCooldownUI(remaining);
                     return;
                 }
 
-                let data = await res.json();
+                const data = await res.json();
                 if (data.error) throw new Error(data.error.message);
 
-                let rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-                const bt = String.fromCharCode(96).repeat(3);
-                let cleanJSON = rawText.replace(new RegExp(bt + 'json', 'gi'), '').replace(new RegExp(bt, 'g'), '').trim();
-                cleanJSON = cleanJSON.replace(/[\r\n]+/g, ' ');
-                let s2 = cleanJSON.indexOf('['), e2 = cleanJSON.lastIndexOf(']');
-                if (s2 !== -1 && e2 !== -1) {
-                    cleanJSON = cleanJSON.substring(s2, e2+1).replace(/,\s*\]/g,']').replace(/,\s*\}/g,'}');
-                }
-                let parsed = JSON.parse(cleanJSON);
-                let newQ = Array.isArray(parsed) ? parsed[0] : parsed;
+                const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                const parsed = JSON.parse(cleanAiJsonText(rawText, false));
+                const newQ = Array.isArray(parsed) ? parsed[0] : parsed;
                 if (!newQ || !newQ.q) throw new Error("AI 回傳格式異常，請再試一次");
 
                 window.currentItems[idx] = newQ;
                 updateQuestionDOM(idx, newQ);
-                let ansContainer = document.getElementById('answerModeContainer');
+                const ansContainer = document.getElementById('answerModeContainer');
                 if (ansContainer) ansContainer.dataset.rendered = '';
             } catch(e) {
                 lqAlert("重新出題失敗: " + e.message);
@@ -152,43 +136,92 @@
             }
         }
 
-        function renderPaperFixed(items, titleOverride) {
-            const inputForm = document.getElementById('inputForm');
-            const resultSection = document.getElementById('resultSection');
-            inputForm.classList.add('hidden');
+        // 切到「試卷結果」畫面：藏輸入表單與學生首頁，清空舊試卷與作答區
+        function showPaperResultView() {
+            document.getElementById('inputForm').classList.add('hidden');
             hidePracticeLoading();
             const studentHome = document.getElementById('studentHome');
             if (studentHome) studentHome.classList.add('hidden');
-            resultSection.classList.remove('hidden');
+            document.getElementById('resultSection').classList.remove('hidden');
 
-            let container = document.getElementById('paperContainer');
+            const container = document.getElementById('paperContainer');
             container.innerHTML = "";
             container.style.display = 'block';
 
-            let ansContainer = document.getElementById('answerModeContainer');
+            const ansContainer = document.getElementById('answerModeContainer');
             if (ansContainer) { ansContainer.dataset.rendered = ''; ansContainer.style.display = 'none'; }
+            return container;
+        }
 
-            let title = titleOverride || ((document.getElementById('sourceType').value==='1' ? (document.getElementById('grade').value==='Custom'?document.getElementById('c_grade').value:document.getElementById('grade').value)+" "+document.getElementById('subject').value : "測驗") + "試卷");
-            let sub = "範圍：" + (document.getElementById('scope').value || "綜合");
+        // 算試卷標題與範圍，並記下 window.docTitle／docName
+        function setPaperTitles(titleOverride) {
+            const title = titleOverride || ((document.getElementById('sourceType').value==='1' ? (document.getElementById('grade').value==='Custom'?document.getElementById('c_grade').value:document.getElementById('grade').value)+" "+document.getElementById('subject').value : "測驗") + "試卷");
+            const sub = "範圍：" + (document.getElementById('scope').value || "綜合");
             // docTitle是乾淨標題(給分享連結/剪貼簿訊息這種要顯示給人看的地方用)；
             // docName是title+範圍組合(給下載檔名用，例如"XX試卷_範圍：YY.doc")。
             // 之前分享連結直接把docName當標題傳給/api/share，學生端開啟時renderPaperFixed()
             // 又會在這個已經含"範圍："的字串後面再接一次範圍，變成"範圍：A_範圍：B"重複(Steve回報)
             window.docTitle = title.replace(/[<>:"/\\|?*]/g, "");
             window.docName = (title + "_" + sub).replace(/[<>:"/\\|?*]/g, "");
+            return { title, sub };
+        }
+
+        // 一題的試卷 HTML（qIdx 是從 0 起算的全卷題序）
+        function quizItemHTML(q, qIdx) {
+            const globalNum = qIdx + 1;
+            let optsHTML = "";
+            if(q.o && q.o.length > 0) {
+                optsHTML += "<div class='q-opts'>";
+                q.o.forEach((o, oi) => {
+                    let label = String.fromCharCode(65+oi);
+                    optsHTML += "<div class='q-opt editable-text' contenteditable='true'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
+                });
+                optsHTML += "</div>";
+            }
+            const prefix = (q.o && q.o.length > 0) ? (globalNum + ". (　　)") : (globalNum + ".");
+            const answerSpace = (!q.o || q.o.length === 0) ? "<div class='writing-space'></div>" : "";
+
+            return "<div class='q-item' data-idx='" + qIdx + "'>" +
+               "<div class='q-num-box'>" + prefix + "</div>" +
+               "<div class='q-content-box'>" +
+                   regenBtnHTML(qIdx) +
+                   "<div class='q-text editable-text' contenteditable='true'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
+                   optsHTML +
+                   answerSpace +
+               "</div></div>";
+        }
+
+        // 解析卷頁（預設隱藏，切到「解析」分頁才顯示）
+        function buildKeyPage(items) {
+            const kDiv = document.createElement('div');
+            kDiv.className = "a4-page key-page";
+            kDiv.style.display = 'none';
+            kDiv.contentEditable = "true";
+            let kHtml = "<h2 style='text-align:center; font-size:18pt; font-weight:bold; margin-bottom:20px;'>解析卷</h2>";
+            items.forEach((q, i) => {
+                const ans = answerKeyText(q);
+                kHtml += "<div class='key-item' data-idx='" + i + "' style='margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:4px;'><b>"+(i+1)+".</b> <span style='color:red; font-weight:bold; margin-right:10px;'>"+escapeHtml(ans)+"</span> <span style='font-size:10pt; color:#666;'>"+escapeHtml(q.e||'')+"</span></div>";
+            });
+            kDiv.innerHTML = kHtml;
+            return kDiv;
+        }
+
+        function renderPaperFixed(items, titleOverride) {
+            const container = showPaperResultView();
+            const { title, sub } = setPaperTitles(titleOverride);
 
             const qTypeVal = document.getElementById('qType').value || "";
             const isWriting = qTypeVal.includes('簡答') || qTypeVal.includes('填充') || qTypeVal.includes('計算');
             const ITEMS_PER_PAGE = isWriting ? 8 : 10;
 
-            let chunks = [];
+            const chunks = [];
             for (let i = 0; i < items.length; i += ITEMS_PER_PAGE) {
                 chunks.push(items.slice(i, i + ITEMS_PER_PAGE));
             }
 
             chunks.forEach((chunk, pageIdx) => {
-                let pageNum = pageIdx + 1;
-                let pageDiv = document.createElement('div');
+                const pageNum = pageIdx + 1;
+                const pageDiv = document.createElement('div');
                 pageDiv.className = "a4-page quiz-page";
                 pageDiv.contentEditable = "true";
 
@@ -202,51 +235,16 @@
                     headerHTML = "<div style='height: 30pt;'></div>";
                 }
 
-                let contentHTML = "";
-                chunk.forEach((q, localIdx) => {
-                    let globalNum = (pageIdx * ITEMS_PER_PAGE) + localIdx + 1;
-                    let optsHTML = "";
-                    if(q.o && q.o.length > 0) {
-                        optsHTML += "<div class='q-opts'>";
-                        q.o.forEach((o, oi) => {
-                            let label = String.fromCharCode(65+oi);
-                            optsHTML += "<div class='q-opt editable-text' contenteditable='true'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
-                        });
-                        optsHTML += "</div>";
-                    }
-                    let prefix = (q.o && q.o.length > 0) ? (globalNum + ". (　　)") : (globalNum + ".");
-                    let answerSpace = (!q.o || q.o.length === 0) ? "<div class='writing-space'></div>" : "";
-                    let qIdx = globalNum - 1;
-
-                    contentHTML += "<div class='q-item' data-idx='" + qIdx + "'>" +
-                       "<div class='q-num-box'>" + prefix + "</div>" +
-                       "<div class='q-content-box'>" +
-                           regenBtnHTML(qIdx) +
-                           "<div class='q-text editable-text' contenteditable='true'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
-                           optsHTML +
-                           answerSpace +
-                       "</div></div>";
-                });
-
-                let footerHTML = "<div class='page-footer' contenteditable='false'>第 " + pageNum + " 頁 / 共 " + chunks.length + " 頁</div>";
+                const contentHTML = chunk.map((q, localIdx) => quizItemHTML(q, pageIdx * ITEMS_PER_PAGE + localIdx)).join("");
+                const footerHTML = "<div class='page-footer' contenteditable='false'>第 " + pageNum + " 頁 / 共 " + chunks.length + " 頁</div>";
                 pageDiv.innerHTML = headerHTML + "<div class='page-content'>" + contentHTML + "</div>" + footerHTML;
                 container.appendChild(pageDiv);
             });
 
-            let kDiv = document.createElement('div');
-            kDiv.className = "a4-page key-page";
-            kDiv.style.display = 'none';
-            kDiv.contentEditable = "true";
-            let kHtml = "<h2 style='text-align:center; font-size:18pt; font-weight:bold; margin-bottom:20px;'>解析卷</h2>";
-            items.forEach((q, i) => {
-                let ans = answerKeyText(q);
-                kHtml += "<div class='key-item' data-idx='" + i + "' style='margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:4px;'><b>"+(i+1)+".</b> <span style='color:red; font-weight:bold; margin-right:10px;'>"+escapeHtml(ans)+"</span> <span style='font-size:10pt; color:#666;'>"+escapeHtml(q.e||'')+"</span></div>";
-            });
-            kDiv.innerHTML = kHtml;
-            container.appendChild(kDiv);
+            container.appendChild(buildKeyPage(items));
 
             // 試卷剛渲染完就要提示「可以直接點文字改」。
-            // 不能只靠 switchSheet() 帶出來——正常出題流程根本不會呼叫它
+            // 不能只靠 switchSheet() 帶出來，正常出題流程根本不會呼叫它
             // （它只在按分頁鈕、分享模式、線上作答時才跑），提示會一直維持隱藏
             updateEditHintVisibility('quiz');
         }

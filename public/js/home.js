@@ -38,21 +38,17 @@
             return grades.map(function (g) { return "<option>" + g + "</option>"; }).join('');
         }
 
-        function renderStudentHome() {
-            const u = window.currentUser;
-            const prof = getStudentProfile() || {};
+        // 學生首頁的身分列：頭像 + 姓名 + 「學生」標籤 + 班級資訊，右側固定放帳號/登出出口。
+        // 未登入時頭像轉灰、標籤轉琥珀色「學生・未登入」，一眼看得出紀錄只在這台裝置。
+        // 2026-11-03 從 renderStudentHome 拆出
+        function studentAppbarHtml(u, prof) {
             const name = u ? u.displayName : (prof.name || '同學');
             const infoLine = u ? (u.className || '') : [prof.school, prof.grade, prof.className].filter(Boolean).join('・');
-            const subjects = ['國語文', '英語文', '數學', '自然科學', '社會', '理化', '生物', '地球科學', '歷史', '地理', '公民'];
-            const box = document.getElementById('studentHome');
-
-            // 身分列：頭像 + 姓名 + 「學生」標籤 + 班級資訊，右側固定放帳號/登出出口。
-            // 未登入時頭像轉灰、標籤轉琥珀色「學生・未登入」，一眼看得出紀錄只在這台裝置。
             // 頭像字：英數帳號取第一個字母（大寫），中文姓名取最後一個字（王小明→明），比較符合稱呼習慣
             const rawName = (name || '同學').trim();
             const initial = escapeHtml(/^[A-Za-z0-9]/.test(rawName) ? rawName.charAt(0).toUpperCase() : rawName.slice(-1));
             const subLine = infoLine || (u ? '學生帳號：' + u.username : '練習紀錄只留在這台裝置');
-            let html = "<div class='lq-appbar'>" +
+            return "<div class='lq-appbar'>" +
                 "<div class='lq-appbar-avatar" + (u ? "" : " is-guest") + "'>" + initial + "</div>" +
                 "<div class='lq-appbar-id'>" +
                     "<div class='lq-appbar-name'><span class='truncate'>" + escapeHtml(name) + "</span>" +
@@ -66,14 +62,11 @@
                     : "<button onclick='openAccountModal()' class='lq-btn lq-btn-primary text-xs px-2.5 py-1.5'>登入</button>" +
                       "<button onclick='studentLeaveHome()' class='lq-btn lq-btn-secondary text-xs px-2.5 py-1.5'>換身分</button>") +
                 "</div></div>";
+        }
 
-            if (!u) {
-                html += "<div class='lq-card p-3 mb-4 text-xs text-gray-500' style='border-color:#fde68a;background:#fffbeb;'>" +
-                    "登入才有：寫一題就馬上知道對不對、換手機或電腦也看得到自己的練習紀錄與分數。" +
-                    "<button onclick='openAccountModal()' class='underline font-bold' style='color:var(--hl-blue);'>現在登入</button></div>";
-            }
-
-            html += "<div class='lq-card p-5 mb-4'>" +
+        // 「進入老師的測驗」卡片：輸入 6 位數代碼或貼連結
+        function studentJoinCardHtml() {
+            return "<div class='lq-card p-5 mb-4'>" +
                 "<div class='font-bold text-lg mb-1'>🎯 進入老師的測驗</div>" +
                 "<div class='text-xs text-gray-500 mb-3'>輸入老師報的 6 位數代碼，或貼上老師給的連結</div>" +
                 "<div class='flex gap-2 mb-2'>" +
@@ -84,8 +77,12 @@
                     "<input id='joinLinkInput' class='lq-input text-sm' placeholder='或貼上測驗連結'>" +
                     "<button onclick='joinByLink()' class='lq-btn lq-btn-secondary px-4 whitespace-nowrap'>前往</button>" +
                 "</div></div>";
+        }
 
-            html += "<div class='lq-card p-5 mb-4'>" +
+        // 「我要練習」卡片：年級、科目、版本、範圍、題數、難度
+        function studentPracticeCardHtml() {
+            const subjects = ['國語文', '英語文', '數學', '自然科學', '社會', '理化', '生物', '地球科學', '歷史', '地理', '公民'];
+            return "<div class='lq-card p-5 mb-4'>" +
                 "<div class='font-bold text-lg mb-1'>📝 我要練習</div>" +
                 "<div class='text-xs text-gray-500 mb-3'>刻度幫你出一份練習卷，寫完自動對答案（每次間隔 30 秒）</div>" +
                 "<div class='grid grid-cols-2 gap-2 mb-2'>" +
@@ -104,6 +101,23 @@
                     "<select id='practiceDiff' class='lq-input text-sm'>" + ['基礎', '普通', '進階', '挑戰'].map(function (d) { return "<option" + (d === '普通' ? " selected" : "") + ">" + d + "</option>"; }).join('') + "</select>" +
                 "</div>" +
                 "<button id='btnPractice' onclick='startPractice(this)' class='lq-btn lq-cta lq-btn-primary w-full py-3 text-lg'>🚀 開始練習</button></div>";
+        }
+
+        function renderStudentHome() {
+            const u = window.currentUser;
+            const prof = getStudentProfile() || {};
+            const box = document.getElementById('studentHome');
+
+            let html = studentAppbarHtml(u, prof);
+
+            if (!u) {
+                html += "<div class='lq-card p-3 mb-4 text-xs text-gray-500' style='border-color:#fde68a;background:#fffbeb;'>" +
+                    "登入才有：寫一題就馬上知道對不對、換手機或電腦也看得到自己的練習紀錄與分數。" +
+                    "<button onclick='openAccountModal()' class='underline font-bold' style='color:var(--hl-blue);'>現在登入</button></div>";
+            }
+
+            html += studentJoinCardHtml();
+            html += studentPracticeCardHtml();
 
             html += "<div class='lq-card p-5 mb-4'>" +
                 "<div class='font-bold text-lg mb-2'>📊 我的練習紀錄</div>" +
@@ -405,12 +419,12 @@
         }
 
         function renderQuizEntryRoleChoice() {
-            document.getElementById('quizEntryTitle').textContent = '📱 你是哪一種身分？';
+            document.getElementById('quizEntryTitle').textContent = '📱 要怎麼線上作答？';
             document.getElementById('quizEntryBody').innerHTML =
                 "<div class='space-y-3'>" +
                 "<button onclick='quizEntryAsStudent(this)' class='lq-btn lq-btn-primary w-full py-3 text-left px-4'>" +
-                    "<div class='font-bold'>🎒 我是學生</div>" +
-                    "<div class='text-xs opacity-80'>直接開始線上作答，答完自動評分</div></button>" +
+                    "<div class='font-bold'>🎒 交給學生作答（或我自己寫）</div>" +
+                    "<div class='text-xs opacity-80'>家長／教師出好題目後，直接把這支手機遞給學生，不用登入、不用傳連結；答完自動評分</div></button>" +
                 "<button onclick='quizEntryAsParent()' class='lq-btn lq-btn-secondary w-full py-3 text-left px-4'>" +
                     "<div class='font-bold'>👨‍👩‍👧 我是家長</div>" +
                     "<div class='text-xs opacity-80'>用孩子傳來的監看連結，或登入家長帳號選孩子</div></button>" +
