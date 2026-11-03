@@ -111,6 +111,12 @@
                 const single = Math.ceil(total / 2);
                 typeVal = "前" + single + "題單選,後" + (total - single) + "題複選";
             }
+            // 綜合題型：單選、是非、填充依題數三等分（餘數給單選），題型順序固定，作答與評分都用既有格式
+            if (typeVal.indexOf('綜合題型') === 0) {
+                const a = Math.ceil(total / 3), b = Math.ceil((total - a) / 2), c = total - a - b;
+                typeVal = "前" + a + "題單選,中間" + b + "題是非,後" + c + "題填充";
+                batchSize = 8;
+            }
             // 相容舊的儲存設定與分享連結（值還是 Mixed_10_10）
             if (typeVal === 'Mixed_10_10') { typeVal = "前10單選,後10複選"; total = 20; batchSize = 10; }
 
@@ -165,6 +171,15 @@
                         "3. 選項格式一致、長度相近，每個選項只放一個答案（一個字或一個詞），不可同一題混著考不同的字或詞。\n" +
                         "4. 注音／字音／字形題，每個選項都要實際核對過；注音題一次只問一個字，不要在一個選項塞整串注音。不確定的字音不要出。\n" +
                         "5. 解析（e）只寫 1～2 句最終結論，直接說為什麼答案對、關鍵錯在哪；不可出現「應為」「（選項寫錯）」這類邊想邊修正的話，答案與解析必須一致。\n\n";
+                    if (typeVal.includes('是非')) {
+                        taskDescription += "【是非題格式】：是非題的 'o' 必須固定為 [\"正確\",\"錯誤\"]，'a' 只寫 \"A\"（正確）或 \"B\"（錯誤）；題幹寫成一個可以判斷對錯的完整敘述句，不可寫成問句，正確與錯誤的題數要大致各半。\n";
+                    }
+                    if (typeVal.includes('克漏字') || typeVal.includes('選擇式填空')) {
+                        taskDescription += "【選擇式填空格式】：題幹是一句完整的句子，把要考的字詞換成「（　　）」；'o' 給 3～4 個詞語，只有一個放進去語意與文法都通順，其餘放進去明顯不通順。\n";
+                    }
+                    if (typeVal.includes('綜合') || typeVal.includes('題填充')) {
+                        taskDescription += "【題型順序】：嚴格依題型要求的順序出題；單選與是非題的 'o' 給選項，填充題的 'o' 必須是空陣列 []。\n";
+                    }
                     const formatRule = ' 【嚴格格式要求】：必須且只能回傳合法的 JSON Array。格式：[{"q":"題目內容","o":["選項1","選項2"],"a":"答案","e":"解析","s":' + scorePerQ + '}]。';
 
                     let parts = [{ text: taskDescription + formatRule }];

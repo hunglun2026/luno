@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>刻度・互動式評量</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -17,10 +16,12 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=7">
+    <link rel="stylesheet" href="css/guide.css?v=9">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=7">
-    <link rel="stylesheet" href="css/sheet.css?v=7">
+    <link rel="stylesheet" href="css/app.css?v=9">
+    <link rel="stylesheet" href="css/sheet.css?v=9">
+    <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
+    <link rel="stylesheet" href="css/tailwind.css?v=9">
 </head>
 <body class="text-slate-800">
 
@@ -29,13 +30,13 @@
         <div class="lg-aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
         <canvas id="lqParticles" class="lg-particles" aria-hidden="true"></canvas>
         <div class="lg-welcome-badge">
-            <img src="assets/badge-medallion.png" alt="鴻綸科技 圓形品牌徽章">
+            <img src="assets/badge-medallion.webp" alt="鴻綸科技 圓形品牌徽章">
         </div>
         <h1 class="lg-welcome-title">刻度</h1>
         <div class="lg-ticks" aria-hidden="true"></div>
         <p class="lg-welcome-sub">互動式評量</p>
         <p class="lg-welcome-en">鴻綸科技　HUNGLUN TECHNOLOGY</p>
-        <img src="assets/logo-dark.png?v=7" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
+        <img src="assets/logo-dark.png?v=9" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
         <button type="button" id="lqWelcomeSkip" class="lg-skip" onclick="this.dataset.clicked = '1'">略過 →</button>
         <div class="lg-welcome-bar" aria-hidden="true"></div>
     </section>
@@ -112,8 +113,8 @@
 
             <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--hl-border);width:100%;max-width:40rem;">
                 <div class="hl-logo-lockup" style="margin:0 auto 1.25rem;max-width:24rem;">
-                    <img src="assets/logo-light.png?v=7" alt="鴻綸科技 x Google for Education" class="hl-logo-light">
-                    <img src="assets/logo-dark.png?v=7" alt="鴻綸科技 x Google for Education" class="hl-logo-dark">
+                    <img src="assets/logo-light.png?v=9" alt="鴻綸科技 x Google for Education" class="hl-logo-light">
+                    <img src="assets/logo-dark.png?v=9" alt="鴻綸科技 x Google for Education" class="hl-logo-dark">
                 </div>
                 <p style="font-size:0.875rem;font-weight:700;color:var(--hl-text-secondary);margin-bottom:0.75rem;">Created by Hunglun Technology Steve</p>
                 <p style="font-size:0.8125rem;color:var(--hl-text-secondary);margin-bottom:0.75rem;">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" style="color:var(--hl-blue);font-weight:700;text-decoration:underline;">鴻綸科技官方網站</a></p>
@@ -152,7 +153,7 @@
     <header id="lqAppbar" class="lq-appbar no-print hidden">
         <div class="lq-appbar-inner">
             <div class="lq-appbar-brand">
-                <img src="assets/badge-medallion.png" alt="" class="lq-appbar-mark" aria-hidden="true">
+                <img src="assets/badge-medallion.webp" alt="" class="lq-appbar-mark" aria-hidden="true">
                 <span class="lq-appbar-name">刻度</span>
                 <span class="lq-appbar-tag">互動式評量</span>
             </div>
@@ -183,7 +184,7 @@
                     <li>學生作答完自動判分，手寫題有 AI 批改建議</li>
                 </ul>
             </div>
-            <img src="assets/art/hero.png" alt="老師在教室用平板檢視剛出好的考卷" class="lq-hero-art" loading="eager" decoding="async"
+            <img src="assets/art/hero.webp" alt="老師在教室用平板檢視剛出好的考卷" class="lq-hero-art" loading="eager" decoding="async"
                  onerror="this.style.display='none'">
         </div>
 
@@ -222,14 +223,14 @@
                      第一次來的人看不出「上傳檔案」跟「現成卷子」差在哪 -->
                 <div class="lq-modes">
                     <div id="btnSourceAI" class="lq-mode is-active" onclick="toggleSource('1')" role="button" tabindex="0">
-                        <img src="assets/art/mode-ai.png" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
+                        <img src="assets/art/mode-ai.webp" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
                         <div class="lq-mode-text">
                             <div class="lq-mode-name">出一份新的</div>
                             <div class="lq-mode-desc">填好年級科目，刻度直接生出題目</div>
                         </div>
                     </div>
                     <div id="btnSourceFile" class="lq-mode" onclick="toggleSource('2')" role="button" tabindex="0">
-                        <img src="assets/art/mode-upload.png" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
+                        <img src="assets/art/mode-upload.webp" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
                         <div class="lq-mode-text">
                             <div class="lq-mode-name">依課本或講義出</div>
                             <div class="lq-mode-desc">上傳檔案或拍照，照著內容出題</div>
@@ -238,7 +239,7 @@
                     <!-- 第三種模式跟前兩種不同：它不出新題目，而是把老師手上現成的卷子原樣變成線上作業，
                          所以點下去直接切到專屬的原卷編輯畫面，不留在這張表單（題型/難度/題數那些欄位都用不到） -->
                     <div id="btnSourcePaper" class="lq-mode" onclick="startPaperFlow()" role="button" tabindex="0">
-                        <img src="assets/art/mode-paper.png" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
+                        <img src="assets/art/mode-paper.webp" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
                         <div class="lq-mode-text">
                             <div class="lq-mode-name">派現成的紙本卷</div>
                             <div class="lq-mode-desc">手邊的卷子掃進來，學生線上作答</div>
@@ -314,6 +315,9 @@
                         <!-- 原本寫死「混搭(10單選+10複選)」，但題數是另一個獨立欄位，
                              老師選 5 題配這個題型就自相矛盾。改成不帶數字，由題數決定比例 -->
                         <option value="智慧混搭(單選+複選各半)">智慧混搭（單選＋複選各半）</option>
+                        <option value="全部是非題">全部是非題（對／錯）</option>
+                        <option value="全部選擇式填空(單選,題幹留括號)">全部選擇式填空（克漏字）</option>
+                        <option value="綜合題型(單選+是非+填充)">綜合題型（單選＋是非＋填充）</option>
                         <option value="全部填充題">全部填充題</option>
                         <option value="全部簡答題(計算題)">全部簡答題(計算題)</option>
                         <option value="Custom">✍️ 自定義</option>
@@ -330,6 +334,7 @@
                         <option value="普通" selected>⚖️ 普通：標準段考難度</option>
                         <option value="進階">🚀 進階：跨概念、需要推理</option>
                         <option value="挑戰">🏆 挑戰：多步驟思考、情境轉換</option>
+                        <option value="混合">🌈 混合：由易到難，一份卷子看出程度</option>
                         <option value="Custom">✍️ 自定義</option>
                     </select>
                     <input type="text" id="c_diff" class="input-custom" placeholder="例: 進階">
@@ -543,22 +548,22 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=7"></script>
-    <script src="js/dialog.js?v=7"></script>
-    <script src="js/entry.js?v=7"></script>
-    <script src="js/home.js?v=7"></script>
-    <script src="js/share.js?v=7"></script>
-    <script src="js/settings.js?v=7"></script>
-    <script src="js/generate.js?v=7"></script>
-    <script src="js/sheet.js?v=7"></script>
-    <script src="js/answer.js?v=7"></script>
-    <script src="js/export.js?v=7"></script>
-    <script src="js/account.js?v=7"></script>
-    <script src="js/admin.js?v=7"></script>
+    <script src="js/core.js?v=9"></script>
+    <script src="js/dialog.js?v=9"></script>
+    <script src="js/entry.js?v=9"></script>
+    <script src="js/home.js?v=9"></script>
+    <script src="js/share.js?v=9"></script>
+    <script src="js/settings.js?v=9"></script>
+    <script src="js/generate.js?v=9"></script>
+    <script src="js/sheet.js?v=9"></script>
+    <script src="js/answer.js?v=9"></script>
+    <script src="js/export.js?v=9"></script>
+    <script src="js/account.js?v=9"></script>
+    <script src="js/admin.js?v=9"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=7">
+<link rel="stylesheet" href="css/paper.css?v=9">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -651,10 +656,10 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=7"></script>
-<script src="js/paper-student.js?v=7"></script>
+<script src="js/paper-teacher.js?v=9"></script>
+<script src="js/paper-student.js?v=9"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=7"></script>
+    <script src="js/guide.js?v=9"></script>
 
 </body>
 </html>
