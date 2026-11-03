@@ -38,6 +38,8 @@
 
         // 選擇/複選題在「即時模式」下才會逐題觸發即時判分；填空/簡答題不管哪個模式都是送出評分後才看結果(文字比對本來就只能算參考)
         function getGradeMode() {
+            // 交接模式（家長／教師把手機遞給學生）一律「全部寫完再送出」，不逐題公布對錯與解析
+            if (handoffActive()) return 'batch';
             const el = document.querySelector('input[name="ansGradeMode"]:checked');
             return el ? el.value : 'instant';
         }
@@ -162,15 +164,10 @@
             }
         }
 
-        function renderAnswerMode() {
-            const container = document.getElementById('answerModeContainer');
-            if (!container) return;
-            const items = window.currentItems || [];
-            let html = "<div class='max-w-2xl mx-auto p-4'>";
-
-            // 開始畫面：先填資料+選作答模式，按「開始測驗」確認後才顯示題目本體，
-            // 避免模式選項跟題目混在一起、寫到一半才發現選錯模式
-            html += "<div id='ansStartScreen'>";
+        // 開始畫面：先填資料+選作答模式，按「開始測驗」確認後才顯示題目本體，
+        // 避免模式選項跟題目混在一起、寫到一半才發現選錯模式。2026-11-03 從 renderAnswerMode 拆出
+        function answerStartScreenHtml() {
+            let html = "<div id='ansStartScreen'>";
             html += "<div class='lq-card p-6 mb-4 text-center'><h2 class='font-bold text-lg mb-1'>📱 線上作答</h2><p class='text-sm text-gray-500'>選擇/複選題會自動判分；填空/簡答題只能做文字比對，僅供參考，請自行核對。</p></div>";
 
             // 登入狀態區塊：只有透過分享連結進來作答的學生需要(家長監看要靠學生帳號)，
@@ -205,32 +202,45 @@
 
             html += "<button onclick='startAnswerQuiz()' class='lq-btn lq-cta lq-btn-primary w-full py-3 rounded-xl text-lg'>🚀 開始測驗</button>";
             html += "</div>";
+            return html;
+        }
+
+        // 單題作答卡片
+        function answerCardHtml(q, i) {
+            const letters = getCorrectLetters(q);
+            let html = "<div class='lq-card p-4 mb-3 ans-card' id='ans-card-" + i + "'>";
+            html += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) + " <span class='text-xs text-gray-400'>(" + q.s + "分)</span></div>";
+            if (q.o && q.o.length > 0) {
+                const inputType = letters && letters.length > 1 ? 'checkbox' : 'radio';
+                q.o.forEach((o, oi) => {
+                    const label = String.fromCharCode(65 + oi);
+                    html += "<label class='flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 cursor-pointer'>" +
+                        "<input type='" + inputType + "' name='ans-" + i + "' value='" + label + "'" +
+                        " class='w-4 h-4 flex-shrink-0 accent-[color:var(--hl-blue)]' onchange='onAnswerPicked(" + i + ")'>" +
+                        "<span>(" + label + ") " + escapeHtml(stripOptLabel(o, label)) + "</span></label>";
+                });
+                // 只有選擇/複選題才需要「確認這題」按鈕(即時模式用)：原本一點選項就馬上判定，
+                // 誤按到旁邊的選項也會被當成已送出，Steve反映要有明確的送出動作才不會誤按。
+                // 是否顯示由startAnswerQuiz()依選定的模式決定(批次模式不需要,只用最下面的送出評分)
+                html += "<button type='button' onclick='confirmAnswer(" + i + ")' id='ans-confirm-" + i + "' class='ans-confirm-btn lq-btn lq-btn-primary text-sm px-3 py-1.5 mt-2' style='display:none;'>✅ 確認這題</button>";
+            } else {
+                html += "<textarea class='lq-input mt-1' rows='2' id='ans-text-" + i + "' placeholder='請輸入答案' onblur='onTextAnswerBlur(" + i + ")'></textarea>";
+            }
+            html += "<div class='ans-feedback mt-2 text-sm hidden' id='ans-feedback-" + i + "'></div>";
+            html += "</div>";
+            return html;
+        }
+
+        function renderAnswerMode() {
+            const container = document.getElementById('answerModeContainer');
+            if (!container) return;
+            const items = window.currentItems || [];
+            let html = "<div class='max-w-2xl mx-auto p-4'>";
+            html += answerStartScreenHtml();
 
             // 題目本體：預設隱藏，確認模式並按下「開始測驗」後才顯示
             html += "<div id='ansQuizBody' class='hidden'>";
-            items.forEach((q, i) => {
-                const letters = getCorrectLetters(q);
-                html += "<div class='lq-card p-4 mb-3 ans-card' id='ans-card-" + i + "'>";
-                html += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) + " <span class='text-xs text-gray-400'>(" + q.s + "分)</span></div>";
-                if (q.o && q.o.length > 0) {
-                    const inputType = letters && letters.length > 1 ? 'checkbox' : 'radio';
-                    q.o.forEach((o, oi) => {
-                        const label = String.fromCharCode(65 + oi);
-                        html += "<label class='flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 cursor-pointer'>" +
-                            "<input type='" + inputType + "' name='ans-" + i + "' value='" + label + "'" +
-                            " class='w-4 h-4 flex-shrink-0 accent-[color:var(--hl-blue)]' onchange='onAnswerPicked(" + i + ")'>" +
-                            "<span>(" + label + ") " + escapeHtml(stripOptLabel(o, label)) + "</span></label>";
-                    });
-                    // 只有選擇/複選題才需要「確認這題」按鈕(即時模式用)：原本一點選項就馬上判定，
-                    // 誤按到旁邊的選項也會被當成已送出，Steve反映要有明確的送出動作才不會誤按。
-                    // 是否顯示由startAnswerQuiz()依選定的模式決定(批次模式不需要,只用最下面的送出評分)
-                    html += "<button type='button' onclick='confirmAnswer(" + i + ")' id='ans-confirm-" + i + "' class='ans-confirm-btn lq-btn lq-btn-primary text-sm px-3 py-1.5 mt-2' style='display:none;'>✅ 確認這題</button>";
-                } else {
-                    html += "<textarea class='lq-input mt-1' rows='2' id='ans-text-" + i + "' placeholder='請輸入答案' onblur='onTextAnswerBlur(" + i + ")'></textarea>";
-                }
-                html += "<div class='ans-feedback mt-2 text-sm hidden' id='ans-feedback-" + i + "'></div>";
-                html += "</div>";
-            });
+            items.forEach((q, i) => { html += answerCardHtml(q, i); });
             // 即時進度分享連結：只有透過分享連結進來作答的學生(有shareId)才需要，老師自己預覽不用
             if (window.isSharedView && window.sharedMode === 'student' && window.liveShareId) {
                 html += "<button type='button' onclick='shareLiveProgressLink(this)' class='lq-btn lq-btn-share w-full py-2 text-sm mb-3'>📤 分享即時監看連結給家長（家長不用註冊）</button>";
@@ -299,18 +309,28 @@
                 const correctDisplay = correct.length > 0 ? correct.join('') : (String(q.a || '').trim() || '(無法判讀，請自行核對)');
                 const userDisplay = checked.length > 0 ? checked.join('') : '(未作答)';
                 const restText = isCorrect ? '答對了！' : ('答錯了，正確答案：' + correctDisplay + (q.e ? ('｜解析：' + q.e) : ''));
-                setAnswerFeedback(fb, isCorrect ? '✅' : '❌', restText, 'ans-feedback mt-2 text-sm ' + (isCorrect ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold'));
+                const badge = isCorrect ? '✅' : '❌';
+                const cls = 'ans-feedback mt-2 text-sm ' + (isCorrect ? 'text-emerald-600 font-bold' : 'text-red-600 font-bold');
+                // 交接模式：學生只看到對錯，正確答案與解析留到家長／教師解鎖後才顯示
+                setAnswerFeedback(fb, badge, handoffActive() && !isCorrect ? '答錯了，詳細解答等家長／教師公布' : restText, cls);
                 flashAnswerCard(i, isCorrect);
-                result = { score: isCorrect ? (q.s || 0) : 0, max: q.s || 0, isCorrect, reviewNeeded: false, userDisplay, correctDisplay };
+                result = { score: isCorrect ? (q.s || 0) : 0, max: q.s || 0, isCorrect, reviewNeeded: false, userDisplay, correctDisplay, fb: { badge, restText, cls } };
             } else {
                 const inputEl = document.getElementById('ans-text-' + i);
                 const userAns = ((inputEl && inputEl.value) || '').trim();
                 const correctAns = String(q.a || '').trim();
                 const roughMatch = userAns !== '' && userAns.replace(/\s/g, '') === correctAns.replace(/\s/g, '');
                 const restText = (roughMatch ? '文字比對相符(僅供參考)' : '請自行核對') + '，參考答案：' + correctAns + (q.e ? ('｜解析：' + q.e) : '');
-                setAnswerFeedback(fb, roughMatch ? '🤔' : '📝', restText, 'ans-feedback mt-2 text-sm text-blue-600');
-                flashAnswerCard(i, roughMatch);
-                result = { score: roughMatch ? (q.s || 0) : 0, max: q.s || 0, isCorrect: roughMatch, reviewNeeded: true, userDisplay: userAns || '(未作答)', correctDisplay: correctAns };
+                const badge = roughMatch ? '🤔' : '📝';
+                const cls = 'ans-feedback mt-2 text-sm text-blue-600';
+                if (handoffActive()) {
+                    // 填空／簡答的比對結果也不透露，避免看顏色就猜到答案
+                    setAnswerFeedback(fb, '📝', '已作答，等家長／教師核對', cls);
+                } else {
+                    setAnswerFeedback(fb, badge, restText, cls);
+                    flashAnswerCard(i, roughMatch);
+                }
+                result = { score: roughMatch ? (q.s || 0) : 0, max: q.s || 0, isCorrect: roughMatch, reviewNeeded: true, userDisplay: userAns || '(未作答)', correctDisplay: correctAns, fb: { badge, restText, cls } };
             }
             window.gradedDetails = window.gradedDetails || {};
             window.gradedDetails[i] = result;
@@ -340,8 +360,13 @@
             let resultHTML = "<div class='lq-card p-5 text-center ans-score-pop' style='border:2px solid var(--hl-blue);'>";
             resultHTML += "<div class='text-3xl font-bold mb-1' style='color:var(--hl-blue);'>" + totalScore + " / " + maxScore + " 分</div>";
             resultHTML += "<div class='text-sm text-gray-500 mb-3'>約 " + pct + " 分" + (needReview > 0 ? "（含填空/簡答題的文字比對估算，建議自行核對）" : "（選擇/複選題自動判分）") + "</div>";
-            resultHTML += "<button onclick='shareResult(this)' class='lq-btn lq-btn-share px-4 py-2 text-sm'>📤 分享結果給家長/老師</button>";
-            resultHTML += "<div id='shareResultMsg' class='text-xs text-gray-500 mt-2'></div>";
+            if (handoffActive()) {
+                resultHTML += "<div class='text-sm mb-3'>🎉 寫完了！請把手機交還給家長／教師，由他們輸入密碼查看詳細解答。</div>";
+                resultHTML += "<button onclick='handoffUnlock()' class='lq-btn lq-btn-primary px-4 py-2 text-sm'>🔓 家長／教師查看詳解</button>";
+            } else {
+                resultHTML += "<button onclick='shareResult(this)' class='lq-btn lq-btn-share px-4 py-2 text-sm'>📤 分享結果給家長/老師</button>";
+                resultHTML += "<div id='shareResultMsg' class='text-xs text-gray-500 mt-2'></div>";
+            }
             resultHTML += "</div>";
             const scoreEl = document.getElementById('scoreResult');
             scoreEl.innerHTML = resultHTML;

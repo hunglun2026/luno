@@ -76,7 +76,14 @@
             enterMainApp();
         }
 
+        // 學生入口（renderStudentEntryChoice）會把 #hlStepAuth 整個重寫，連登入表單容器 #hlAuthFormBody 一起清掉；
+        // 返回再選家長／教師登入就會因為找不到容器而當掉。返回時把原本的骨架還原
         function splashBackToIdentity() {
+            if (!document.getElementById('hlAuthFormBody')) {
+                document.getElementById('hlStepAuth').innerHTML =
+                    "<button type=\"button\" class=\"hl-back-link\" onclick=\"splashBackToIdentity()\">← 返回身分選擇</button>" +
+                    "<div id=\"hlAuthFormBody\" style=\"width:100%; max-width:22rem;\"></div>";
+            }
             document.getElementById('hlStepAuth').classList.add('hidden');
             document.getElementById('hlStepApiKey').classList.add('hidden');
             document.getElementById('hlStepIdentity').classList.remove('hidden');

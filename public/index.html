@@ -16,12 +16,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=9">
+    <link rel="stylesheet" href="css/guide.css?v=13">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=9">
-    <link rel="stylesheet" href="css/sheet.css?v=9">
+    <link rel="stylesheet" href="css/app.css?v=13">
+    <link rel="stylesheet" href="css/sheet.css?v=13">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=9">
+    <link rel="stylesheet" href="css/tailwind.css?v=13">
+<link rel="canonical" href="https://luno.hunglun.com/">
+<!--seo-games--><script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "@id": "https://luno.hunglun.com/#app", "name": "刻度・互動式評量", "url": "https://luno.hunglun.com/", "description": "刻度・互動式評量", "applicationCategory": "EducationalApplication", "operatingSystem": "All", "inLanguage": "zh-TW", "isAccessibleForFree": true, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TWD"}, "creator": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}, "publisher": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "鴻綸科技", "item": "https://www.hunglun.com/"}, {"@type": "ListItem", "position": 2, "name": "學習專區", "item": "https://www.hunglun.com/tools/games"}, {"@type": "ListItem", "position": 3, "name": "刻度・互動式評量", "item": "https://luno.hunglun.com/"}]}]}</script>
 </head>
 <body class="text-slate-800">
 
@@ -36,7 +38,7 @@
         <div class="lg-ticks" aria-hidden="true"></div>
         <p class="lg-welcome-sub">互動式評量</p>
         <p class="lg-welcome-en">鴻綸科技　HUNGLUN TECHNOLOGY</p>
-        <img src="assets/logo-dark.png?v=9" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
+        <img src="assets/logo-dark.png?v=13" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
         <button type="button" id="lqWelcomeSkip" class="lg-skip" onclick="this.dataset.clicked = '1'">略過 →</button>
         <div class="lg-welcome-bar" aria-hidden="true"></div>
     </section>
@@ -113,8 +115,8 @@
 
             <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--hl-border);width:100%;max-width:40rem;">
                 <div class="hl-logo-lockup" style="margin:0 auto 1.25rem;max-width:24rem;">
-                    <img src="assets/logo-light.png?v=9" alt="鴻綸科技 x Google for Education" class="hl-logo-light">
-                    <img src="assets/logo-dark.png?v=9" alt="鴻綸科技 x Google for Education" class="hl-logo-dark">
+                    <img src="assets/logo-light.png?v=13" alt="鴻綸科技 x Google for Education" class="hl-logo-light">
+                    <img src="assets/logo-dark.png?v=13" alt="鴻綸科技 x Google for Education" class="hl-logo-dark">
                 </div>
                 <p style="font-size:0.875rem;font-weight:700;color:var(--hl-text-secondary);margin-bottom:0.75rem;">Created by Hunglun Technology Steve</p>
                 <p style="font-size:0.8125rem;color:var(--hl-text-secondary);margin-bottom:0.75rem;">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" style="color:var(--hl-blue);font-weight:700;text-decoration:underline;">鴻綸科技官方網站</a></p>
@@ -395,7 +397,7 @@
                  老師分不出哪些只是換畫面、哪些會真的送出去。
                  現在左邊是切換(上面那組連體按鈕)，這裡只放動作，低頻的收進「更多」 -->
             <div class="flex gap-2 flex-wrap justify-center order-2 sm:order-3 items-center">
-                <button onclick="openQuizEntryModal()" id="btnAnswerMode" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-device-mobile lq-icon lq-icon-sky"></span> 直接線上測驗</button>
+                <button onclick="openHandoffSetup()" id="btnAnswerMode" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-device-mobile lq-icon lq-icon-sky"></span> 交給學生作答</button>
                 <div class="relative inline-block" id="downloadMenuWrap">
                     <button onclick="toggleDownloadMenu()" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-download-simple lq-icon lq-icon-blue"></span> 下載 ▾</button>
                     <div id="downloadMenu" class="hidden absolute right-0 mt-1 bg-white text-slate-800 rounded-lg shadow-xl border z-50 overflow-hidden w-56">
@@ -548,22 +550,23 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=9"></script>
-    <script src="js/dialog.js?v=9"></script>
-    <script src="js/entry.js?v=9"></script>
-    <script src="js/home.js?v=9"></script>
-    <script src="js/share.js?v=9"></script>
-    <script src="js/settings.js?v=9"></script>
-    <script src="js/generate.js?v=9"></script>
-    <script src="js/sheet.js?v=9"></script>
-    <script src="js/answer.js?v=9"></script>
-    <script src="js/export.js?v=9"></script>
-    <script src="js/account.js?v=9"></script>
-    <script src="js/admin.js?v=9"></script>
+    <script src="js/core.js?v=13"></script>
+    <script src="js/dialog.js?v=13"></script>
+    <script src="js/entry.js?v=13"></script>
+    <script src="js/home.js?v=13"></script>
+    <script src="js/share.js?v=13"></script>
+    <script src="js/settings.js?v=13"></script>
+    <script src="js/generate.js?v=13"></script>
+    <script src="js/sheet.js?v=13"></script>
+    <script src="js/answer.js?v=13"></script>
+    <script src="js/handoff.js?v=13"></script>
+    <script src="js/export.js?v=13"></script>
+    <script src="js/account.js?v=13"></script>
+    <script src="js/admin.js?v=13"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=9">
+<link rel="stylesheet" href="css/paper.css?v=13">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -656,10 +659,10 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=9"></script>
-<script src="js/paper-student.js?v=9"></script>
+<script src="js/paper-teacher.js?v=13"></script>
+<script src="js/paper-student.js?v=13"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=9"></script>
+    <script src="js/guide.js?v=13"></script>
 
 </body>
 </html>

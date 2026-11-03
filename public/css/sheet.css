@@ -215,3 +215,11 @@
             .q-num-box { width: 48px; }
         }
     
+
+/* 交接模式（js/handoff.js）：家長／教師把手機遞給學生，藏掉工具列與返回鈕，學生出不去答案卷 */
+body.handoff-mode #resultSection .sticky-header,
+body.handoff-mode #btnGlobalBack,
+body.handoff-mode #editHint { display: none !important; }
+body.handoff-mode #answerModeContainer { padding-top: 44px; }
+#handoffBar { position: fixed; top: 0; left: 0; right: 0; z-index: 60; display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; background: #1e293b; color: #fff; font-size: 14px; }
+#handoffBar button { background: transparent; color: #cbd5e1; border: 1px solid #475569; border-radius: 8px; padding: 2px 10px; font-size: 12px; }
