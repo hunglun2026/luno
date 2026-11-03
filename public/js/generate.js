@@ -275,6 +275,7 @@
             window.currentSettings = { sType: cfg.sType, grade: cfg.grade, subject: cfg.subject, publisher: cfg.publisher, scope: cfg.scope, count: plan.total, qType: plan.typeVal, difficulty: cfg.diffVal, lang: cfg.langVal, contentText: cfg.contentText };
 
             renderPaperFixed(allItems);
+            submitToBank(cfg, allItems);
 
             // 學生的「我要練習」：出完題直接進線上作答(他要的是寫，不是看考卷排版)，
             // 姓名/班級也先幫他填好，省得每次重打

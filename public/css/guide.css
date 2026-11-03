@@ -379,6 +379,20 @@
 #hlSplash .lg-role-card.is-student { --lg-accent: #4cc57a; }
 #hlSplash .lg-role-more button, #hlSplash .lg-role-more a { color: #cbd5e1; }
 #hlSplash .lg-role-more button:hover, #hlSplash .lg-role-more a:hover { color: #fff; }
+/* 歡迎頁使用說明：三段可展開，深色毛玻璃跟身分卡同一套 */
+.lg-howto { width: 100%; max-width: 40rem; margin: 1.25rem auto 0; display: flex; flex-direction: column; gap: 0.5rem; text-align: left; }
+.lg-howto-title { margin: 0 0 0.25rem; text-align: center; font-size: 0.95rem; font-weight: 700; color: #e2e8f0; letter-spacing: 0.08em; }
+.lg-howto-item { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.16); border-radius: 0.9rem; padding: 0 1rem; }
+.lg-howto-item summary { cursor: pointer; padding: 0.8rem 0; font-weight: 700; color: #f1f5f9; font-size: 0.98rem; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.lg-howto-item summary::-webkit-details-marker { display: none; }
+.lg-howto-item summary::after { content: '+'; font-size: 1.3rem; line-height: 1; color: #93c5fd; }
+.lg-howto-item[open] summary::after { content: '−'; }
+.lg-howto-item ol { list-style: decimal; margin: 0 0 0.9rem; padding-left: 1.5rem; color: #cbd5e1; font-size: 0.92rem; line-height: 1.7; }
+.lg-howto-item li { margin-bottom: 0.2rem; }
+.lg-howto-item b { color: #fff; }
+.lg-howto-more { align-self: center; margin-top: 0.25rem; padding: 0.4rem 0.5rem; color: #93c5fd; font-size: 0.9rem; text-decoration: underline; }
+.lg-howto-more:hover, .lg-howto-more:focus-visible { color: #fff; }
+
 #hlSplash .lg-continue { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.5); }
 
 /* 頁尾：用透明底的深色版 logo 直接浮在背景上，拿掉白框與陰影；聯絡資訊縮成一條 */

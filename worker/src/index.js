@@ -13,6 +13,8 @@
 // - 模型比照 lunslip 專案做雙模型容錯：gemini-3.5-flash 失敗（額度滿/模型暫時異常）
 //   就自動 fallback 到 gemini-3.1-flash-lite，不會整批直接失敗
 
+import { handleBank, retryPendingBank } from "./bank.js";
+
 const COOLDOWN_MS = 30000;
 // 一次出題（第 0 批通過冷卻後）最多還能打幾次後續批次／重試；用完要重新走冷卻。
 // 以前是「前端說自己是第幾批就信」，任何人把 X-Batch-Index 寫成 1 就能無限繞過冷卻
@@ -68,8 +70,13 @@ function json(data, status = 200) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    // 題庫（收題＋驗證，邏輯在 bank.js；共用工具以 deps 傳入，避免循環 import）
+    if (url.pathname.startsWith("/api/bank/")) {
+      return handleBank(request, env, ctx, { json, CORS_HEADERS, getApiKeys, GEMINI_MODELS, adminPassMatches });
+    }
 
     if (url.pathname === "/api/generate") {
       return handleGenerate(request, env);
@@ -218,6 +225,9 @@ export default {
           console.log("purgeExpiredPapers", JSON.stringify(expired));
           const orphans = await purgeOrphanObjects(env);
           console.log("purgeOrphanObjects", JSON.stringify(orphans));
+          // 題庫：上次 AI 驗證失敗而留在 pending 的題，每天重驗一次
+          const bank = await retryPendingBank(env, { json, CORS_HEADERS, getApiKeys, GEMINI_MODELS, adminPassMatches });
+          console.log("retryPendingBank", JSON.stringify(bank));
         } catch (err) {
           console.error("purge cron 失敗：", err && err.stack ? err.stack : String(err));
         }

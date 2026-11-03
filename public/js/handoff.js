@@ -2,7 +2,7 @@
 // 學生交卷後只看到「已交卷」；分數、對錯、正確答案與解析，要家長／教師輸入開始前設定的 4 位數密碼才會公布。
 // 一支手機可以輪流給多位學生寫（換下一位免密碼，成績暫存在記憶體，解鎖時一次看全部）。
 // 密碼與成績只存在這個頁面的記憶體裡，重新整理就消失（重整也會失去題目，所以不會留下殘餘）。
-// UI 取捨經 Gemini 兩輪討論（2026-11-03）：全藏對錯避免挫折與偷看、頂端細條長按 2 秒才解鎖防誤觸、忘記密碼改用算式。
+// UI 取捨經 Gemini 兩輪討論（2026-11-03）：全藏對錯避免挫折與偷看、忘記密碼改用算式。解鎖一度設計成長按 2 秒，後來因為已有密碼擋著而改成單點。
         window.handoff = null;
 
         function handoffActive() {
@@ -61,24 +61,15 @@
             window.scrollTo(0, 0);
         }
 
-        // 頂端細條：提示「學生作答中」；右邊小按鈕要長按 2 秒才會跳出密碼框，避免學生滑題目時誤觸
+        // 頂端細條：提示「學生作答中」；右邊小按鈕單點就跳出密碼框（有 4 位數密碼擋著，不需要再長按）
         function ensureHandoffBar() {
             if (document.getElementById('handoffBar')) return;
             const bar = document.createElement('div');
             bar.id = 'handoffBar';
             bar.className = 'no-print';
-            bar.innerHTML = "<span>🔒 " + escapeHtml(window.handoff.name) + " 作答中</span><button type='button'>家長／教師・長按 2 秒</button>";
+            bar.innerHTML = "<span>🔒 " + escapeHtml(window.handoff.name) + " 作答中</span><button type='button'>家長／教師</button>";
             document.body.appendChild(bar);
-            const btn = bar.querySelector('button');
-            let timer = null;
-            const stop = function () { if (timer) { clearTimeout(timer); timer = null; } btn.classList.remove('is-pressing'); };
-            btn.addEventListener('pointerdown', function () {
-                stop();
-                btn.classList.add('is-pressing');
-                timer = setTimeout(function () { timer = null; btn.classList.remove('is-pressing'); handoffUnlock(); }, 2000);
-            });
-            ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { btn.addEventListener(ev, stop); });
-            btn.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+            bar.querySelector('button').addEventListener('click', handoffUnlock);
         }
 
         // 交卷時由 gradeAnswers() 呼叫：把這位學生的成績存進記憶體
