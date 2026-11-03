@@ -14,7 +14,7 @@ function ppStuInit() {
 }
 
 function ppStuStart() {
-    if (!document.getElementById('ppStuName').value.trim()) { alert('請填姓名，老師才知道這份是誰寫的'); return; }
+    if (!document.getElementById('ppStuName').value.trim()) { lqAlert('請填姓名，老師才知道這份是誰寫的'); return; }
     document.getElementById('ppStuInfo').classList.add('hidden');
     document.getElementById('ppStuBody').classList.remove('hidden');
     ppStuRenderStages();
@@ -31,12 +31,12 @@ async function ppStuRenderStages() {
                 let btns = '';
                 opts.forEach(function (o) {
                     btns += "<span class='pp-opt' data-region='" + escapeHtml(r.id) + "' data-val='" + escapeHtml(o) +
-                        "' onclick=\"ppStuPick('" + r.id + "','" + o + "')\">" + escapeHtml(o) + "</span>";
+                        "' onclick=\"ppStuPick(" + jsArg(r.id) + "," + jsArg(o) + ")\">" + escapeHtml(o) + "</span>";
                 });
                 overlay += "<div class='pp-ans' style='" + style + "'>" + btns + "</div>";
             } else if (r.type === 'fill') {
                 overlay += "<div class='pp-ans' style='" + style + "'><input class='pp-fillbox' data-region='" + escapeHtml(r.id) +
-                    "' placeholder='第" + escapeHtml(r.no) + "題' oninput=\"ppStuType('" + r.id + "',this.value)\"></div>";
+                    "' placeholder='第" + escapeHtml(r.no) + "題' oninput=\"ppStuType(" + jsArg(r.id) + ",this.value)\"></div>";
             } else {
                 overlay += "<div class='pp-ans pp-region pp-hand' style='" + style + "'>" +
                     "<canvas class='pp-handcanvas' data-region='" + escapeHtml(r.id) + "'></canvas></div>";
@@ -232,7 +232,7 @@ async function ppStuSubmit() {
                 : "<div class='text-sm text-gray-600 mt-2'>老師確認後就是最後分數。</div>");
         window.scrollTo(0, 0);
     } catch (e) {
-        alert('送出失敗：' + e.message);
+        lqAlert('送出失敗：' + e.message);
         btn.disabled = false;
         btn.textContent = btnText;
     }
@@ -249,7 +249,7 @@ async function ppLoadSubmissions() {
         let html = '';
         subs.forEach(function (s) {
             html += "<button class='w-full text-left border rounded-lg p-2 mb-1 hover:bg-emerald-50 " +
-                (s.status === 'graded' ? 'border-emerald-300' : 'border-gray-200') + "' onclick=\"ppOpenSub('" + s.student_id + "')\">" +
+                (s.status === 'graded' ? 'border-emerald-300' : 'border-gray-200') + "' onclick=\"ppOpenSub(" + jsArg(s.student_id) + ")\">" +
                 "<div class='font-bold'>" + escapeHtml(s.seat ? s.seat + '號 ' : '') + escapeHtml(s.name || '(未填姓名)') + "</div>" +
                 "<div class='text-xs text-gray-500'>" + (s.score == null ? '—' : s.score) + " / " + s.max_score +
                 (s.status === 'graded' ? ' ・已批改' : ' ・待批改') + "</div></button>";
@@ -297,7 +297,7 @@ function ppRenderGrade() {
             if (ai) {
                 html += "<div class='text-sm bg-indigo-50 border border-indigo-200 rounded p-2 mb-2'>" +
                     "🤖 AI 建議 <b>" + ai.score + " 分</b>：" + escapeHtml(ai.comment) +
-                    " <button class='pp-tool' onclick=\"ppUseAi('" + r.id + "')\">採用</button></div>";
+                    " <button class='pp-tool' onclick=\"ppUseAi(" + jsArg(r.id) + ")\">採用</button></div>";
             }
         } else {
             const got = a ? (a.v || '') : '';
@@ -363,6 +363,6 @@ async function ppSaveGrade() {
         ppRenderGrade();
         ppLoadSubmissions();
     } catch (e) {
-        alert('儲存失敗：' + e.message);
+        lqAlert('儲存失敗：' + e.message);
     }
 }

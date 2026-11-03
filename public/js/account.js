@@ -99,10 +99,11 @@
             document.getElementById('accountModalTitle').textContent = mode === 'login' ? '👤 登入' : '👤 註冊';
             const isLogin = mode === 'login';
             let html = "<div class='space-y-3'>";
-            html += "<input id='authUsername' class='lq-input' placeholder='帳號'>";
-            html += "<input id='authPassword' type='password' class='lq-input' placeholder='密碼（至少6碼）'>";
+            const credAttrs = isLogin ? "" : CRED_INPUT_ATTRS;
+            html += "<input id='authUsername' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs + ">";
+            html += "<input id='authPassword' type='password' class='lq-input' placeholder='" + (isLogin ? '密碼' : CRED_PASS_HINT) + "'" + credAttrs + ">";
             if (!isLogin) {
-                html += "<input id='authPasswordConfirm' type='password' class='lq-input' placeholder='再輸入一次密碼'>";
+                html += "<input id='authPasswordConfirm' type='password' class='lq-input' placeholder='再輸入一次密碼'" + credAttrs + ">";
                 html += "<input id='authDisplayName' class='lq-input' placeholder='顯示名稱（例如：王小明）'>";
                 html += "<select id='authRole' class='lq-input' onchange='onAuthRoleChange()'>" +
                     "<option value=''>請選擇角色...</option>" +
@@ -137,6 +138,8 @@
             const username = document.getElementById('authUsername').value.trim();
             const password = document.getElementById('authPassword').value;
             const passwordConfirm = (document.getElementById('authPasswordConfirm') || {}).value || '';
+            const credErr = credentialInputError(username, password);
+            if (credErr) { showAuthError(credErr); return; }
             if (password !== passwordConfirm) { showAuthError('兩次密碼輸入不一致'); return; }
             const displayName = document.getElementById('authDisplayName').value.trim();
             const role = document.getElementById('authRole').value;
@@ -212,11 +215,11 @@
                     body: JSON.stringify({ classCode })
                 });
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 window.currentUser.classId = data.classId;
                 window.currentUser.className = data.className;
                 renderAccountLoggedInBody();
-            } catch (e) { alert('加入班級失敗：' + e.message); }
+            } catch (e) { lqAlert('加入班級失敗：' + e.message); }
         }
 
         async function doLinkChild() {
@@ -230,10 +233,10 @@
                     body: JSON.stringify({ studentUsername })
                 });
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 document.getElementById('linkChildUsername').value = '';
                 loadMyChildren();
-            } catch (e) { alert('連結失敗：' + e.message); }
+            } catch (e) { lqAlert('連結失敗：' + e.message); }
         }
 
         async function loadMyChildren() {
@@ -248,7 +251,7 @@
                 box.innerHTML = children.map(c =>
                     "<div class='flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-2'>" +
                     "<span class='text-sm font-semibold'>" + escapeHtml(c.displayName) + "（" + escapeHtml(c.username) + "）</span>" +
-                    "<button onclick=\"openProctorDetailParent('" + escapeHtml(c.username) + "')\" class='lq-btn lq-btn-primary text-xs px-3 py-1'>🔍 即時監看</button>" +
+                    "<button onclick=\"openProctorDetailParent(" + jsArg(c.username) + ")\" class='lq-btn lq-btn-primary text-xs px-3 py-1'>🔍 即時監看</button>" +
                     "</div>"
                 ).join('');
             } catch (e) {}
@@ -257,7 +260,7 @@
         // ---- 班級歷史(老師登入後專用，每班上限50份) ----
         async function saveToClassHistory() {
             if (!window.currentUser || window.currentUser.role !== 'teacher') return;
-            if (!window.currentItems || window.currentItems.length === 0) { alert('目前沒有題目可以存'); return; }
+            if (!window.currentItems || window.currentItems.length === 0) { lqAlert('目前沒有題目可以存'); return; }
             const token = localStorage.getItem('lun_session_token') || '';
             const title = window.docTitle || '測驗';
             try {
@@ -267,9 +270,9 @@
                     body: JSON.stringify({ title, items: window.currentItems })
                 });
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
-                alert('✅ 已存入班級歷史「' + title + '」');
-            } catch (e) { alert('存入失敗：' + e.message); }
+                if (data.error) { lqAlert(data.error.message); return; }
+                lqAlert('✅ 已存入班級歷史「' + title + '」');
+            } catch (e) { lqAlert('存入失敗：' + e.message); }
         }
 
         async function openClassHistory() {
@@ -308,15 +311,15 @@
         }
 
         async function deleteClassHistoryItem(id) {
-            if (!confirm('確定刪除這筆班級歷史記錄？')) return;
+            if (!(await askConfirm('確定刪除這筆班級歷史記錄？', { danger: true }))) return;
             const token = localStorage.getItem('lun_session_token') || '';
             try {
                 const res = await fetch(API_BASE + "/api/history/" + id, {
                     method: 'DELETE', headers: { 'X-Session-Token': token }
                 });
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 openClassHistory();
-            } catch (e) { alert('刪除失敗：' + e.message); }
+            } catch (e) { lqAlert('刪除失敗：' + e.message); }
         }
 

@@ -37,7 +37,7 @@
                             "<td class='py-2 pr-2 text-xs text-gray-500'>" + new Date(u.createdAt).toLocaleDateString() + "</td>" +
                             "<td class='py-2'><div class='flex gap-1 flex-wrap'>" +
                             "<button onclick='openAdminEditForm(" + u.id + ")' class='lq-btn lq-btn-secondary text-xs px-2 py-1'>編輯</button>" +
-                            "<button onclick='deleteAdminUser(" + u.id + ", \"" + escapeHtml(u.username).replace(/"/g, '&quot;') + "\")' class='lq-btn lq-btn-danger text-xs px-2 py-1'>刪除</button>" +
+                            "<button onclick=\"deleteAdminUser(" + Number(u.id) + ", " + jsArg(u.username) + ")\" class='lq-btn lq-btn-danger text-xs px-2 py-1'>刪除</button>" +
                             "</div></td></tr>";
                     }).join('') + "</tbody></table></div>";
             } catch (e) { listEl.innerHTML = "<p class='text-red-600 text-center py-8'>載入失敗：" + escapeHtml(e.message) + "</p>"; }
@@ -45,8 +45,8 @@
 
         function openAdminCreateForm() {
             let html = "<div class='space-y-3'>";
-            html += "<input id='adminNewUsername' class='lq-input' placeholder='帳號'>";
-            html += "<input id='adminNewPassword' type='password' class='lq-input' placeholder='密碼（至少6碼）'>";
+            html += "<input id='adminNewUsername' class='lq-input' placeholder='" + CRED_USER_HINT + "'" + CRED_INPUT_ATTRS + ">";
+            html += "<input id='adminNewPassword' type='password' class='lq-input' placeholder='" + CRED_PASS_HINT + "'" + CRED_INPUT_ATTRS + ">";
             html += "<input id='adminNewDisplayName' class='lq-input' placeholder='顯示名稱'>";
             html += "<select id='adminNewRole' class='lq-input' onchange='onAdminNewRoleChange()'>" +
                 "<option value=''>請選擇角色...</option>" +
@@ -81,6 +81,8 @@
             const displayName = document.getElementById('adminNewDisplayName').value.trim();
             const role = document.getElementById('adminNewRole').value;
             const className = (document.getElementById('adminNewClassName') || {}).value || '';
+            const credErr = credentialInputError(username, password);
+            if (credErr) { showAdminCreateError(credErr); return; }
             try {
                 const res = await fetch(API_BASE + "/api/admin/users", {
                     method: 'POST',
@@ -104,7 +106,7 @@
                 ["teacher", "student", "parent", "superadmin"].map(function(r) {
                     return "<option value='" + r + "'" + (r === u.role ? " selected" : "") + ">" + ADMIN_ROLE_LABEL[r] + "</option>";
                 }).join('') + "</select>";
-            html += "<input id='adminEditNewPassword' type='password' class='lq-input' placeholder='重設密碼（留空代表不變更，至少6碼）'>";
+            html += "<input id='adminEditNewPassword' type='password' class='lq-input' placeholder='重設密碼（留空代表不變更；6～16字，英文、數字、符號）'" + CRED_INPUT_ATTRS + ">";
             html += "<div id='adminEditError' class='text-sm text-red-600 hidden'></div>";
             html += "<button onclick='doAdminUpdateUser(" + id + ")' class='lq-btn lq-btn-primary w-full py-2'>儲存</button>";
             html += "</div>";
@@ -123,6 +125,10 @@
             const displayName = document.getElementById('adminEditDisplayName').value.trim();
             const role = document.getElementById('adminEditRole').value;
             const newPassword = document.getElementById('adminEditNewPassword').value;
+            if (newPassword) {
+                const pwErr = credentialInputError(null, newPassword);
+                if (pwErr) { showAdminEditError(pwErr); return; }
+            }
             const body = { displayName, role };
             if (newPassword) body.newPassword = newPassword;
             try {
@@ -139,16 +145,16 @@
         }
 
         async function deleteAdminUser(id, username) {
-            if (!confirm('確定要刪除帳號「' + username + '」？此動作無法復原，若是老師帳號會一併刪除其班級與歷史記錄。')) return;
+            if (!(await askConfirm('確定要刪除帳號「' + username + '」？此動作無法復原，若是老師帳號會一併刪除其班級與歷史記錄。', { danger: true }))) return;
             const token = localStorage.getItem('lun_session_token') || '';
             try {
                 const res = await fetch(API_BASE + "/api/admin/users/" + id, {
                     method: 'DELETE', headers: { 'X-Session-Token': token }
                 });
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 loadAdminUsers();
-            } catch (e) { alert('刪除失敗：' + e.message); }
+            } catch (e) { lqAlert('刪除失敗：' + e.message); }
         }
 
         // ---- 監考式即時監看：老師從班級儀表板點學生詳情 / 家長從已連結孩子點監看 ----
@@ -195,7 +201,7 @@
         window.studentWatchStopped = {};
         function revokeStudentBtnHtml(shareId, studentId) {
             const stopped = !!window.studentWatchStopped[shareId + ':' + studentId];
-            return "<button type='button' onclick=\"toggleRevokeStudentWatch('" + escapeHtml(shareId) + "','" + escapeHtml(studentId) + "', this)\" class='lq-btn lq-btn-ghost text-xs px-3 py-1 mb-3'>" +
+            return "<button type='button' onclick=\"toggleRevokeStudentWatch(" + jsArg(shareId) + "," + jsArg(studentId) + ", this)\" class='lq-btn lq-btn-ghost text-xs px-3 py-1 mb-3'>" +
                 (stopped ? '▶️ 恢復監看' : '⏹ 停止監看（讓這條連結失效）') + "</button>";
         }
         async function toggleRevokeStudentWatch(shareId, studentId, btnEl) {
@@ -211,14 +217,14 @@
                     method: 'POST', headers,
                     body: JSON.stringify({ shareId, studentId, revoked: next })
                 });
-                if (!res.ok && res.status === 404) { alert('這個功能需要後端更新後才能使用，請稍後再試。'); return; }
+                if (!res.ok && res.status === 404) { lqAlert('這個功能需要後端更新後才能使用，請稍後再試。'); return; }
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 window.studentWatchStopped[mapKey] = next;
                 if (btnEl) btnEl.innerHTML = next ? '▶️ 恢復監看' : '⏹ 停止監看（讓這條連結失效）';
-                alert(next ? '已停止監看，發出去的這條連結暫時看不到作答內容了。' : '已恢復監看。');
+                lqAlert(next ? '已停止監看，發出去的這條連結暫時看不到作答內容了。' : '已恢復監看。');
             } catch (e) {
-                alert('操作失敗：' + e.message);
+                lqAlert('操作失敗：' + e.message);
             } finally {
                 if (btnEl) btnEl.disabled = false;
             }

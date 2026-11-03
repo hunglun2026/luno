@@ -43,11 +43,11 @@
                 await Promise.all([loadScript(LIB_URLS.html2canvas), loadScript(LIB_URLS.jspdf)]);
             } catch (e) {}
             if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-                alert('PDF 元件載入失敗，請檢查網路連線後再試一次');
+                lqAlert('PDF 元件載入失敗，請檢查網路連線後再試一次');
                 return;
             }
             let pages = Array.from(document.querySelectorAll('#paperContainer > .a4-page')).filter(p => p.style.display !== 'none');
-            if (pages.length === 0) { alert('沒有可匯出的內容'); return; }
+            if (pages.length === 0) { lqAlert('沒有可匯出的內容'); return; }
 
             // 用display:none而不是visibility:hidden：visibility只是「看不見」，元素照樣佔位，
             // 每題上方那顆「🔁 重新出這題」工具列就會在PDF裡的題號後面留下一整行空白。
@@ -135,7 +135,7 @@
 
                 pdf.save((window.docName || "試卷") + ".pdf");
             } catch (e) {
-                alert('PDF 匯出失敗: ' + e.message);
+                lqAlert('PDF 匯出失敗: ' + e.message);
             } finally {
                 noPrintEls.forEach((el, i) => { el.style.display = noPrintPrevDisplay[i] || ''; });
             }
@@ -158,11 +158,11 @@
         async function dlDocInner() {
             try { await loadScript(LIB_URLS.docx); } catch (e) {}
             if (typeof window.docx === 'undefined') {
-                alert('Word 元件載入失敗，請檢查網路連線後再試一次');
+                lqAlert('Word 元件載入失敗，請檢查網路連線後再試一次');
                 return;
             }
             const items = window.currentItems || [];
-            if (items.length === 0) { alert('沒有可匯出的內容'); return; }
+            if (items.length === 0) { lqAlert('沒有可匯出的內容'); return; }
 
             const D = window.docx;
             const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle, HeadingLevel } = D;

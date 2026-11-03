@@ -43,8 +43,8 @@
 
 .lg-welcome-badge {
     position: relative;
-    width: 9.5rem;
-    height: 9.5rem;
+    width: 8rem;
+    height: 8rem;
     animation: lg-pop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
 }
 .lg-welcome-badge img {
@@ -73,40 +73,62 @@
     to { opacity: 1; transform: scale(1); }
 }
 
-.lg-welcome-brand {
+/* 歡迎頁的主角是「刻度」；鴻綸科技退成下方署名，跟身分頁同一個主角，不再像兩個產品 */
+.lg-welcome-title {
+    position: relative;
+    margin: 0.25rem 0 0;
+    font-size: clamp(3.25rem, 14vw, 5.5rem);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: 0.12em;
+    text-indent: 0.12em; /* 補回最後一個字的字距，視覺上才置中 */
+    animation: lg-reveal-title 1s ease 0.35s both;
+}
+.lg-welcome-sub {
     position: relative;
     margin: 0;
-    font-size: clamp(2rem, 7vw, 3.25rem);
-    font-weight: 900;
-    letter-spacing: 0.3em;
-    text-indent: 0.3em; /* 補回最後一個字的字距，視覺上才置中 */
-    animation: lg-reveal 1s ease 0.35s both;
+    font-size: clamp(1.15rem, 4vw, 1.5rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-indent: 0.2em;
+    opacity: 0.9;
+    animation: lg-fade-up 0.8s ease 0.9s both;
 }
+/* 刻度尺：四色（品牌色）刻線，短線每 8px、長線每 40px，歡迎頁與身分頁共用 */
+.lg-ticks {
+    flex: none;
+    width: 11rem;
+    height: 14px;
+    margin: 0.9rem auto;
+    background: linear-gradient(90deg, var(--hl-blue, #1A73E8), var(--hl-red, #EA4335), var(--hl-yellow, #FBBC04), var(--hl-green, #34A853));
+    -webkit-mask: linear-gradient(90deg, #000 2px, transparent 2px) 0 100% / 8px 8px repeat-x,
+                  linear-gradient(90deg, #000 2px, transparent 2px) 0 100% / 40px 14px repeat-x;
+    mask: linear-gradient(90deg, #000 2px, transparent 2px) 0 100% / 8px 8px repeat-x,
+          linear-gradient(90deg, #000 2px, transparent 2px) 0 100% / 40px 14px repeat-x;
+}
+.lg-welcome .lg-ticks { margin: -0.4rem 0 -0.4rem; animation: lg-fade-up 0.8s ease 0.7s both; }
 .lg-welcome-en {
     position: relative;
-    margin: -0.5rem 0 0;
+    margin: 1.5rem 0 0;
     font-size: 0.8rem;
-    letter-spacing: 0.45em;
-    text-indent: 0.45em;
+    letter-spacing: 0.3em;
+    text-indent: 0.3em;
     opacity: 0.7;
-    animation: lg-fade-up 0.8s ease 0.8s both;
-}
-.lg-welcome-app {
-    position: relative;
-    margin: 0.75rem 0 0;
-    font-size: clamp(1.1rem, 4vw, 1.4rem);
-    font-weight: 700;
     animation: lg-fade-up 0.8s ease 1.2s both;
 }
 .lg-welcome-logo {
     position: relative;
-    width: min(16rem, 70vw);
-    margin-top: 0.5rem;
+    width: min(17rem, 72vw);
+    margin-top: 0.25rem;
     animation: lg-fade-up 0.8s ease 1.5s both;
 }
 @keyframes lg-reveal {
     from { opacity: 0; letter-spacing: 0.9em; filter: blur(8px); }
     to { opacity: 1; letter-spacing: 0.3em; filter: blur(0); }
+}
+@keyframes lg-reveal-title {
+    from { opacity: 0; letter-spacing: 0.6em; filter: blur(8px); }
+    to { opacity: 1; letter-spacing: 0.12em; filter: blur(0); }
 }
 @keyframes lg-fade-up {
     from { opacity: 0; transform: translateY(12px); }
@@ -142,7 +164,7 @@
 .lg-skip:hover, .lg-skip:focus-visible { background: rgba(255, 255, 255, 0.2); outline: 2px solid #fff; outline-offset: 2px; }
 
 /* ---------- ② 選身分 ---------- */
-.lg-identity { width: 100%; max-width: 40rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+.lg-identity { width: 100%; max-width: 46rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
 .lg-identity-q { margin: 0; font-size: 1.15rem; font-weight: 700; color: var(--hl-text); }
 
 .lg-continue {
@@ -160,7 +182,10 @@
 }
 .lg-continue:hover, .lg-continue:focus-visible { background: var(--hl-blue, #1A73E8); color: #fff; outline: none; }
 
-.lg-role-cards { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+/* 身分頁標題：刻度＋刻度尺＋副標，不再放第二顆徽章 */
+.lg-splash-title { letter-spacing: 0.1em; text-indent: 0.1em; margin-bottom: 0; }
+.lg-splash-sub { margin-bottom: 1.75rem; }
+.lg-role-cards { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .lg-role-card {
     display: flex;
     flex-direction: column;
@@ -183,6 +208,7 @@
     outline: none;
 }
 .lg-role-card.is-teacher { --lg-accent: var(--hl-blue, #1A73E8); }
+.lg-role-card.is-parent { --lg-accent: var(--hl-yellow-hover, #F29900); }
 .lg-role-card.is-student { --lg-accent: var(--hl-green, #34A853); }
 .lg-role-icon {
     display: grid;
@@ -210,11 +236,20 @@
 }
 .lg-role-more button:hover, .lg-role-more button:focus-visible, .lg-role-more a:hover, .lg-role-more a:focus-visible { color: var(--hl-blue, #1A73E8); }
 
-@media (max-width: 420px) {
-    .lg-role-cards { gap: 0.6rem; }
-    .lg-role-card { padding: 1.1rem 0.5rem 1rem; }
-    .lg-role-icon { width: 3.25rem; height: 3.25rem; font-size: 1.8rem; }
-    .lg-role-name { font-size: 1.1rem; }
+/* 手機：三張卡直向排，每張左圖右字，一個畫面看得到全部、手指好點 */
+@media (max-width: 600px) {
+    .lg-role-cards { grid-template-columns: 1fr; gap: 0.6rem; }
+    .lg-role-card {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        column-gap: 1rem;
+        row-gap: 0.1rem;
+        padding: 0.9rem 1.1rem;
+        text-align: left;
+    }
+    .lg-role-icon { grid-row: 1 / span 2; width: 3.25rem; height: 3.25rem; font-size: 1.8rem; }
+    .lg-role-name { font-size: 1.15rem; }
 }
 
 /* ---------- ③ 老師一步一頁 ---------- */
@@ -279,7 +314,7 @@
 
 @media (prefers-reduced-motion: reduce) {
     .lg-aurora span, .lg-welcome-badge, .lg-welcome-badge::before,
-    .lg-welcome-brand, .lg-welcome-en, .lg-welcome-app, .lg-welcome-logo, .lg-welcome-bar { animation: none !important; }
+    .lg-welcome-title, .lg-welcome-sub, .lg-welcome .lg-ticks, .lg-welcome-en, .lg-welcome-logo, .lg-welcome-bar { animation: none !important; }
     .lg-particles { display: none; }
     .lg-role-card { transition: none; }
 }

@@ -23,6 +23,35 @@
             cooldownTimer = setInterval(tick, 1000);
         }
 
+        // 出題後自動檢查：把「學生一定會被害到」的壞題擋掉（2026-11-03 注音題三個選項都對、解析自打臉）。
+        // 只擋能用程式確定的：選項不足／重複、答案對不到任何選項、解析出現邊想邊改的口氣。
+        // 題目本身對不對（例如兩個選項都對）程式看不出來，靠出題提示詞規則。
+        const SELF_CORRECT_RE = /選項\s*\d*\s*(寫錯|有誤)|讓我(再)?(想|檢查|重新)|重新(檢查|計算|確認)|等等[，,]|抱歉|更正[：:，,]/;
+        function vetItems(items) {
+            const kept = [];
+            items.forEach(q => {
+                if (!q || typeof q.q !== 'string' || !q.q.trim()) return;
+                if (Array.isArray(q.o) && q.o.length > 0) {
+                    const opts = q.o.map(o => String(o).trim());
+                    if (opts.length < 2 || new Set(opts).size !== opts.length) return;
+                    const letters = getCorrectLetters(q) || [];
+                    const valid = letters.length > 0 && letters.every(l => /^[A-Z]$/.test(l) && (l.charCodeAt(0) - 65) < opts.length);
+                    if (!valid) return;
+                }
+                if (typeof q.e === 'string' && SELF_CORRECT_RE.test(q.e)) return;
+                kept.push(q);
+            });
+            return kept;
+        }
+        // 每題配分各自取整會湊不滿 100（7 題 14 分共 98；超過 100 題變 0 分）：餘數補在最後幾題
+        function normalizeScores(items) {
+            const n = items.length;
+            if (n === 0) return;
+            const base = Math.max(1, Math.floor(100 / n));
+            let extra = n > 100 ? 0 : 100 - base * n;
+            items.forEach((q, idx) => { q.s = base + (idx >= n - extra ? 1 : 0); });
+        }
+
         // ... API 呼叫邏輯 ...
         async function startGen() {
             let sType = document.getElementById('sourceType').value;
@@ -129,6 +158,13 @@
                     taskDescription += "【語言】：請務必使用「" + langVal + "」撰寫所有內容！\n\n";
                     taskDescription += "【批次定位】：這是第 " + (i+1) + " 批，請僅生成【第 " + startNum + " 題 到 第 " + endNum + " 題】（共 " + currentCount + " 題）。\n";
                     taskDescription += "若為單/複選題，'o' 給選項，'a' 給答案；若為填充/簡答/計算題，'o' 必須且只能回傳空陣列 []，並將解答寫在 'a'！題目中預留極長的底線(________________________)供填寫。配分固定為 " + scorePerQ + " 分。\n";
+                    // 品質規則：2026-11-03 注音題三個選項都對、解析自相矛盾（學生選對卻被判錯）
+                    taskDescription += "【題目品質規則】（違反就是壞題）：\n" +
+                        "1. 單選題只能有一個正確選項，其餘選項必須明確錯誤；出完題逐一檢查每個選項，確認沒有第二個也對的。\n" +
+                        "2. 題目要讓該年級學生一看就懂：一題只考一個觀念，題幹用日常白話直接問（例如「『朋』的注音是哪一個？」），不要出「選出完全正確的」「下列何者錯誤的有幾個」這類要逐項判斷的繞口題。\n" +
+                        "3. 選項格式一致、長度相近，每個選項只放一個答案（一個字或一個詞），不可同一題混著考不同的字或詞。\n" +
+                        "4. 注音／字音／字形題，每個選項都要實際核對過；注音題一次只問一個字，不要在一個選項塞整串注音。不確定的字音不要出。\n" +
+                        "5. 解析（e）只寫 1～2 句最終結論，直接說為什麼答案對、關鍵錯在哪；不可出現「應為」「（選項寫錯）」這類邊想邊修正的話，答案與解析必須一致。\n\n";
                     const formatRule = ' 【嚴格格式要求】：必須且只能回傳合法的 JSON Array。格式：[{"q":"題目內容","o":["選項1","選項2"],"a":"答案","e":"解析","s":' + scorePerQ + '}]。';
 
                     let parts = [{ text: taskDescription + formatRule }];
@@ -214,11 +250,17 @@
 
                 setProgressBar(100);
 
+                const rawCount = allItems.length;
+                allItems = vetItems(allItems);
                 if (allItems.length === 0) {
                     throw new Error("AI回傳的內容無法解析成題目格式，請重新嘗試出題一次（通常是暫時性問題）");
                 }
+                normalizeScores(allItems);
+                if (allItems.length < rawCount) {
+                    lqAlert("已自動剔除 " + (rawCount - allItems.length) + " 題有問題的題目（選項重複、答案對不到選項或解析前後矛盾）。若題數不足可以「重新出題」再試一次");
+                }
                 if (parseFailBatches.length > 0) {
-                    alert("⚠️ 第 " + parseFailBatches.join("、") + " 批題目AI回傳格式異常已略過，其餘題目正常產生。若題數不足可以「重新出題」再試一次");
+                    lqAlert("⚠️ 第 " + parseFailBatches.join("、") + " 批題目AI回傳格式異常已略過，其餘題目正常產生。若題數不足可以「重新出題」再試一次");
                 }
 
                 // 這兩行一定要在 renderPaperFixed／switchSheet 之前：
@@ -246,7 +288,7 @@
             } catch(e) {
                 if (simTimer) clearInterval(simTimer);
                 hidePracticeLoading();
-                alert("錯誤: " + e.message);
+                lqAlert("錯誤: " + e.message);
                 document.getElementById('btnGo').disabled = false;
                 document.getElementById('btnGo').innerText = "🚀 開始出題";
                 document.getElementById('btnGo').classList.remove('is-working');

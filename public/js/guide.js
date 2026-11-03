@@ -111,7 +111,7 @@
     }
 
     // ========== ② 選身分 ==========
-    var ROLE_LABEL = { teacher: '老師', student: '學生' };
+    var ROLE_LABEL = { teacher: '教師', student: '學生' };
 
     function renderContinue() {
         var btn = $('lgContinue');

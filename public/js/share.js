@@ -7,11 +7,11 @@
         function requireLoginForShare() {
             const u = window.currentUser;
             if (u && u.role === 'student') {
-                alert('分享測驗連結是老師／家長的功能喔。你可以把練習卷下載成 PDF 或 Word 自己印出來。');
+                lqAlert('分享測驗連結是老師／家長的功能喔。你可以把練習卷下載成 PDF 或 Word 自己印出來。');
                 return false;
             }
             if (u) return true;
-            alert('🔒 分享功能需要登入帳號才能使用。\n\n登入後可以分享學生作答連結、家長答案連結，以及全班即時進度儀表板。');
+            lqAlert('🔒 分享功能需要登入帳號才能使用。\n\n登入後可以分享學生作答連結、家長答案連結，以及全班即時進度儀表板。');
             openAccountModal();
             return false;
         }
@@ -39,7 +39,7 @@
         async function openSendQuizModal() {
             if (!requireLoginForShare()) return;
             if (!window.currentItems || window.currentItems.length === 0) {
-                alert('目前沒有題目可以發送');
+                lqAlert('目前沒有題目可以發送');
                 return;
             }
             const modal = document.getElementById('sendQuizModal');
@@ -112,7 +112,7 @@
                 await navigator.clipboard.writeText(text);
                 if (btnEl) { btnEl.textContent = '✅ 已複製'; setTimeout(function () { btnEl.textContent = original; }, 1600); }
             } catch (e) {
-                prompt('複製失敗，請手動複製以下內容：', text);
+                await askText('複製失敗，請手動複製以下內容：', { value: text, readonly: true });
             }
         }
 
@@ -143,7 +143,7 @@
                 switchSheet(window.sharedMode === 'student' ? 'answer' : 'key');
                 applySharedViewChrome();
             } catch (e) {
-                document.getElementById('paperContainer').innerHTML = "<div class='text-center text-white py-20 text-lg'>❌ 載入失敗：" + e.message + "</div>";
+                document.getElementById('paperContainer').innerHTML = "<div class='text-center text-white py-20 text-lg'>❌ 載入失敗：" + escapeHtml(e.message) + "</div>";
             }
             return true;
         }
@@ -237,7 +237,7 @@
                 const sessionToken = localStorage.getItem('lun_session_token') || '';
                 let adminPass = sessionStorage.getItem('linquiz_admin') || '';
                 if (!dashKey && (!sessionToken || window.__liveNeedAdminPass) && !adminPass) {
-                    adminPass = prompt('請輸入管理者密碼以查看班級即時進度：') || '';
+                    adminPass = (await askText('請輸入管理者密碼以查看班級即時進度：', { secret: true })) || '';
                     sessionStorage.setItem('linquiz_admin', adminPass);
                 }
                 try {
@@ -284,7 +284,7 @@
                 const infoLine = infoParts.length > 0 ? infoParts.map(escapeHtml).join('・') : '(未填寫姓名)';
                 html += "<div class='lq-card p-3 mb-2'>" +
                     "<div class='flex items-center justify-between mb-1'><span class='font-semibold text-sm'>" + infoLine + "</span>" +
-                    "<button onclick=\"openProctorDetailTeacher('" + escapeHtml(shareId) + "','" + escapeHtml(s.studentId) + "')\" class='lq-btn lq-btn-secondary text-xs px-2 py-1'>🔍 查看詳情</button></div>" +
+                    "<button onclick=\"openProctorDetailTeacher(" + jsArg(shareId) + "," + jsArg(s.studentId) + ")\" class='lq-btn lq-btn-secondary text-xs px-2 py-1'>🔍 查看詳情</button></div>" +
                     "<div class='flex items-center justify-between mb-1'><span class='text-xs text-gray-400'>" + answered + " / " + total + " 題</span></div>" +
                     "<div class='h-2 w-full bg-gray-200 rounded-full overflow-hidden'><div class='progress-bar' style='width:" + pct + "%;height:100%;'></div></div>" +
                     "</div>";
@@ -311,9 +311,9 @@
                     method: 'POST', headers,
                     body: JSON.stringify({ shareId, revoked: next })
                 });
-                if (!res.ok && res.status === 404) { alert('這個功能需要後端更新後才能使用，請稍後再試。'); return; }
+                if (!res.ok && res.status === 404) { lqAlert('這個功能需要後端更新後才能使用，請稍後再試。'); return; }
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 window.dashRevoked = next;
                 if (btn) btn.innerHTML = next ? '▶️ 恢復監看（讓連結重新可用）' : '⏹ 停止監看（讓這條連結失效）';
                 if (next) {
@@ -325,7 +325,7 @@
                     if (!window.livePollTimer) window.livePollTimer = setInterval(window.liveViewRefresh, window.livePollIntervalMs || 9000);
                 }
             } catch (e) {
-                alert('操作失敗：' + e.message);
+                lqAlert('操作失敗：' + e.message);
             } finally {
                 if (btn) btn.disabled = false;
             }

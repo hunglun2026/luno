@@ -17,10 +17,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=3">
+    <link rel="stylesheet" href="css/guide.css?v=7">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=3">
-    <link rel="stylesheet" href="css/sheet.css?v=3">
+    <link rel="stylesheet" href="css/app.css?v=7">
+    <link rel="stylesheet" href="css/sheet.css?v=7">
 </head>
 <body class="text-slate-800">
 
@@ -31,10 +31,11 @@
         <div class="lg-welcome-badge">
             <img src="assets/badge-medallion.png" alt="鴻綸科技 圓形品牌徽章">
         </div>
-        <h1 class="lg-welcome-brand">鴻綸科技</h1>
-        <p class="lg-welcome-en">HUNGLUN TECHNOLOGY</p>
-        <p class="lg-welcome-app">刻度・互動式評量</p>
-        <img src="assets/logo-dark.png" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
+        <h1 class="lg-welcome-title">刻度</h1>
+        <div class="lg-ticks" aria-hidden="true"></div>
+        <p class="lg-welcome-sub">互動式評量</p>
+        <p class="lg-welcome-en">鴻綸科技　HUNGLUN TECHNOLOGY</p>
+        <img src="assets/logo-dark.png?v=7" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
         <button type="button" id="lqWelcomeSkip" class="lg-skip" onclick="this.dataset.clicked = '1'">略過 →</button>
         <div class="lg-welcome-bar" aria-hidden="true"></div>
     </section>
@@ -55,38 +56,35 @@
 
     <section id="hlSplash" class="hl-splash no-print">
         <div class="hl-work-card hl-splash-card hl-scrollbar">
-            <div class="hl-badge-ring" style="margin-bottom:2rem;">
-                <div class="hl-badge-glow hl-spin-slow"></div>
-                <div class="hl-badge-inner">
-                    <img src="assets/badge-medallion.png" alt="鴻綸科技 圓形品牌徽章">
-                    <div class="hl-badge-dashed-ring hl-spin-slow-reverse"></div>
-                </div>
-            </div>
+            <h1 class="hl-splash-title lg-splash-title">刻度</h1>
+            <div class="lg-ticks" aria-hidden="true"></div>
+            <h2 class="hl-splash-subtitle lg-splash-sub">互動式評量</h2>
 
-            <h1 class="hl-splash-title">刻度</h1>
-            <h2 class="hl-splash-subtitle">互動式評量</h2>
-
-            <!-- ② 選身分（guide.js）：老師、學生兩張大卡；家長、帳號登入、管理員人少，收成下面的小連結。
-                 老師卡不用登入就直接進一步一頁的出題流程（7 月拿掉舊進場頁的原因就是「點三層才看得到出題」，不能再變回去） -->
+            <!-- ② 選身分（guide.js）：教師、家長、學生三張一樣大的卡；教師帳號登入、管理員人少，收成下面的小連結。
+                 教師卡不用登入就直接進一步一頁的出題流程（7 月拿掉舊進場頁的原因就是「點三層才看得到出題」，不能再變回去） -->
             <div id="hlStepIdentity" class="hl-identity-step">
                 <div class="lg-identity">
                     <button type="button" id="lgContinue" class="lg-continue" hidden onclick="Guide.continueLast()"></button>
-                    <p class="lg-identity-q">你是老師還是學生？</p>
+                    <p class="lg-identity-q">請選擇你的身分</p>
                     <div class="lg-role-cards">
                         <button type="button" class="lg-role-card is-teacher" onclick="Guide.pick('teacher')">
                             <span class="lg-role-icon"><span class="ph-duotone ph-presentation"></span></span>
-                            <span class="lg-role-name">我是老師</span>
-                            <span class="lg-role-desc">出題、發測驗<br>看全班進度</span>
+                            <span class="lg-role-name">我是教師</span>
+                            <span class="lg-role-desc">出題、發測驗、看進度</span>
+                        </button>
+                        <button type="button" class="lg-role-card is-parent" onclick="Guide.pick('parent')">
+                            <span class="lg-role-icon"><span class="ph-duotone ph-users-three"></span></span>
+                            <span class="lg-role-name">我是家長</span>
+                            <span class="lg-role-desc">看孩子的作答與進度</span>
                         </button>
                         <button type="button" class="lg-role-card is-student" onclick="Guide.pick('student')">
                             <span class="lg-role-icon"><span class="ph-duotone ph-student"></span></span>
                             <span class="lg-role-name">我是學生</span>
-                            <span class="lg-role-desc">輸入測驗代碼<br>或自己練習</span>
+                            <span class="lg-role-desc">輸入測驗代碼或自己練習</span>
                         </button>
                     </div>
                     <div class="lg-role-more">
-                        <button type="button" onclick="Guide.pick('parent')">我是家長</button>
-                        <button type="button" onclick="Guide.pick('teacherLogin')">老師帳號登入</button>
+                        <button type="button" onclick="Guide.pick('teacherLogin')">教師帳號登入</button>
                         <button type="button" onclick="Guide.pick('admin')">管理員登入</button>
                         <a href="manual.html" target="_blank" rel="noopener">使用說明書</a>
                     </div>
@@ -114,8 +112,8 @@
 
             <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--hl-border);width:100%;max-width:40rem;">
                 <div class="hl-logo-lockup" style="margin:0 auto 1.25rem;max-width:24rem;">
-                    <img src="assets/logo-light.png" alt="鴻綸科技 x Google for Education" class="hl-logo-light">
-                    <img src="assets/logo-dark.png" alt="鴻綸科技 x Google for Education" class="hl-logo-dark">
+                    <img src="assets/logo-light.png?v=7" alt="鴻綸科技 x Google for Education" class="hl-logo-light">
+                    <img src="assets/logo-dark.png?v=7" alt="鴻綸科技 x Google for Education" class="hl-logo-dark">
                 </div>
                 <p style="font-size:0.875rem;font-weight:700;color:var(--hl-text-secondary);margin-bottom:0.75rem;">Created by Hunglun Technology Steve</p>
                 <p style="font-size:0.8125rem;color:var(--hl-text-secondary);margin-bottom:0.75rem;">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" style="color:var(--hl-blue);font-weight:700;text-decoration:underline;">鴻綸科技官方網站</a></p>
@@ -545,21 +543,22 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=3"></script>
-    <script src="js/entry.js?v=3"></script>
-    <script src="js/home.js?v=3"></script>
-    <script src="js/share.js?v=3"></script>
-    <script src="js/settings.js?v=3"></script>
-    <script src="js/generate.js?v=3"></script>
-    <script src="js/sheet.js?v=3"></script>
-    <script src="js/answer.js?v=3"></script>
-    <script src="js/export.js?v=3"></script>
-    <script src="js/account.js?v=3"></script>
-    <script src="js/admin.js?v=3"></script>
+    <script src="js/core.js?v=7"></script>
+    <script src="js/dialog.js?v=7"></script>
+    <script src="js/entry.js?v=7"></script>
+    <script src="js/home.js?v=7"></script>
+    <script src="js/share.js?v=7"></script>
+    <script src="js/settings.js?v=7"></script>
+    <script src="js/generate.js?v=7"></script>
+    <script src="js/sheet.js?v=7"></script>
+    <script src="js/answer.js?v=7"></script>
+    <script src="js/export.js?v=7"></script>
+    <script src="js/account.js?v=7"></script>
+    <script src="js/admin.js?v=7"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=3">
+<link rel="stylesheet" href="css/paper.css?v=7">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -652,10 +651,10 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=3"></script>
-<script src="js/paper-student.js?v=3"></script>
+<script src="js/paper-teacher.js?v=7"></script>
+<script src="js/paper-student.js?v=7"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=3"></script>
+    <script src="js/guide.js?v=7"></script>
 
 </body>
 </html>

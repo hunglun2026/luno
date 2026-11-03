@@ -7,6 +7,9 @@
             const raw = String(rawAnswer).trim();
             if (!raw) return null;
             let idx = q.o.findIndex(o => o.trim() === raw);
+            // 純字母答案（"B"、"AC"）是選項代號不是選項文字：不做模糊比對，
+            // 否則選項「B 型血」「ATP」這種含英文字母的會被誤認成答案
+            if (idx < 0 && /^[A-Za-z]{1,8}$/.test(raw)) return null;
             if (idx < 0) idx = q.o.findIndex(o => raw.includes(o.trim()) || o.trim().includes(raw));
             return idx >= 0 ? String.fromCharCode(65 + idx) : null;
         }
@@ -44,7 +47,7 @@
         function confirmAnswer(i) {
             const inputs = document.querySelectorAll('input[name="ans-' + i + '"]');
             const hasSelection = Array.from(inputs).some(el => el.checked);
-            if (!hasSelection) { alert('請先選擇答案再確認'); return; }
+            if (!hasSelection) { lqAlert('請先選擇答案再確認'); return; }
             gradeOneQuestion(i);
             inputs.forEach(el => el.disabled = true);
             const btn = document.getElementById('ans-confirm-' + i);
@@ -151,9 +154,9 @@
                 const msg = "✅ 已複製即時監看連結！家長開啟後不用註冊、不用密碼，就能看到你答了幾題＋每題選了什麼。不想被看的時候可以按下面的「⏹ 停止監看」讓連結失效。";
                 let copied = false;
                 try { await navigator.clipboard.writeText(clipboardText); copied = true; } catch (e) {}
-                if (copied) { alert(msg); } else { prompt(msg + '\n複製失敗，請手動複製以下內容：', clipboardText); }
+                if (copied) { lqAlert(msg); } else { await askText(msg + '\n複製失敗，請手動複製以下內容：', { value: clipboardText, readonly: true }); }
             } catch (e) {
-                alert('產生連結失敗: ' + e.message);
+                lqAlert('產生連結失敗: ' + e.message);
             } finally {
                 if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = originalHTML; }
             }
@@ -394,7 +397,7 @@
                 let copied = false;
                 try { await navigator.clipboard.writeText(clipboardText); copied = true; } catch (e) {}
                 if (msgEl) msgEl.textContent = copied ? ('✅ 已複製「' + title + '」' + whoLabel + ' 的結果連結！可貼給家長/老師查看(30天內有效，唯讀)') : ('連結：' + url);
-                if (!copied) prompt('複製失敗，請手動複製以下內容：', clipboardText);
+                if (!copied) await askText('複製失敗，請手動複製以下內容：', { value: clipboardText, readonly: true });
             } catch (e) {
                 if (msgEl) msgEl.textContent = '❌ 產生連結失敗：' + e.message;
             } finally {

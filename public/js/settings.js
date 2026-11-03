@@ -22,7 +22,7 @@
                 g.items.forEach(function (v) {
                     // 「國小三年級」在按鈕上只顯示「三年級」，同一列已經標了學制，不用重複
                     const short = v.replace(/^(國小|國中|高中)/, '');
-                    html += "<button type='button' class='lq-chip' data-val='" + escapeHtml(v) + "' onclick=\"pickGrade('" + escapeHtml(v) + "')\">" + escapeHtml(short) + "</button>";
+                    html += "<button type='button' class='lq-chip' data-val='" + escapeHtml(v) + "' onclick=\"pickGrade(" + jsArg(v) + ")\">" + escapeHtml(short) + "</button>";
                 });
                 // 「其他」接在最後一組同一行，不要自己獨佔一行——它很少用，卻多吃一整行高度
                 if (gi === groups.length - 1) {
@@ -34,7 +34,7 @@
 
             let sHtml = "<div class='lq-chip-group'>";
             SUBJECT_CHIPS.forEach(function (v) {
-                sHtml += "<button type='button' class='lq-chip' data-val='" + escapeHtml(v) + "' onclick=\"pickSubject('" + escapeHtml(v) + "')\">" + escapeHtml(v) + "</button>";
+                sHtml += "<button type='button' class='lq-chip' data-val='" + escapeHtml(v) + "' onclick=\"pickSubject(" + jsArg(v) + ")\">" + escapeHtml(v) + "</button>";
             });
             sHtml += "<button type='button' class='lq-chip lq-chip-custom' data-val='Custom' onclick=\"pickSubject('Custom')\">✍️ 其他科目</button></div>";
             document.getElementById('subjectChips').innerHTML = sHtml;
@@ -147,9 +147,9 @@
             const url = location.origin + location.pathname + "?" + params.toString();
 
             navigator.clipboard.writeText(url).then(() => {
-                alert("✅ 設定連結已複製！貼給同事開啟後，表單會自動帶入這些設定。");
+                lqAlert("✅ 設定連結已複製！貼給同事開啟後，表單會自動帶入這些設定。");
             }).catch(() => {
-                prompt("複製失敗，請手動複製以下連結：", url);
+                askText("複製失敗，請手動複製以下連結：", { value: url, readonly: true });
             });
         }
 
@@ -157,11 +157,11 @@
         function saveDefaultSettings() {
             const s = getFormSettingsSnapshot();
             if (!s.grade && !s.subject && !s.scope) {
-                alert('目前表單是空的，請先填一些出題條件再儲存');
+                lqAlert('目前表單是空的，請先填一些出題條件再儲存');
                 return;
             }
             localStorage.setItem('lun_saved_settings', JSON.stringify(s));
-            alert('✅ 已儲存目前出題條件！下次打開頁面會自動帶入，不用重填。');
+            lqAlert('✅ 已儲存目前出題條件！下次打開頁面會自動帶入，不用重填。');
         }
 
         function loadSavedSettingsIfAny() {
@@ -172,8 +172,8 @@
             } catch (e) {}
         }
 
-        function clearAllSettings() {
-            if (!confirm('確定要清除所有出題條件嗎？已儲存的預設值也會一併刪除。')) return;
+        async function clearAllSettings() {
+            if (!(await askConfirm('確定要清除所有出題條件嗎？已儲存的預設值也會一併刪除。', { danger: true, okText: '確定清除' }))) return;
             localStorage.removeItem('lun_saved_settings');
 
             function resetSelect(selectId, customId, defaultValue) {
@@ -193,7 +193,7 @@
             document.getElementById('lang').value = '繁體中文';
             syncChoiceChips();
 
-            alert('↺ 已重置表單（年級與科目請重新選擇，其餘已回到常用預設值）');
+            lqAlert('↺ 已重置表單（年級與科目請重新選擇，其餘已回到常用預設值）');
         }
 
         // --- 出題紀錄（存在這台裝置的 localStorage，最多留20筆） ---
@@ -248,8 +248,8 @@
             closeHistory();
             renderPaperFixed(h.items);
         }
-        function deleteHistory(i) {
-            if (!confirm('確定刪除這筆歷史紀錄？')) return;
+        async function deleteHistory(i) {
+            if (!(await askConfirm('確定刪除這筆歷史紀錄？', { danger: true }))) return;
             let hist = [];
             try { hist = JSON.parse(localStorage.getItem('lun_history') || '[]'); } catch(e) {}
             hist.splice(i, 1);
@@ -257,8 +257,8 @@
             openHistory();
         }
 
-        window.forgetKey = function() {
-            if (confirm("確定清除記憶的 API Key？")) {
+        window.forgetKey = async function() {
+            if (await askConfirm("確定清除記憶的 API Key？", { danger: true, okText: '確定清除' })) {
                 localStorage.removeItem('lun_key');
                 document.getElementById('userKey').value = '';
             }
@@ -305,22 +305,22 @@
         function renderFileList() {
             let html = "";
             uploadItems.forEach((item, idx) => {
-                html += "<div class='flex justify-between items-center bg-emerald-50 p-3 rounded-lg mb-2 border border-emerald-100 text-emerald-800 text-sm font-bold shadow-sm'><span class='truncate mr-4'>✅ " + item.name + "</span><button onclick='removeFile(" + idx + ")' class='text-red-500 hover:text-red-700 bg-white border border-red-200 hover:bg-red-50 px-3 py-1 rounded shadow-sm transition'>✖ 刪除</button></div>";
+                html += "<div class='flex justify-between items-center bg-emerald-50 p-3 rounded-lg mb-2 border border-emerald-100 text-emerald-800 text-sm font-bold shadow-sm'><span class='truncate mr-4'>✅ " + escapeHtml(item.name) + "</span><button onclick='removeFile(" + idx + ")' class='text-red-500 hover:text-red-700 bg-white border border-red-200 hover:bg-red-50 px-3 py-1 rounded shadow-sm transition'>✖ 刪除</button></div>";
             });
             document.getElementById('fList').innerHTML = html;
         }
         window.removeFile = function(idx) { uploadItems.splice(idx, 1); renderFileList(); };
 
         // --- 管理者解除冷卻限制 ---
-        function unlockAdmin() {
+        async function unlockAdmin() {
             const btn = document.getElementById('adminBtn');
             if (sessionStorage.getItem('linquiz_admin')) {
                 sessionStorage.removeItem('linquiz_admin');
                 btn.innerText = "🔓 管理者解除限制";
-                alert("已恢復一般冷卻限制");
+                lqAlert("已恢復一般冷卻限制");
                 return;
             }
-            let pw = prompt("請輸入管理者密碼：");
+            let pw = await askText("請輸入管理者密碼：", { secret: true });
             if (pw === null || pw === "") return;
             sessionStorage.setItem('linquiz_admin', pw);
             btn.innerText = "🔒 已解除限制（點擊恢復）";

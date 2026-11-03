@@ -2,12 +2,12 @@
         // --- 單題重新出（會再打一次API，一樣受30秒冷卻限制） ---
         // 「重新出整份」實際上是整頁 reload，會把已經產生的題目、老師手動改過的內容、
         // 還沒複製的分享連結全部丟掉，卻沒有任何確認。加一道防呆。
-        function restartWholeQuiz() {
+        async function restartWholeQuiz() {
             const n = (window.currentItems || []).length;
             const msg = n > 0
                 ? "確定要重出整份試卷嗎？\n\n目前這 " + n + " 題（含你手動修改過的內容）都會被清掉，回到出題設定畫面。\n\n如果只是某一題不滿意，請關掉這個視窗，改按該題右上角的「🎲 換這題」。"
                 : "確定要回到出題設定畫面嗎？";
-            if (!confirm(msg)) return;
+            if (!(await askConfirm(msg, { danger: true, okText: '確定重出' }))) return;
             location.reload();
         }
 
@@ -46,6 +46,17 @@
             return String(text).replace(new RegExp('^\\s*[（(]?\\s*' + label + '\\s*[)）.、:：]\\s*', 'i'), '');
         }
 
+        // 答案卷上的答案文字：選擇題用 getCorrectLetters 統一轉字母（AI 可能回字母、數字、選項全文或陣列），
+        // 以前只認數字陣列，AI 回 ["A","C"] 就變成亂碼（String.fromCharCode(65+"A")）
+        function answerKeyText(q) {
+            if (q.o && q.o.length > 0) {
+                const letters = getCorrectLetters(q) || [];
+                if (letters.length > 0) return letters.join('');
+            }
+            if (Array.isArray(q.a)) return q.a.join('、') || '(略)';
+            return (q.a === 0 || q.a) ? String(q.a) : '(略)';
+        }
+
         function updateQuestionDOM(idx, q) {
             let qItem = document.querySelector('.q-item[data-idx="' + idx + '"]');
             if (qItem) {
@@ -71,10 +82,7 @@
 
             let keyItem = document.querySelector('.key-item[data-idx="' + idx + '"]');
             if (keyItem) {
-                let ans = q.a;
-                if (Array.isArray(q.a)) ans = q.a.map(x=>String.fromCharCode(65+x)).join('');
-                else if (typeof q.a === 'number') ans = String.fromCharCode(65+q.a);
-                else ans = q.a || '(略)';
+                let ans = answerKeyText(q);
                 keyItem.innerHTML = "<b>"+(idx+1)+".</b> <span style='color:red; font-weight:bold; margin-right:10px;'>"+escapeHtml(ans)+"</span> <span style='font-size:10pt; color:#666;'>"+escapeHtml(q.e||'')+"</span>";
             }
         }
@@ -112,7 +120,7 @@
                 if (res.status === 429) {
                     let cd = await res.json().catch(() => ({}));
                     let remaining = (cd.error && cd.error.remaining) || 30;
-                    alert("⏳ 目前冷卻中，請等待 " + remaining + " 秒後再試一次單題重出");
+                    lqAlert("⏳ 目前冷卻中，請等待 " + remaining + " 秒後再試一次單題重出");
                     startCooldownUI(remaining);
                     return;
                 }
@@ -137,7 +145,7 @@
                 let ansContainer = document.getElementById('answerModeContainer');
                 if (ansContainer) ansContainer.dataset.rendered = '';
             } catch(e) {
-                alert("重新出題失敗: " + e.message);
+                lqAlert("重新出題失敗: " + e.message);
             } finally {
                 btnEl.disabled = false;
                 btnEl.innerHTML = originalLabel;
@@ -231,10 +239,7 @@
             kDiv.contentEditable = "true";
             let kHtml = "<h2 style='text-align:center; font-size:18pt; font-weight:bold; margin-bottom:20px;'>解析卷</h2>";
             items.forEach((q, i) => {
-                let ans = q.a;
-                if(Array.isArray(q.a)) ans = q.a.map(x=>String.fromCharCode(65+x)).join('');
-                else if(typeof q.a==='number') ans = String.fromCharCode(65+q.a);
-                else ans = q.a || '(略)';
+                let ans = answerKeyText(q);
                 kHtml += "<div class='key-item' data-idx='" + i + "' style='margin-bottom:8px; border-bottom:1px solid #eee; padding-bottom:4px;'><b>"+(i+1)+".</b> <span style='color:red; font-weight:bold; margin-right:10px;'>"+escapeHtml(ans)+"</span> <span style='font-size:10pt; color:#666;'>"+escapeHtml(q.e||'')+"</span></div>";
             });
             kDiv.innerHTML = kHtml;

@@ -169,8 +169,8 @@
 
         // 學生首頁的登出：session token 與這台裝置的學生資料一起清掉，再回到進場頁。
         // 不能只呼叫 doLogout()——那只更新出題工具那邊的帳號列，學生首頁會停在原畫面看起來沒登出。
-        function studentLogout() {
-            if (!confirm('要登出嗎？登出後要重新輸入帳號密碼才能看到跨裝置的練習紀錄。')) return;
+        async function studentLogout() {
+            if (!(await askConfirm('要登出嗎？登出後要重新輸入帳號密碼才能看到跨裝置的練習紀錄。', { okText: '登出' }))) return;
             localStorage.removeItem('lun_session_token');
             localStorage.removeItem(STUDENT_PROFILE_KEY);
             window.currentUser = null;
@@ -179,16 +179,16 @@
 
         async function joinByCode(btnEl) {
             const raw = (document.getElementById('joinCodeInput').value || '').replace(/[^0-9]/g, '');
-            if (raw.length !== 6) { alert('請輸入老師給的 6 位數代碼'); return; }
+            if (raw.length !== 6) { lqAlert('請輸入老師給的 6 位數代碼'); return; }
             const original = btnEl ? btnEl.innerHTML : '';
             if (btnEl) { btnEl.disabled = true; btnEl.innerHTML = '⏳'; }
             try {
                 const res = await fetch(API_BASE + "/api/code/" + raw);
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 location.href = location.origin + location.pathname + "?share=" + data.shareId + "&mode=student";
             } catch (e) {
-                alert('進入失敗：' + e.message);
+                lqAlert('進入失敗：' + e.message);
             } finally {
                 if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = original; }
             }
@@ -198,8 +198,8 @@
             const raw = (document.getElementById('joinLinkInput').value || '').trim();
             if (!raw) return;
             let target;
-            try { target = new URL(raw, location.href); } catch (e) { alert('連結格式看起來不對，請整條複製貼上'); return; }
-            if (!target.searchParams.get('share')) { alert('這不是測驗連結（網址裡要有 share=）'); return; }
+            try { target = new URL(raw, location.href); } catch (e) { lqAlert('連結格式看起來不對，請整條複製貼上'); return; }
+            if (!target.searchParams.get('share')) { lqAlert('這不是測驗連結（網址裡要有 share=）'); return; }
             location.href = target.href;
         }
 
@@ -280,7 +280,7 @@
                 box.innerHTML = children.map(function (c) {
                     return "<div class='flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-2'>" +
                         "<span class='text-sm font-semibold'>" + escapeHtml(c.displayName) + "（" + escapeHtml(c.username) + "）</span>" +
-                        "<button onclick=\"openProctorDetailParent('" + escapeHtml(c.username) + "')\" class='lq-btn lq-btn-primary text-xs px-3 py-1'>🔍 即時監看</button></div>";
+                        "<button onclick=\"openProctorDetailParent(" + jsArg(c.username) + ")\" class='lq-btn lq-btn-primary text-xs px-3 py-1'>🔍 即時監看</button></div>";
                 }).join('');
             } catch (e) {
                 box.innerHTML = "<div class='text-sm text-red-600'>載入失敗：" + escapeHtml(e.message) + "</div>";
@@ -299,11 +299,11 @@
                     body: JSON.stringify({ studentUsername: studentUsername })
                 });
                 const data = await res.json();
-                if (data.error) { alert(data.error.message); return; }
+                if (data.error) { lqAlert(data.error.message); return; }
                 document.getElementById('parentPanelChildInput').value = '';
                 loadParentPanelChildren();
             } catch (e) {
-                alert('連結失敗：' + e.message);
+                lqAlert('連結失敗：' + e.message);
             } finally {
                 if (btnEl) btnEl.disabled = false;
             }
@@ -393,7 +393,7 @@
         // 所以先問身分再分流，不要讓家長/老師點進去變成自己在寫考卷。
         function openQuizEntryModal() {
             if (!window.currentItems || window.currentItems.length === 0) {
-                alert('目前沒有題目可以線上作答');
+                lqAlert('目前沒有題目可以線上作答');
                 return;
             }
             document.getElementById('quizEntryModal').classList.remove('hidden');
@@ -451,8 +451,8 @@
             const raw = (document.getElementById('quizEntryParentLink').value || '').trim();
             if (!raw) return;
             let u;
-            try { u = new URL(raw, location.href); } catch (e) { alert('連結格式看起來不對，請整條複製貼上'); return; }
-            if (!u.searchParams.get('live')) { alert('這不是即時監看連結（網址裡要有 live=）'); return; }
+            try { u = new URL(raw, location.href); } catch (e) { lqAlert('連結格式看起來不對，請整條複製貼上'); return; }
+            if (!u.searchParams.get('live')) { lqAlert('這不是即時監看連結（網址裡要有 live=）'); return; }
             window.open(u.href, '_blank');
         }
 
@@ -480,7 +480,7 @@
                 }
                 body.innerHTML = "<div class='space-y-2'>" +
                     children.map(c =>
-                        "<button onclick=\"closeQuizEntryModal(); openProctorDetailParent('" + escapeHtml(c.username) + "')\" class='lq-btn lq-btn-primary w-full py-3 text-left px-4'>" +
+                        "<button onclick=\"closeQuizEntryModal(); openProctorDetailParent(" + jsArg(c.username) + ")\" class='lq-btn lq-btn-primary w-full py-3 text-left px-4'>" +
                         "<div class='font-bold'>🔍 " + escapeHtml(c.displayName) + "</div>" +
                         "<div class='text-xs opacity-80'>帳號：" + escapeHtml(c.username) + "</div></button>"
                     ).join('') +

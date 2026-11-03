@@ -1,4 +1,6 @@
 // linquiz API worker — Gemini 出題代理
+// 2026-11-03：帳號規則（16 字、僅英數符號、不分大小寫）、冷卻改後續批次額度、學生識別碼驗證；
+// CI 因 runner 磁碟滿失敗過一次，修好 detect 後由這個改動重新觸發部署
 // - BYOK：使用者可在前端填自己的 Key（X-Gemini-Api-Key），用他自己的 Key 呼叫，不受冷卻限制
 // - 沒填 Key 時用伺服器內建的 Key 池，支援多組 Gemini API Key 輪換：
 //   env.GEMINI_API_KEYS 用逗號分隔多組 Key（單組時退回用 env.GEMINI_API_KEY），
@@ -12,6 +14,16 @@
 //   就自動 fallback 到 gemini-3.1-flash-lite，不會整批直接失敗
 
 const COOLDOWN_MS = 30000;
+// 一次出題（第 0 批通過冷卻後）最多還能打幾次後續批次／重試；用完要重新走冷卻。
+// 以前是「前端說自己是第幾批就信」，任何人把 X-Batch-Index 寫成 1 就能無限繞過冷卻
+const GENERATE_RUN_ALLOWANCE = 15;
+const GENERATE_RUN_TTL_SECONDS = 10 * 60;
+// 同一個 IP 每小時最多開幾次新的出題（防換裝置 ID 洗額度；60 夠一間學校共用網路）
+const GENERATE_IP_HOURLY_LIMIT = 60;
+const GENERATE_MAX_BYTES = 20 * 1024 * 1024;
+const GENERATE_MAX_PARTS = 40;
+// 學生識別碼：裝置 ID（UUID 或 數字-隨機字串）或 u<帳號編號>，只准這些字元，不能夾 ' " / 之類
+const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
 // 管理者密碼只從 secret 讀，原始碼裡不留預設值——這個 repo 是 public，
 // 寫死的預設密碼等於公開，任何人都能拿去略過冷卻、查 Key 池狀態。
 // 沒設 ADMIN_PASSWORD secret 時，管理者密碼一律視為不成立（功能停用，不是放行）。
@@ -408,6 +420,13 @@ async function handleLiveProgressPost(request, env) {
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
+    // 學生識別碼會被顯示在老師畫面、拼進網址與 R2 路徑，只准安全字元、有長度上限
+    if (!ID_RE.test(shareId) || !ID_RE.test(studentId)) {
+      return new Response(JSON.stringify({ error: { message: "識別碼格式不正確" } }), {
+        status: 400,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
 
     const studentInfo = {
       grade: String((body.studentInfo && body.studentInfo.grade) || "").slice(0, 50),
@@ -428,7 +447,7 @@ async function handleLiveProgressPost(request, env) {
 
     // 學生若剛好有登入帳號(非強制)就記下來，讓已連結的家長能用孩子帳號反查
     // 「現在正在寫哪一份」，不必另外拿到分享連結
-    const studentUsername = String(body.studentUsername || "").trim().slice(0, 100);
+    const studentUsername = normalizeUsername(body.studentUsername).slice(0, 100);
 
     await env.DB.prepare(
       `INSERT INTO live_progress
@@ -581,7 +600,7 @@ async function handleLiveRevoke(request, env) {
 async function parentOwnsLiveStudent(env, parentId, shareId, studentId) {
   const row = await env.DB.prepare(
     `SELECT 1 FROM live_progress p
-       JOIN users u ON u.username = p.student_username
+       JOIN users u ON lower(u.username) = lower(p.student_username)
        JOIN parent_child_links l ON l.student_id = u.id
       WHERE l.parent_id = ? AND p.share_id = ? AND p.student_id = ?
       LIMIT 1`
@@ -800,36 +819,53 @@ async function handleGenerate(request, env) {
   }
 
   try {
-    const batchIndex = parseInt(request.headers.get("X-Batch-Index") || "0", 10);
+    // 批次序號只當「是不是第一批」用，而且不信任：不是正整數一律當第 0 批（一樣要過冷卻）
+    const rawBatch = parseInt(request.headers.get("X-Batch-Index") || "0", 10);
+    const batchIndex = Number.isInteger(rawBatch) && rawBatch > 0 ? rawBatch : 0;
+    const declared = parseInt(request.headers.get("Content-Length") || "0", 10);
+    if (declared > GENERATE_MAX_BYTES) {
+      return new Response(JSON.stringify({ error: { message: "上傳內容太大，請縮小檔案後再試" } }), {
+        status: 413,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
     const isAdmin = adminPassMatches(request, env);
     const userApiKey = (request.headers.get("X-Gemini-Api-Key") || "").trim();
     const ip = request.headers.get("CF-Connecting-IP") || "unknown";
     const clientId = (request.headers.get("X-Client-Id") || "").trim();
 
     // 使用者自帶 Key（BYOK）時，用量算他自己的，跳過冷卻。
-    // 只有走伺服器內建 Key 池時，才需要在每次出題的第一批 (batchIndex === 0) 檢查冷卻，
-    // 讓同一次出題內續抓後續批次不會被自己的冷卻卡住。
-    // 冷卻以裝置ID為主、IP為備援，避免同校/同網路多位老師互相卡到彼此的冷卻。
-    if (!isAdmin && !userApiKey && batchIndex === 0) {
+    // 走伺服器內建 Key 池時：第 0 批要過冷卻，通過後發給一份「後續批次額度」；
+    // 後續批次（含重試）只認這份額度，不認前端自己填的批次序號。
+    // 冷卻以裝置ID為主、IP為備援，避免同校/同網路多位老師互相卡到彼此的冷卻，
+    // 另外加每 IP 每小時上限，擋「一直換裝置ID」洗額度。
+    if (!isAdmin && !userApiKey) {
       const cooldownKey = `cooldown:${clientId || ip}`;
-      const lastTs = await env.COOLDOWN_KV.get(cooldownKey);
+      const runKey = `run:${clientId || ip}`;
       const now = Date.now();
+      const tooMany = (remaining) =>
+        new Response(JSON.stringify({ error: { code: "COOLDOWN", remaining } }), {
+          status: 429,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json", "Retry-After": String(remaining) },
+        });
 
-      if (lastTs) {
-        const elapsed = now - parseInt(lastTs, 10);
-        if (elapsed < COOLDOWN_MS) {
-          const remaining = Math.ceil((COOLDOWN_MS - elapsed) / 1000);
-          return new Response(
-            JSON.stringify({ error: { code: "COOLDOWN", remaining } }),
-            {
-              status: 429,
-              headers: { ...CORS_HEADERS, "Content-Type": "application/json", "Retry-After": String(remaining) },
-            }
-          );
+      if (batchIndex === 0) {
+        const lastTs = await env.COOLDOWN_KV.get(cooldownKey);
+        if (lastTs) {
+          const elapsed = now - parseInt(lastTs, 10);
+          if (elapsed < COOLDOWN_MS) return tooMany(Math.ceil((COOLDOWN_MS - elapsed) / 1000));
         }
+        const hourKey = `ipgen:${ip}:${Math.floor(now / 3600000)}`;
+        const used = parseInt((await env.COOLDOWN_KV.get(hourKey)) || "0", 10);
+        if (used >= GENERATE_IP_HOURLY_LIMIT) return tooMany(300);
+        await env.COOLDOWN_KV.put(hourKey, String(used + 1), { expirationTtl: 3700 });
+        await env.COOLDOWN_KV.put(cooldownKey, String(now), { expirationTtl: 60 });
+        await env.COOLDOWN_KV.put(runKey, String(GENERATE_RUN_ALLOWANCE), { expirationTtl: GENERATE_RUN_TTL_SECONDS });
+      } else {
+        const left = parseInt((await env.COOLDOWN_KV.get(runKey)) || "0", 10);
+        if (left <= 0) return tooMany(Math.ceil(COOLDOWN_MS / 1000));
+        await env.COOLDOWN_KV.put(runKey, String(left - 1), { expirationTtl: GENERATE_RUN_TTL_SECONDS });
       }
-
-      await env.COOLDOWN_KV.put(cooldownKey, String(now), { expirationTtl: 60 });
     }
 
     const apiKeys = userApiKey ? [userApiKey] : getApiKeys(env);
@@ -838,15 +874,33 @@ async function handleGenerate(request, env) {
     }
 
     const payload = await request.json();
-    const baseConfig = payload.generationConfig || {
+    // 只收前端的 contents；generationConfig 一律用伺服器自己的，不讓外人指定輸出長度或模型參數。
+    // parts 只收文字與圖片／文件（inline_data），數量設上限
+    if (!Array.isArray(payload.contents) || payload.contents.length === 0 || payload.contents.length > 4) {
+      throw new Error("格式錯誤：缺少 contents");
+    }
+    for (const c of payload.contents) {
+      if (!c || !Array.isArray(c.parts) || c.parts.length === 0 || c.parts.length > GENERATE_MAX_PARTS) {
+        throw new Error("格式錯誤：parts 數量不正確");
+      }
+      for (const p of c.parts) {
+        const isText = p && typeof p.text === "string";
+        const isFile = p && p.inline_data && typeof p.inline_data.data === "string" && typeof p.inline_data.mime_type === "string";
+        if (!isText && !isFile) throw new Error("格式錯誤：不支援的內容");
+      }
+    }
+    const baseConfig = {
       responseMimeType: "application/json",
+      // 國語注音這類要逐字查核的題目，思考太少會邊寫解析邊推翻自己（2026-11-03 注音題三個選項都對、解析自打臉），
+      // 溫度也壓低讓答案穩定
+      temperature: 0.4,
       // 原本8192太容易被題數多/計算解析題較長的輸出截斷,導致JSON陣列沒收尾解析失敗
       // (Steve回報「AI回傳的內容無法解析成題目格式」常出現),提高上限降低截斷機率
       maxOutputTokens: 32768,
       // gemini-3.x 是思考模型,思考用掉的 token 也算在 maxOutputTokens 裡。
-      // 實測一批 10 題國語文:預設思考 4804 tokens、輸出才 1699,思考是輸出的 2.8 倍;
-      // 改成 low 之後思考降到 1571(-68%),截斷風險與延遲都明顯下降,題目品質沒有差別。
-      thinkingConfig: { thinkingLevel: "low" },
+      // 實測一批 10 題國語文:預設(high)思考 4804 tokens、輸出才 1699;low 降到 1571,但品質不夠
+      // (注音題出現互相矛盾的解析),所以用 medium。maxOutputTokens 有 32768,不會因此截斷。
+      thinkingConfig: { thinkingLevel: "medium" },
     };
     const requestBody = JSON.stringify({ contents: payload.contents, generationConfig: baseConfig });
     // 萬一某個模型不吃 thinkingConfig(例如舊模型),同一組 Key 拿掉它再試一次,不要整批失敗
@@ -961,6 +1015,40 @@ async function verifyPassword(password, saltB64, expectedHashB64) {
   return hash === expectedHashB64;
 }
 
+// 帳號密碼規則（Steve 2026-11-03）：最多 16 字，只能用英文、數字和半形符號（不可中文、不可空白），不分大小寫。
+// 不分大小寫的做法：註冊與改密碼一律轉小寫再存；登入時帳號轉小寫比對，密碼先用小寫試、再用原樣試
+// （舊帳號的密碼可能含大寫，不能讓他們登不進去）。舊帳號若有中文或超過 16 字，只擋新註冊，不擋登入。
+const CRED_MAX_LEN = 16;
+const CRED_MIN_PASSWORD_LEN = 6;
+const CRED_CHARS_RE = /^[!-~]+$/;
+function normalizeUsername(v) {
+  return String(v || "").trim().toLowerCase();
+}
+function normalizePassword(v) {
+  return String(v || "").toLowerCase();
+}
+// 回傳錯誤訊息；null 代表通過。username、password 要先經過 normalize
+function credentialError(username, password) {
+  if (username.length > CRED_MAX_LEN) return "帳號最多 " + CRED_MAX_LEN + " 個字";
+  if (!CRED_CHARS_RE.test(username)) return "帳號只能用英文、數字和符號，不能有中文或空白";
+  if (password.length < CRED_MIN_PASSWORD_LEN) return "密碼至少需要" + CRED_MIN_PASSWORD_LEN + "碼";
+  if (password.length > CRED_MAX_LEN) return "密碼最多 " + CRED_MAX_LEN + " 個字";
+  if (!CRED_CHARS_RE.test(password)) return "密碼只能用英文、數字和符號，不能有中文或空白";
+  return null;
+}
+// 回傳 "lower"（密碼已是小寫版）、"exact"（舊帳號，密碼是照原樣大小寫存的）、或 null（不符）
+async function verifyPasswordLoose(password, saltB64, expectedHashB64) {
+  const lower = normalizePassword(password);
+  if (await verifyPassword(lower, saltB64, expectedHashB64)) return "lower";
+  if (lower !== password && (await verifyPassword(password, saltB64, expectedHashB64))) return "exact";
+  return null;
+}
+
+// 登入失敗太多次先鎖一下：密碼不分大小寫又限 16 字，強度變低，補一道擋暴力猜測。
+// 以帳號為單位（不用 IP：同校共用網路會互相牽連），15 分鐘內錯 10 次就先停 15 分鐘
+const LOGIN_FAIL_LIMIT = 10;
+const LOGIN_FAIL_TTL_SECONDS = 15 * 60;
+
 async function hmacSign(data, secret) {
   const key = await crypto.subtle.importKey(
     "raw",
@@ -1009,19 +1097,18 @@ async function handleAuthRegister(request, env) {
 
   try {
     const body = await request.json();
-    const username = String(body.username || "").trim().slice(0, 50);
-    const password = String(body.password || "");
+    const username = normalizeUsername(body.username);
+    const password = normalizePassword(body.password);
     const role = String(body.role || "");
     const displayName = String(body.displayName || username).slice(0, 50);
 
     if (!username || !password || !["student", "parent", "teacher"].includes(role)) {
       return json({ error: { message: "請填寫帳號、密碼，並選擇學生/家長/老師其中一種角色" } }, 400);
     }
-    if (password.length < 6) {
-      return json({ error: { message: "密碼至少需要6碼" } }, 400);
-    }
+    const credErr = credentialError(username, password);
+    if (credErr) return json({ error: { message: credErr } }, 400);
 
-    const existing = await env.DB.prepare("SELECT id FROM users WHERE username = ?").bind(username).first();
+    const existing = await env.DB.prepare("SELECT id FROM users WHERE lower(username) = ?").bind(username).first();
     if (existing) {
       return json({ error: { message: "這個帳號名稱已經被使用" } }, 400);
     }
@@ -1071,16 +1158,37 @@ async function handleAuthLogin(request, env) {
 
   try {
     const body = await request.json();
-    const username = String(body.username || "").trim().slice(0, 50);
+    const username = normalizeUsername(body.username).slice(0, 50);
     const password = String(body.password || "");
 
-    const user = await env.DB.prepare(
-      "SELECT id, username, password_hash, salt, role, display_name, class_id FROM users WHERE username = ?"
-    ).bind(username).first();
+    const failKey = "loginfail:" + username;
+    const failCount = parseInt((await env.COOLDOWN_KV.get(failKey)) || "0", 10);
+    if (failCount >= LOGIN_FAIL_LIMIT) {
+      return json({ error: { message: "這個帳號登入失敗次數太多，請 15 分鐘後再試" } }, 429);
+    }
 
-    if (!user || !(await verifyPassword(password, user.salt, user.password_hash))) {
+    // 舊資料可能有只差大小寫的帳號，全部撈出來逐一比對密碼
+    const candidates = await env.DB.prepare(
+      "SELECT id, username, password_hash, salt, role, display_name, class_id FROM users WHERE lower(username) = ?"
+    ).bind(username).all();
+    let user = null;
+    let matchedBy = null;
+    for (const row of candidates.results || []) {
+      matchedBy = await verifyPasswordLoose(password, row.salt, row.password_hash);
+      if (matchedBy) { user = row; break; }
+    }
+    // 舊帳號的密碼含大寫、而且這次是照原樣打對的：趁現在改存小寫版，之後就不分大小寫了
+    // （雜湊只能驗證不能還原，不趁登入成功這一刻做，就永遠沒機會）
+    if (user && matchedBy === "exact") {
+      const migrated = await hashPassword(normalizePassword(password));
+      await env.DB.prepare("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?").bind(migrated.hash, migrated.salt, user.id).run();
+    }
+
+    if (!user) {
+      await env.COOLDOWN_KV.put(failKey, String(failCount + 1), { expirationTtl: LOGIN_FAIL_TTL_SECONDS });
       return json({ error: { message: "帳號或密碼錯誤" } }, 401);
     }
+    if (failCount > 0) await env.COOLDOWN_KV.delete(failKey);
 
     const now = Date.now();
     const token = await signToken({ uid: user.id, role: user.role, exp: now + SESSION_TTL_SECONDS * 1000 }, env.SESSION_SECRET || "");
@@ -1348,10 +1456,10 @@ async function handleParentLinkChild(request, env) {
 
   try {
     const body = await request.json();
-    const studentUsername = String(body.studentUsername || "").trim().slice(0, 50);
+    const studentUsername = normalizeUsername(body.studentUsername).slice(0, 50);
     if (!studentUsername) return json({ error: { message: "請輸入孩子的帳號名稱" } }, 400);
 
-    const student = await env.DB.prepare("SELECT id, role FROM users WHERE username = ?").bind(studentUsername).first();
+    const student = await env.DB.prepare("SELECT id, role FROM users WHERE lower(username) = ?").bind(studentUsername).first();
     if (!student || student.role !== "student") {
       return json({ error: { message: "找不到這個學生帳號" } }, 404);
     }
@@ -1390,12 +1498,13 @@ async function handleParentChildLive(request, env, studentUsername) {
   if (!session || session.role !== "parent") {
     return json({ error: { message: "只有登入的家長可以查看" } }, 401);
   }
+  studentUsername = normalizeUsername(studentUsername);
   if (!studentUsername) {
     return json({ error: { message: "缺少學生帳號" } }, 400);
   }
 
   const link = await env.DB.prepare(
-    "SELECT 1 FROM parent_child_links l JOIN users u ON u.id = l.student_id WHERE l.parent_id = ? AND u.username = ?"
+    "SELECT 1 FROM parent_child_links l JOIN users u ON u.id = l.student_id WHERE l.parent_id = ? AND lower(u.username) = ?"
   ).bind(session.uid, studentUsername).first();
   if (!link) {
     return json({ error: { message: "尚未連結這個學生帳號" } }, 403);
@@ -1404,7 +1513,7 @@ async function handleParentChildLive(request, env, studentUsername) {
   // 孩子最近在寫的那一份（8小時內），直接一條 SQL 問完
   const active = await env.DB.prepare(
     `SELECT share_id, student_id FROM live_progress
-      WHERE student_username = ? AND updated_at >= ?
+      WHERE lower(student_username) = ? AND updated_at >= ?
       ORDER BY updated_at DESC LIMIT 1`
   ).bind(studentUsername, Date.now() - LIVE_PROGRESS_TTL_SECONDS * 1000).first();
   if (!active) {
@@ -1474,19 +1583,18 @@ async function handleAdminUsersCreate(request, env) {
 
   try {
     const body = await request.json();
-    const username = String(body.username || "").trim().slice(0, 50);
-    const password = String(body.password || "");
+    const username = normalizeUsername(body.username);
+    const password = normalizePassword(body.password);
     const role = String(body.role || "");
     const displayName = String(body.displayName || username).slice(0, 50);
 
     if (!username || !password || !["student", "parent", "teacher", "superadmin"].includes(role)) {
       return json({ error: { message: "請填寫帳號、密碼，並選擇正確的角色" } }, 400);
     }
-    if (password.length < 6) {
-      return json({ error: { message: "密碼至少需要6碼" } }, 400);
-    }
+    const credErr = credentialError(username, password);
+    if (credErr) return json({ error: { message: credErr } }, 400);
 
-    const existing = await env.DB.prepare("SELECT id FROM users WHERE username = ?").bind(username).first();
+    const existing = await env.DB.prepare("SELECT id FROM users WHERE lower(username) = ?").bind(username).first();
     if (existing) return json({ error: { message: "這個帳號名稱已經被使用" } }, 400);
 
     let classId = null;
@@ -1543,8 +1651,10 @@ async function handleAdminUsersUpdate(request, env, idStr) {
       values.push(body.role);
     }
     if (typeof body.newPassword === "string" && body.newPassword) {
-      if (body.newPassword.length < 6) return json({ error: { message: "新密碼至少需要6碼" } }, 400);
-      const { hash, salt } = await hashPassword(body.newPassword);
+      const newPassword = normalizePassword(body.newPassword);
+      const pwErr = credentialError("x", newPassword);
+      if (pwErr) return json({ error: { message: pwErr.replace("密碼至少需要", "新密碼至少需要") } }, 400);
+      const { hash, salt } = await hashPassword(newPassword);
       updates.push("password_hash = ?", "salt = ?");
       values.push(hash, salt);
     }
@@ -2122,8 +2232,13 @@ async function handlePaperSubmit(request, env, paperId) {
 
   const clientId = (request.headers.get("X-Client-Id") || "").trim();
   const session = await verifySession(request, env);
-  const studentId = String(body.studentId || (session ? "u" + session.uid : clientId) || "").trim();
+  // 以前直接信 body.studentId：任何人填別人的 "u5" 就能蓋掉那位學生的作答（也會拿來組 R2 路徑）。
+  // 現在只收「等於自己的裝置 ID 或自己的帳號代號」，其他一律退回自己的
+  const requested = String(body.studentId || "").trim();
+  const ownId = session ? "u" + session.uid : clientId;
+  const studentId = requested && (requested === clientId || (session && requested === "u" + session.uid)) ? requested : ownId;
   if (!studentId) return json({ error: { message: "缺少學生識別碼" } }, 400);
+  if (!ID_RE.test(studentId)) return json({ error: { message: "學生識別碼格式不正確" } }, 400);
 
   const regions = safeParse(paper.regions_json, []);
   const answerKey = safeParse(paper.answer_key_json, {});
@@ -2234,7 +2349,7 @@ async function canReadSubmission(request, env, paperId, studentId) {
   if (session.role === "parent") {
     const row = await env.DB.prepare(
       "SELECT 1 FROM paper_submissions s" +
-        " JOIN users u ON u.username = s.student_username" +
+        " JOIN users u ON lower(u.username) = lower(s.student_username)" +
         " JOIN parent_child_links l ON l.student_id = u.id" +
         " WHERE l.parent_id = ? AND s.paper_id = ? AND s.student_id = ? LIMIT 1"
     ).bind(session.uid, paperId, studentId).first();

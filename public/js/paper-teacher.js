@@ -303,17 +303,17 @@ function ppRenderRegionList() {
         const key = (ppPaper.answerKey || {})[r.id] || '';
         html += "<div class='border rounded-lg p-2 mb-2 " + (r.id === ppSelId ? 'border-red-400 bg-red-50' : 'border-gray-200') + "'>" +
             "<div class='flex gap-1 items-center mb-1'>" +
-            "<input class='pp-in w-14' value='" + escapeHtml(r.no) + "' onchange=\"ppSetField('" + r.id + "','no',this.value)\" title='題號'>" +
-            "<select class='pp-in flex-1' onchange=\"ppSetField('" + r.id + "','type',this.value)\">" +
+            "<input class='pp-in w-14' value='" + escapeHtml(r.no) + "' onchange=\"ppSetField(" + jsArg(r.id) + ",'no',this.value)\" title='題號'>" +
+            "<select class='pp-in flex-1' onchange=\"ppSetField(" + jsArg(r.id) + ",'type',this.value)\">" +
             "<option value='choice'" + (r.type === 'choice' ? ' selected' : '') + ">選擇題</option>" +
             "<option value='fill'" + (r.type === 'fill' ? ' selected' : '') + ">填空／短答</option>" +
             "<option value='hand'" + (r.type === 'hand' ? ' selected' : '') + ">手寫（計算/作圖）</option>" +
             "</select>" +
-            "<input class='pp-in w-14' type='number' min='0' value='" + Number(r.score || 0) + "' onchange=\"ppSetField('" + r.id + "','score',this.value)\" title='配分'>" +
+            "<input class='pp-in w-14' type='number' min='0' value='" + Number(r.score || 0) + "' onchange=\"ppSetField(" + jsArg(r.id) + ",'score',this.value)\" title='配分'>" +
             "</div>" +
             (r.type === 'hand'
                 ? "<div class='text-xs text-indigo-600'>手寫題由老師批改（可按 AI 協助）</div>"
-                : "<input class='pp-in w-full' placeholder='正確答案（留空＝不自動判分）' value='" + escapeHtml(key) + "' onchange=\"ppSetAnswer('" + r.id + "',this.value)\">") +
+                : "<input class='pp-in w-full' placeholder='正確答案（留空＝不自動判分）' value='" + escapeHtml(key) + "' onchange=\"ppSetAnswer(" + jsArg(r.id) + ",this.value)\">") +
             "</div>";
     });
     document.getElementById('ppRegionList').innerHTML = html;
@@ -348,7 +348,7 @@ function ppAddRegion() {
 }
 
 function ppDeleteSelected() {
-    if (!ppSelId) { alert('請先點一下要刪除的框'); return; }
+    if (!ppSelId) { lqAlert('請先點一下要刪除的框'); return; }
     ppPaper.regions = (ppPaper.regions || []).filter(function (r) { return r.id !== ppSelId; });
     ppSelId = null;
     ppSaveSoon();
@@ -422,7 +422,7 @@ async function ppPublish() {
 }
 
 function ppOpenGrading() {
-    if (!ppPaper || !ppPaper.id) { alert('請先上傳卷子'); return; }
+    if (!ppPaper || !ppPaper.id) { lqAlert('請先上傳卷子'); return; }
     ppShow('paperGradeView');
     document.getElementById('ppGradeTitle').textContent = document.getElementById('ppTitle').value || ppPaper.title;
     ppLoadSubmissions();

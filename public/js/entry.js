@@ -1,7 +1,7 @@
 // Luno 綸諾｜進場頁：身分、登入註冊、API Key 選擇。2026-10-21 從 index.html 原樣拆出，檔案順序見 index.html 底部
         // --- 品牌進場頁：身分選擇(快速使用/學生/家長/老師/管理員) → 登入或註冊(快速使用略過) → API Key選擇 ---
         let splashKind = null; // 'guest' | 'student' | 'parent' | 'teacher' | 'admin'
-        const SPLASH_ROLE_LABEL = { student: '學生', parent: '家長', teacher: '老師', admin: '管理員' };
+        const SPLASH_ROLE_LABEL = { student: '學生', parent: '家長', teacher: '教師', admin: '管理員' };
         const SPLASH_ROLE_TO_API = { student: 'student', parent: 'parent', teacher: 'teacher', admin: 'superadmin' };
 
         function splashSelectIdentity(kind) {
@@ -91,10 +91,11 @@
             let html = "<h3 style='font-weight:900;font-size:1.1rem;margin-bottom:0.75rem;color:var(--hl-text);'>" +
                 (kind === 'admin' ? '🛡️ 管理員登入' : (isLogin ? ('🔑 ' + label + '登入') : ('📝 ' + label + '註冊'))) + "</h3>";
             html += "<div class='space-y-3'>";
-            html += "<input id='splashUsername' class='lq-input' placeholder='帳號'>";
-            html += "<input id='splashPassword' type='password' class='lq-input' placeholder='密碼（至少6碼）'>";
+            const credAttrs = isLogin ? "" : CRED_INPUT_ATTRS;
+            html += "<input id='splashUsername' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs + ">";
+            html += "<input id='splashPassword' type='password' class='lq-input' placeholder='" + (isLogin ? '密碼' : CRED_PASS_HINT) + "'" + credAttrs + ">";
             if (!isLogin) {
-                html += "<input id='splashPasswordConfirm' type='password' class='lq-input' placeholder='再輸入一次密碼'>";
+                html += "<input id='splashPasswordConfirm' type='password' class='lq-input' placeholder='再輸入一次密碼'" + credAttrs + ">";
                 html += "<input id='splashDisplayName' class='lq-input' placeholder='顯示名稱（例如：王小明）'>";
                 if (kind === 'teacher') {
                     html += "<input id='splashClassName' class='lq-input' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
@@ -150,6 +151,8 @@
             const username = document.getElementById('splashUsername').value.trim();
             const password = document.getElementById('splashPassword').value;
             const passwordConfirm = document.getElementById('splashPasswordConfirm').value;
+            const credErr = credentialInputError(username, password);
+            if (credErr) { showSplashAuthError(credErr); return; }
             if (password !== passwordConfirm) { showSplashAuthError('兩次密碼輸入不一致'); return; }
             const displayName = document.getElementById('splashDisplayName').value.trim();
             const role = SPLASH_ROLE_TO_API[kind];
@@ -216,7 +219,7 @@
         // --- 老師自己測試「線上作答」：開一個新分頁，跟原本出題頁完全分開(不影響原畫面) ---
         async function openAnswerModeNewTab(btnEl) {
             if (!window.currentItems || window.currentItems.length === 0) {
-                alert('目前沒有題目可以線上作答');
+                lqAlert('目前沒有題目可以線上作答');
                 return;
             }
             const originalText = btnEl ? btnEl.innerHTML : '';
@@ -237,7 +240,7 @@
                 }
             } catch (e) {
                 if (newTab) newTab.close();
-                alert('開啟線上作答分頁失敗: ' + e.message);
+                lqAlert('開啟線上作答分頁失敗: ' + e.message);
             } finally {
                 if (btnEl) { btnEl.disabled = false; btnEl.innerHTML = originalText; }
             }
