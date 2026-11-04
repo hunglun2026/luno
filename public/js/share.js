@@ -68,9 +68,10 @@
 
                 window._sendQuizLinks = { code: code, student: studentUrl, parent: parentUrl, dash: dashUrl, title: window.docTitle || '測驗' };
 
-                let html = "";
+                // 三個情境頁籤（2026-11-05）：傳給學生／課堂投影／家長與老師，一次只看一種，不再堆四個出口
+                let cardHtml = "";
                 if (code) {
-                    html += "<div class='lq-card p-4 text-center mb-4' style='border:2px solid var(--hl-blue);'>" +
+                    cardHtml += "<div class='lq-card p-4 text-center mb-4' style='border:2px solid var(--hl-blue);'>" +
                         "<div class='text-xs text-gray-500 mb-1'>課堂上最快的方式：報這組代碼，學生在首頁輸入就進得去</div>" +
                         "<div class='font-black' style='font-size:2.6rem; letter-spacing:0.15em; color:var(--hl-blue);'>" + escapeHtml(code.replace(/(\d{3})(\d{3})/, '$1 $2')) + "</div>" +
                         "<div class='flex gap-2 justify-center mt-3'>" +
@@ -78,16 +79,29 @@
                         "<button onclick=\"showQuizCodeModal(window._sendQuizLinks.code)\" class='lq-btn lq-btn-secondary text-sm px-3 py-1.5'>投影大字</button>" +
                         "</div></div>";
                 }
-
-                html += sendQuizRow('student', '🎓 學生作答連結', '傳給學生（LINE／Google Classroom）。開啟直接線上作答＋自動評分，看不到答案。');
-                html += sendQuizRow('parent', '👨‍👩‍👧 家長答案連結', '傳給家長。可以看題目、答案與解析，唯讀不能改。');
-                html += sendQuizRow('dash', '📊 老師即時進度儀表板', '你自己留著。開啟不用登入就能看全班進度，所以<b class="text-red-600">不要轉給學生或貼到班級群組</b>。');
+                const panes = {
+                    student: "<button onclick=\"copySendQuizItem('notice', this)\" class='lq-btn lq-btn-primary w-full py-3 mb-3 font-bold'>📋 複製班級公告（含代碼與連結）</button>" + "<div class='mb-3'></div>" + sendQuizRow('student', '🎓 學生作答連結', '傳給學生（LINE／Google Classroom）。開啟直接線上作答＋自動評分，看不到答案。'),
+                    class: cardHtml || "<div class='lq-card p-4 text-sm text-gray-500'>這次沒有產生測驗代碼（需要登入），請改用「傳給學生」的連結。</div>",
+                    adult: sendQuizRow('parent', '👨‍👩‍👧 家長答案連結', '傳給家長。可以看題目、答案與解析，唯讀不能改。') + sendQuizRow('dash', '📊 老師即時進度儀表板', '你自己留著。開啟不用登入就能看全班進度，所以<b class="text-red-600">不要轉給學生或貼到班級群組</b>。')
+                };
+                const tabs = [['student', '🎓 傳給學生'], ['class', '🖥️ 課堂投影'], ['adult', '👨‍👩‍👧 家長老師']];
+                let html = "<div class='lq-send-tabs' role='tablist'>" + tabs.map(function (t, i) {
+                    return "<button type='button' role='tab' class='lq-send-tab" + (i === 0 ? " is-on" : "") + "' data-tab='" + t[0] + "' onclick=\"sendQuizTab('" + t[0] + "')\">" + t[1] + "</button>";
+                }).join('') + "</div>";
+                tabs.forEach(function (t, i) {
+                    html += "<div class='lq-send-pane" + (i === 0 ? "" : " hidden") + "' data-pane='" + t[0] + "'>" + panes[t[0]] + "</div>";
+                });
 
                 html += "<div class='text-xs text-gray-400 mt-4 text-center'>以上連結與代碼 30 天內有效，指向同一份測驗。</div>";
                 body.innerHTML = html;
             } catch (e) {
                 body.innerHTML = "<div class='text-center text-red-600 py-8'>產生失敗：" + escapeHtml(e.message) + "</div>";
             }
+        }
+
+        function sendQuizTab(k) {
+            document.querySelectorAll('#sendQuizBody .lq-send-tab').forEach(function (b) { b.classList.toggle('is-on', b.dataset.tab === k); });
+            document.querySelectorAll('#sendQuizBody .lq-send-pane').forEach(function (p) { p.classList.toggle('hidden', p.dataset.pane !== k); });
         }
 
         function sendQuizRow(key, title, desc) {
@@ -104,6 +118,16 @@
             const L = window._sendQuizLinks || {};
             // 剪貼簿內容前面固定加題目名稱：老師一次出好幾份時，光看網址完全分不出誰是誰
             const labels = { code: '測驗代碼', student: '學生作答連結', parent: '家長答案連結', dash: '即時進度儀表板(老師用，勿外流)' };
+            if (key === 'notice') {
+                const c = L.code ? L.code.replace(/(\d{3})(\d{3})/, '$1 $2') : '';
+                const notice = "【" + L.title + "】線上測驗開始囉\n" +
+                    (c ? "測驗代碼：" + c + "（打開刻度首頁輸入即可）\n或是" : "") + "直接點連結作答：" + L.student + "\n作答完會自動評分，加油！";
+                try {
+                    await navigator.clipboard.writeText(notice);
+                    if (btnEl) { const o = btnEl.textContent; btnEl.textContent = '✅ 已複製，可以貼到班級群組'; setTimeout(function () { btnEl.textContent = o; }, 2000); }
+                } catch (e) { await askText('複製失敗，請手動複製以下內容：', { value: notice, readonly: true }); }
+                return;
+            }
             const value = L[key] || '';
             if (!value) return;
             const text = key === 'code' ? value : "【" + L.title + "】" + labels[key] + "\n" + value;
@@ -271,7 +295,9 @@
 
         function renderLiveDashboardTable(body, students, shareId) {
             if (students.length === 0) {
-                body.innerHTML = "<div class='lq-card p-4 text-center text-gray-500'>還沒有學生開始作答</div>";
+                body.innerHTML = "<div class='lq-card p-4 text-center text-gray-500'>" +
+                    "<img src='assets/illust/waiting-students.webp' alt='' class='lq-illust' style='max-width:15rem' width='640' height='480' loading='lazy'>" +
+                    "還沒有學生開始作答。請先把測驗代碼或連結傳給學生，他們開始作答後就會出現在這裡</div>";
                 return;
             }
             students.sort((a, b) => (b.answered || 0) - (a.answered || 0));

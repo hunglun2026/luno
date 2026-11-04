@@ -45,17 +45,47 @@ async function ppStuRenderStages() {
         html += "<div class='pp-stage'><img src='" + ppPageUrl(p) + "' alt='卷子第 " + p + " 頁'>" + overlay + "</div>";
     }
     const hasHand = (ppPaper.regions || []).some(function (r) { return r.type === 'hand'; });
+    // 工具列固定在上方：放大卷面（手機 390px 時一整頁 A4 字太小，放大後可左右捲動）＋進度；有手寫題才多出筆具
     document.getElementById('ppStuStages').innerHTML =
-        (hasHand ? "<div class='pp-card sticky top-[64px] z-10 flex flex-wrap gap-2 items-center'>" +
-            "<span class='text-sm font-bold'>手寫工具</span>" +
+        "<div class='pp-card sticky top-[64px] z-10 flex flex-wrap gap-2 items-center'>" +
+        "<button class='pp-tool' id='ppZoomBtn' onclick='ppToggleZoom()'>🔍 放大卷面</button>" +
+        "<span class='text-sm font-bold' id='ppStuProgress' aria-live='polite'></span>" +
+        (hasHand ? "<span class='w-full'></span><span class='text-sm font-bold'>手寫工具</span>" +
             "<button class='pp-tool on' id='ppToolPen' onclick=\"ppSetTool('pen')\">✏️ 筆</button>" +
             "<button class='pp-tool' id='ppToolMark' onclick=\"ppSetTool('mark')\">🖍️ 螢光筆</button>" +
             "<button class='pp-tool' id='ppToolEraser' onclick=\"ppSetTool('eraser')\">🧽 橡皮擦</button>" +
-            "<button class='pp-tool' onclick='ppUndo()'>↩️ 復原</button></div>" : '') + html;
+            "<button class='pp-tool' onclick='ppUndo()'>↩️ 復原</button>" : '') +
+        "</div><div id='ppStuScroll' class='pp-scroll'>" + html + "</div>";
+    const box = document.getElementById('ppStuStages');
+    ['input', 'click', 'pointerup'].forEach(function (ev) { box.addEventListener(ev, function () { setTimeout(ppStuProgress, 0); }); });
+    ppStuProgress();
     // 一定要等卷面影像載完再算手寫畫布尺寸：圖片還沒載入時 <img> 高度是 0，
     // 疊在上面的作答區跟著變成高度 0，畫布會建成 0 px，送出時合成手寫圖就整個炸掉
     await ppWaitImages(document.getElementById('ppStuStages'));
     ppInitHandCanvases();
+}
+
+// 已作答幾題：選擇、填空有內容算；手寫題有筆跡算
+function ppStuProgress() {
+    const el = document.getElementById('ppStuProgress');
+    if (!el || !ppPaper) return;
+    const regs = ppPaper.regions || [];
+    let done = 0;
+    regs.forEach(function (r) {
+        if (r.type === 'hand') { if ((ppStrokes[r.id] || []).length) done++; }
+        else if (ppStuAnswers[r.id] && String(ppStuAnswers[r.id].v || '').trim()) done++;
+    });
+    el.textContent = '已作答 ' + done + ' / ' + regs.length + ' 題';
+}
+
+// 放大卷面：卷面撐到 900px 寬，外層可左右捲動；作答區是用百分比定位，會跟著放大。
+// 手寫畫布要等版面變了再重算尺寸，所以補送一次 resize
+function ppToggleZoom() {
+    const sc = document.getElementById('ppStuScroll'), btn = document.getElementById('ppZoomBtn');
+    if (!sc) return;
+    const on = sc.classList.toggle('pp-zoom');
+    if (btn) btn.textContent = on ? '↔️ 縮回全頁' : '🔍 放大卷面';
+    setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 50);
 }
 
 function ppWaitImages(container) {

@@ -230,7 +230,7 @@
                     headerHTML = "<div class='paper-header' contenteditable='true'>" +
                         "<h2>"+escapeHtml(title)+"</h2>" +
                         "<div class='paper-info'>" +
-                        "<span>"+escapeHtml(sub)+"</span><span>班級：＿＿＿＿＿ 姓名：＿＿＿＿＿ 座號：＿＿＿＿＿</span></div></div>";
+                        "<span>"+escapeHtml(sub)+"</span><span>班級：＿＿＿＿ 姓名：＿＿＿＿ 座號：＿＿＿＿</span></div></div>";
                 } else {
                     headerHTML = "<div style='height: 30pt;'></div>";
                 }

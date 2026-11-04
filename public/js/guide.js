@@ -16,7 +16,7 @@
 
     var STEP_INFO = {
         1: { title: '要怎麼出題？', hint: '選一種方式，下一步就開始填條件' },
-        2: { title: '選年級和科目', hint: '兩個都選好，會自動到下一步' },
+        2: { title: '選年級和科目', hint: '兩個都選好，按下面亮起的「下一步」' },
         3: { title: '版本和範圍', hint: '都可以不填：不選版本就依一般課綱，範圍空白就是整冊' },
         4: { title: '題數、題型、難度', hint: '都有預設值，看一眼沒問題就出題' }
     };
@@ -227,16 +227,11 @@
             if (el) el.addEventListener('click', function () { if (cur === 1) setTimeout(function () { go(2); }, 150); });
         });
 
-        // 年級、科目都選好就自動往下（選「其他」要打字，不自動跳）
+        // 年級、科目選好後不再自動跳下一步（2026-11-05：點錯會被瞬間帶走）；
+        // 改由「下一步」按鈕亮起來（is-ready）引導視線，讓使用者自己確認
         ['gradeChips', 'subjectChips'].forEach(function (id) {
             var el = $(id);
-            if (!el) return;
-            el.addEventListener('click', function (e) {
-                var chip = e.target.closest('.lq-chip');
-                if (!chip || chip.dataset.val === 'Custom' || chip.classList.contains('lq-chip-custom')) { refresh(); return; }
-                if (cur === 2 && step2Ok()) setTimeout(function () { if (cur === 2) go(3); }, 350);
-                else refresh();
-            });
+            if (el) el.addEventListener('click', refresh);
         });
         ['count', 'qType', 'difficulty', 'lang', 'scope', 'c_count', 'c_qType', 'c_diff'].forEach(function (id) {
             var el = $(id);
@@ -273,6 +268,7 @@
 
     function refresh() {
         if (!$('lgWizHead')) return;
+        if (typeof syncPublisherChips === 'function') syncPublisherChips();
         var list = steps();
         var info = stepInfo();
         $('lgStepTitle').textContent = '第 ' + (list.indexOf(cur) + 1) + ' 步：' + info.title;
@@ -293,6 +289,8 @@
         if (sum) sum.innerHTML = '<span>這次出題：</span>' + escapeHtml(summaryText());
 
         $('lgNext').hidden = cur === 4;
+        $('lgNext').classList.toggle('is-ready', cur === 2 && step2Ok());
+        $('lgNext').classList.toggle('lg-wait', cur === 2 && !step2Ok());
         $('lgNext').classList.toggle('lg-off', cur === 1); // 第一步點卡片就會往下，不需要下一步
         $('lgDirect').hidden = !(cur === 2 || cur === 3) || !step2Ok();
         $('lgPrev').textContent = cur === 1 ? '← 換身分' : '← 上一步';
@@ -448,6 +446,7 @@
 
     window.Guide = {
         start: start,
+        refresh: function () { refresh(); },
         pick: function (role) { pick(role); },
         toWelcome: function () { toWelcome(false); },
         openGuide: function () { toWelcome(true); },

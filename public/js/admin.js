@@ -172,7 +172,14 @@
         function renderProctorAnswersHtml(items, answers) {
             const map = {};
             (answers || []).forEach(a => { map[a.i] = a.selected; });
-            let html = "";
+            // 題號矩陣（2026-11-05）：一眼看出寫到哪、哪幾題還空著，點題號捲到該題。
+            // 監看資料只有「有沒有作答」，沒有對錯，所以只分已答／未答兩種
+            let html = "<div class='lq-card p-3 mb-3'><div class='text-xs font-bold mb-2' style='color:var(--hl-text-secondary);'>題號一覽（綠色＝已作答）</div><div class='lq-matrix-grid'>";
+            items.forEach((q, i) => {
+                const done = !!map[i];
+                html += "<button type='button' class='lq-matrix-dot" + (done ? " is-done" : "") + "' aria-label='第 " + (i + 1) + " 題" + (done ? "，已作答" : "，尚未作答") + "' onclick=\"var e=document.getElementById('proctor-q-" + i + "');if(e)e.scrollIntoView({behavior:'smooth',block:'center'})\">" + (i + 1) + "</button>";
+            });
+            html += "</div></div>";
             items.forEach((q, i) => {
                 const sel = map[i];
                 let selDisplay = '';
@@ -186,7 +193,7 @@
                         selDisplay = sel;
                     }
                 }
-                html += "<div class='lq-card p-3 mb-2'>" +
+                html += "<div class='lq-card p-3 mb-2' id='proctor-q-" + i + "'>" +
                     "<div class='font-semibold text-sm mb-1'>" + (i + 1) + ". " + escapeHtml(q.q) + "</div>" +
                     (selDisplay
                         ? "<div class='text-sm' style='color:var(--hl-blue);'>✍️ " + escapeHtml(selDisplay) + "</div>"

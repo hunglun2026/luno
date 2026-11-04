@@ -470,3 +470,20 @@
 .lq-dlg-msg { white-space: pre-wrap; word-break: break-word; line-height: 1.7; font-size: 0.95rem; }
 .lq-dlg-input { margin-top: 0.75rem; width: 100%; }
 .lq-dlg-row { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1rem; }
+
+/* 插圖（2026-11-05，Gemini 帳號 A 生成，扁平向量、藍／琥珀／薄荷色盤）：圓角、不超出容器 */
+.lq-illust { display: block; max-width: 100%; height: auto; margin: 0 auto 0.75rem; border-radius: 1rem; }
+.lq-illust-hero { max-width: 20rem; margin-bottom: 0.5rem; }
+.lq-photo-tip { margin: 0 0 0.9rem; text-align: center; }
+.lq-photo-tip .lq-illust { max-width: 15rem; margin-bottom: 0.4rem; }
+.lq-photo-tip figcaption { font-size: 0.8125rem; color: #6b7280; }
+
+/* 監看頁題號矩陣 */
+.lq-matrix-grid { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.lq-matrix-dot { width: 2.4rem; height: 2.4rem; border-radius: 0.6rem; border: 1.5px solid var(--hl-border, #e5e7eb); background: var(--hl-card-bg, #fff); color: var(--hl-text-secondary, #6b7280); font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+.lq-matrix-dot.is-done { border-color: #34a853; background: #e6f4ea; color: #137333; }
+
+/* 發送測驗彈窗的情境頁籤 */
+.lq-send-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; }
+.lq-send-tab { flex: 1; min-height: 44px; padding: 0.4rem 0.3rem; border: 1.5px solid var(--hl-border, #e5e7eb); border-radius: 0.75rem; background: transparent; color: var(--hl-text-secondary, #6b7280); font-weight: 700; font-size: 0.85rem; cursor: pointer; }
+.lq-send-tab.is-on { border-color: var(--hl-blue, #1a73e8); background: var(--hl-blue, #1a73e8); color: #fff; }

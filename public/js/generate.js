@@ -360,7 +360,18 @@
             } catch (e) {
                 if (simTimer) clearInterval(simTimer);
                 hidePracticeLoading();
-                lqAlert("錯誤: " + e.message);
                 setGenBusy(false);
+                // 白話說明原因，並讓老師直接「再出一次」，不再只丟技術訊息
+                if (await askConfirm(friendlyGenError(e), { okText: '再出一次', cancelText: '回去改條件', image: 'assets/illust/gen-retry.webp' })) startGen();
             }
+        }
+
+        // 把出題失敗的技術訊息換成老師看得懂的原因（細節留在最後一行，方便回報問題）
+        function friendlyGenError(e) {
+            const msg = String((e && e.message) || e || '');
+            let why = '這次的條件或網路有點狀況，請再試一次。';
+            if (/Failed to fetch|NetworkError|network|網路|連線|timeout|逾時/i.test(msg)) why = '網路連線可能暫時中斷了。';
+            else if (/429|503|忙|冷卻|overload|busy|quota|額度/i.test(msg)) why = '線上出題的人比較多，系統正忙線。';
+            else if (/解析|格式|無法/.test(msg)) why = 'AI 這次回的內容讀不出來，再出一次通常就好。';
+            return '這次出題沒有成功。\n可能原因：' + why + '\n\n（細節：' + msg + '）';
         }

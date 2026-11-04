@@ -18,6 +18,7 @@
             document.getElementById('quizEntryTitle').textContent = '📱 交給學生作答';
             document.getElementById('quizEntryBody').innerHTML =
                 "<div class='space-y-3'>" +
+                "<img src='assets/illust/handoff.webp' alt='' class='lq-illust' style='max-width:15rem' loading='lazy'>" +
                 "<div class='lq-card p-3 text-sm'>直接把這支手機遞給學生，不用登入。學生交卷後只會看到「已交卷」，<b>分數與詳細解答要輸入下面設定的密碼才會出現</b>。</div>" +
                 "<div>" +
                     "<label class='text-sm font-semibold block mb-1' for='handoffPinInput'>設定家長／教師密碼（4 位數字）</label>" +

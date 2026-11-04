@@ -54,6 +54,12 @@
             inputs.forEach(el => el.disabled = true);
             const btn = document.getElementById('ans-confirm-' + i);
             if (btn) btn.style.display = 'none';
+            // 確認後稍等讓學生看到對錯回饋，再把下一題帶進視線（沒有下一題就不動；偏好減少動態的人用瞬間跳）
+            const next = document.getElementById('ans-card-' + (i + 1));
+            if (next) {
+                const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+                setTimeout(function () { next.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' }); }, 1400);
+            }
         }
 
         // --- 即時進度：讓老師/家長輪詢看到學生目前答了幾題(輕量版,不用WebSocket) ---
@@ -214,9 +220,9 @@
                 const inputType = letters && letters.length > 1 ? 'checkbox' : 'radio';
                 q.o.forEach((o, oi) => {
                     const label = String.fromCharCode(65 + oi);
-                    html += "<label class='flex items-center gap-2 py-1.5 px-2 rounded-lg hover:bg-gray-50 cursor-pointer'>" +
+                    html += "<label class='lq-ans-opt flex items-center gap-2 cursor-pointer'>" +
                         "<input type='" + inputType + "' name='ans-" + i + "' value='" + label + "'" +
-                        " class='w-4 h-4 flex-shrink-0 accent-[color:var(--hl-blue)]' onchange='onAnswerPicked(" + i + ")'>" +
+                        " class='w-5 h-5 flex-shrink-0 accent-[color:var(--hl-blue)]' onchange='onAnswerPicked(" + i + ")'>" +
                         "<span>(" + label + ") " + escapeHtml(stripOptLabel(o, label)) + "</span></label>";
                 });
                 // 只有選擇/複選題才需要「確認這題」按鈕(即時模式用)：原本一點選項就馬上判定，
@@ -245,12 +251,39 @@
             if (window.isSharedView && window.sharedMode === 'student' && window.liveShareId) {
                 html += "<button type='button' onclick='shareLiveProgressLink(this)' class='lq-btn lq-btn-share w-full py-2 text-sm mb-3'>📤 分享即時監看連結給家長（家長不用註冊）</button>";
             }
-            html += "<button onclick='requestGrade()' class='lq-btn lq-btn-primary w-full py-3 rounded-xl text-lg'>✅ 送出評分</button>";
+            // 底部固定列（2026-11-05）：隨時看得到寫到哪、交卷鈕不用捲到最底
             html += "<div id='scoreResult' class='mt-4'></div>";
+            html += "<nav class='lq-quiz-bottombar' aria-label='作答進度'>" +
+                "<div class='lq-bar-progress-box'><div class='lq-bar-meta'><span>已作答</span><b id='ansProgressText' aria-live='polite' aria-atomic='true'>0 / " + items.length + " 題</b></div>" +
+                "<div class='lq-bar-track'><div class='lq-bar-fill' id='ansProgressFill' style='width:0%'></div></div></div>" +
+                "<button type='button' onclick='requestGrade()' class='lq-btn lq-btn-primary lq-bar-submit'>✅ 送出評分</button></nav>";
             html += "</div>";
 
             html += "</div>";
             container.innerHTML = html;
+            container.oninput = container.onchange = updateAnsProgress;
+        }
+
+        // 已作答題數：選擇題有勾選、文字題有內容才算
+        function updateAnsProgress() {
+            const items = window.currentItems || [];
+            let done = 0;
+            items.forEach(function (q, i) {
+                if (q.o && q.o.length > 0) {
+                    if (document.querySelector('input[name="ans-' + i + '"]:checked')) done++;
+                } else {
+                    const t = document.getElementById('ans-text-' + i);
+                    if (t && t.value.trim()) done++;
+                }
+            });
+            // 舊 iPad（iOS 15.4 以前）不支援 :has()，改用 class 標示選中的那一列
+            document.querySelectorAll('#answerModeContainer .lq-ans-opt').forEach(function (lb) {
+                const inp = lb.querySelector('input');
+                lb.classList.toggle('is-selected', !!(inp && inp.checked));
+            });
+            const txt = document.getElementById('ansProgressText'), fill = document.getElementById('ansProgressFill');
+            if (txt) txt.textContent = done + ' / ' + items.length + ' 題';
+            if (fill) fill.style.width = (items.length ? Math.round(done * 100 / items.length) : 0) + '%';
         }
 
         // 確認模式+資料後才會呼叫，把題目本體從隱藏切成顯示；學生資料/模式選擇的input
@@ -379,7 +412,8 @@
             if (handoffActive()) {
                 // 交接模式：學生只看到「已交卷」，分數與對錯等家長／教師解鎖後才公布
                 handoffRecordResult(totalScore, maxScore, pct);
-                resultHTML += "<div class='text-3xl mb-2'>✅</div><div class='text-xl font-bold mb-1'>已交卷！</div>";
+                resultHTML += "<img src='assets/illust/submitted-done.webp' alt='' class='lq-illust' style='max-width:14rem' width='640' height='480'>";
+                resultHTML += "<div class='text-xl font-bold mb-1'>已交卷！</div>";
                 resultHTML += "<div class='text-sm text-gray-600 mb-4'>請把手機交還給家長／教師。</div>";
                 resultHTML += "<div class='flex flex-col gap-2'>" +
                     "<button onclick='handoffNextStudent()' class='lq-btn lq-btn-secondary px-4 py-2 text-sm'>👥 換下一位同學寫</button>" +

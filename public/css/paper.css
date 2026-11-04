@@ -36,3 +36,26 @@
   .pp-btn-main { background: #10b981; color: #fff; }
   .pp-btn-ghost { background: #fff; color: #475569; border-color: #e5e7eb; }
   .pp-in { border: 1px solid #cbd5e1; border-radius: 8px; padding: 6px 8px; font-size: 14px; }
+
+  /* 手機作答（2026-11-05）：放大卷面可橫向捲動；選項點擊範圍加大；輸入框 16px 以上，iOS 才不會一點就自動縮放 */
+  .pp-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pp-scroll.pp-zoom .pp-stage { width: 900px; max-width: none; }
+  .pp-opt { position: relative; touch-action: manipulation; }
+  .pp-opt::after { content: ''; position: absolute; inset: -6px; }
+  .pp-fillbox { font-size: 16px; }
+
+  /* 手機簡答面板（paper-focus.js）：底部滑出，上方原題裁切、下方大輸入框；卷面是「紙」，永遠淺色 */
+  .pp-focus-overlay { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.45); }
+  .pp-focus-box { position: fixed; left: 0; right: 0; bottom: 0; background: #fff; color: #1f2937;
+    border-radius: 16px 16px 0 0; padding: 0 16px 12px; box-shadow: 0 -6px 24px rgba(0,0,0,.2);
+    animation: ppFocusUp .25s ease-out; }
+  @keyframes ppFocusUp { from { transform: translateY(100%); } to { transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .pp-focus-box { animation: none; } }
+  .pp-focus-head { display: flex; align-items: center; justify-content: space-between; height: 48px; }
+  .pp-focus-done-top { min-width: 56px; min-height: 44px; border: 0; background: transparent; color: #1a73e8; font-size: 16px; font-weight: 700; }
+  .pp-focus-crop { position: relative; height: 120px; overflow: hidden; border-radius: 8px; background-color: #f3f4f6; background-repeat: no-repeat; border: 1px solid #e5e7eb; }
+  .pp-focus-mark { position: absolute; box-sizing: border-box; border: 2px solid #1a73e8; background: rgba(26,115,232,.12); border-radius: 4px; }
+  .pp-focus-input { display: block; width: 100%; box-sizing: border-box; margin-top: 10px; min-height: 76px; max-height: 150px; padding: 10px 12px;
+    font: inherit; font-size: 16px; line-height: 1.5; color: #1f2937; background: #f9fafb; border: 1.5px solid #d1d5db; border-radius: 8px; resize: none; }
+  .pp-focus-input:focus { outline: none; border-color: #1a73e8; }
+  .pp-focus-done { width: 100%; min-height: 44px; margin-top: 10px; border: 0; border-radius: 10px; background: #1a73e8; color: #fff; font-size: 16px; font-weight: 700; }

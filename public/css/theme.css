@@ -105,3 +105,12 @@
 
 /* 對話框裡的輸入欄 */
 [data-theme="dark"] .lq-dlg-box .lq-input { background: #0d1730; }
+
+[data-theme="dark"] .lq-photo-tip figcaption { color: #9ca3af; }
+
+[data-theme="dark"] .lq-matrix-dot.is-done { background: rgba(52,168,83,.18); color: #81c995; border-color: #34a853; }
+
+/* 作答卷是「紙」，深色主題下卡片、選項、回饋也維持淺底深字（2026-11-05：原本卡片變深色、文字看不清） */
+[data-theme="dark"] #answerModeContainer .lq-card { background: #fff; color: #1f2937; border-color: #e5e7eb; }
+[data-theme="dark"] #answerModeContainer .lq-input { background: #fff; color: #1f2937; border-color: #d1d5db; }
+[data-theme="dark"] #answerModeContainer .lq-ans-opt { color: #1f2937; }

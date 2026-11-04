@@ -116,6 +116,7 @@
                     "<button onclick='openAccountModal()' class='underline font-bold' style='color:var(--hl-blue);'>現在登入</button></div>";
             }
 
+            html += "<img src='assets/illust/student-hero.webp' alt='' class='lq-illust lq-illust-hero' loading='lazy'>";
             html += studentJoinCardHtml();
             html += studentPracticeCardHtml();
 

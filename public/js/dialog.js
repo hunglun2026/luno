@@ -1,6 +1,7 @@
 // 刻度｜自製對話框：取代瀏覽器內建 alert／confirm／prompt。
 // 內建的長相跟網站無關、標題會顯示網址，自動化測試也會被直接按取消。
 // 用法：lqAlert(訊息)；await askConfirm(訊息, { danger: true })（true／false）；
+//       askConfirm 可加 okText／cancelText 改按鈕文字、image 放一張插圖；
 //       await askText(訊息, { value, secret, readonly })（字串，取消回 null）。
 // 多個對話框會排隊一個一個顯示。訊息一律用 textContent，不會當 HTML 執行。
 (function () {
@@ -31,6 +32,11 @@
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         const box = el('div', 'lq-dlg-box');
+        if (spec.image) {
+            const pic = el('img', 'lq-illust');
+            pic.src = spec.image; pic.alt = ''; pic.style.maxWidth = '11rem';
+            box.appendChild(pic);
+        }
         box.appendChild(el('div', 'lq-dlg-msg', spec.message));
 
         let input = null;
@@ -56,7 +62,7 @@
         const okValue = function () { return spec.kind === 'confirm' ? true : (spec.kind === 'text' ? input.value : undefined); };
 
         if (spec.kind !== 'alert') {
-            const cancel = el('button', 'lq-btn lq-btn-ghost', '取消');
+            const cancel = el('button', 'lq-btn lq-btn-ghost', spec.cancelText || '取消');
             cancel.type = 'button';
             cancel.onclick = function () { close(cancelValue); };
             row.appendChild(cancel);
@@ -83,7 +89,7 @@
     window.lqAlert = function (message) { return open({ kind: 'alert', message: String(message) }); };
     window.askConfirm = function (message, opts) {
         opts = opts || {};
-        return open({ kind: 'confirm', message: String(message), danger: !!opts.danger, okText: opts.okText });
+        return open({ kind: 'confirm', message: String(message), danger: !!opts.danger, okText: opts.okText, cancelText: opts.cancelText, image: opts.image });
     };
     window.askText = function (message, opts) {
         opts = opts || {};

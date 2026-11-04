@@ -8,7 +8,7 @@
     <meta name="theme-color" content="#fbfcfe">
     <title>刻度・互動式評量</title>
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=18"></script>
+    <script src="js/theme.js?v=26"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -20,15 +20,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=18">
+    <link rel="stylesheet" href="css/guide.css?v=26">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=18">
-    <link rel="stylesheet" href="css/sheet.css?v=18">
+    <link rel="stylesheet" href="css/app.css?v=26">
+    <link rel="stylesheet" href="css/sheet.css?v=26">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=18">
+    <link rel="stylesheet" href="css/tailwind.css?v=26">
     <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=18">
-    <link rel="stylesheet" href="css/theme.css?v=18">
+    <link rel="stylesheet" href="css/landing.css?v=26">
+    <link rel="stylesheet" href="css/theme.css?v=26">
 <link rel="canonical" href="https://luno.hunglun.com/">
 <!--seo-games--><script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "@id": "https://luno.hunglun.com/#app", "name": "刻度・互動式評量", "url": "https://luno.hunglun.com/", "description": "刻度・互動式評量", "applicationCategory": "EducationalApplication", "operatingSystem": "All", "inLanguage": "zh-TW", "isAccessibleForFree": true, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TWD"}, "creator": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}, "publisher": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "鴻綸科技", "item": "https://www.hunglun.com/"}, {"@type": "ListItem", "position": 2, "name": "學習專區", "item": "https://www.hunglun.com/tools/games"}, {"@type": "ListItem", "position": 3, "name": "刻度・互動式評量", "item": "https://luno.hunglun.com/"}]}]}</script>
 </head>
@@ -40,8 +40,8 @@
         <div class="ld-wrap">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=18" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=18" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=26" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=26" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <a class="ld-tbtn" href="#lqGuide"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></a>
@@ -128,8 +128,8 @@
         <div class="ld-wrap ld-card">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=18" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=18" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=26" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=26" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <button type="button" class="ld-tbtn" onclick="Guide.openGuide()"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></button>
@@ -151,7 +151,7 @@
                     <p class="ld-or">或選擇你的身分</p>
                     <div class="ld-rows">
                         <button type="button" class="ld-row" onclick="Guide.pick('teacher')"><span class="ic"><span class="ph-duotone ph-presentation"></span></span>
-                            <div><b>我是教師</b><span class="d">出題不限題數、發測驗、看全班即時進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
+                            <div><b>我是教師</b><span class="d">登入後出題不限題數、發測驗、看全班即時進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
                         <button type="button" class="ld-row" onclick="Guide.pick('parent')"><span class="ic"><span class="ph-duotone ph-users-three"></span></span>
                             <div><b>我是家長</b><span class="d">看孩子的作答與進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
                         <button type="button" class="ld-row" onclick="Guide.pick('student')"><span class="ic"><span class="ph-duotone ph-student"></span></span>
@@ -204,6 +204,7 @@
          之前是把老師那張出題表單顯示出來借用它的進度條，學生會莫名其妙看到一整頁出題參數 -->
     <div id="practiceLoading" class="hidden no-print">
         <div class="lq-practice-loading-card">
+            <img src="assets/illust/loading.webp" alt="" class="lq-illust" style="max-width:11rem" width="640" height="480">
             <div class="lq-practice-spinner" aria-hidden="true"></div>
             <div class="lq-practice-loading-title">刻度正在出題…</div>
             <div id="practiceLoadingSub" class="lq-practice-loading-sub">請稍候，大約十幾秒</div>
@@ -338,12 +339,19 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-gstep="3">
                 <div>
                     <label class="font-bold text-sm">版本</label>
-                    <select id="publisher" onchange="checkCustom(this, 'c_publisher')" class="lq-input">
+                    <div id="publisherChips" class="lq-chip-group mt-1">
+                        <button type="button" class="lq-chip" data-pub="">不指定版本</button>
+                        <button type="button" class="lq-chip" data-pub="康軒版">康軒</button>
+                        <button type="button" class="lq-chip" data-pub="翰林版">翰林</button>
+                        <button type="button" class="lq-chip" data-pub="南一版">南一</button>
+                        <button type="button" class="lq-chip lq-chip-custom" data-pub="*">✍️ 其他</button>
+                    </div>
+                    <select id="publisher" onchange="checkCustom(this, 'c_publisher'); syncPublisherChips()" class="lq-input hidden">
                         <!-- value 是存進 localStorage / 拿去比對的鍵，改名時刻意不動，只改顯示文字 -->
                         <option value="由小綸自由發揮" selected>由刻度自由發揮 (不限版本)</option>
                         <option value="Custom">✍️ 依照課本資訊填入</option>
                     </select>
-                    <input type="text" id="c_publisher" class="input-custom" placeholder="請輸入自定義版本資訊">
+                    <input type="text" id="c_publisher" class="input-custom" placeholder="請輸入自定義版本資訊" oninput="syncPublisherChips()">
                 </div>
                 <div>
                     <label class="font-bold text-sm">範圍 <span class="text-gray-400 font-normal">（選填）</span></label>
@@ -460,7 +468,7 @@
             <div class="flex gap-2 flex-wrap justify-center order-2 sm:order-3 items-center">
                 <button onclick="openHandoffSetup()" id="btnAnswerMode" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-device-mobile lq-icon lq-icon-sky"></span> 交給學生作答</button>
                 <div class="relative inline-block" id="downloadMenuWrap">
-                    <button onclick="toggleDownloadMenu()" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-download-simple lq-icon lq-icon-blue"></span> 下載 ▾</button>
+                    <button onclick="toggleDownloadMenu()" class="lq-btn lq-btn-dark lq-iconbtn px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="下載"><span class="ph-duotone ph-download-simple lq-icon lq-icon-blue"></span><span class="lq-lab"> 下載 ▾</span></button>
                     <div id="downloadMenu" class="hidden absolute right-0 mt-1 bg-white text-slate-800 rounded-lg shadow-xl border z-50 overflow-hidden w-56">
                         <button onclick="dlDoc(); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-doc lq-icon text-blue-600"></span> Word (.docx)</button>
                         <button onclick="dlPDF(); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-pdf lq-icon text-red-600"></span> PDF</button>
@@ -475,7 +483,7 @@
                 </div>
                 <!-- 低頻／破壞性動作收進來，不跟主要動作平起平坐 -->
                 <div class="relative inline-block" id="moreMenuWrap">
-                    <button onclick="toggleMoreMenu()" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="更多動作"><span class="ph-duotone ph-dots-three-outline lq-icon"></span> 更多 ▾</button>
+                    <button onclick="toggleMoreMenu()" class="lq-btn lq-btn-dark lq-iconbtn px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="更多動作"><span class="ph-duotone ph-dots-three-outline lq-icon"></span><span class="lq-lab"> 更多 ▾</span></button>
                     <div id="moreMenu" class="hidden absolute right-0 mt-1 bg-white text-slate-800 rounded-lg shadow-xl border z-50 overflow-hidden w-56">
                         <button onclick="saveToClassHistory(); closeMoreMenu()" id="btnSaveHistory" class="hidden w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-floppy-disk lq-icon text-blue-600"></span> 存入班級歷史</button>
                         <button id="btnReload" onclick="restartWholeQuiz(); closeMoreMenu()" class="w-full text-left px-4 py-2 hover:bg-red-50 text-sm flex items-center gap-2 text-red-600 border-t"><span class="ph-duotone ph-arrow-clockwise lq-icon lq-icon-amber"></span> 重新出整份（清空目前題目）</button>
@@ -491,7 +499,7 @@
         </div>
         <div id="paperContainer" class="max-w-5xl mx-auto pt-2"></div>
         <div id="answerModeContainer" class="no-print" style="display:none; background:#f3f4f6; min-height:100vh;"></div>
-        <p class="no-print text-center text-sm text-gray-300 py-6">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" class="text-emerald-400 underline font-bold hover:text-emerald-300">鴻綸科技官方網站</a></p>
+        <p class="lq-foot no-print text-center text-sm text-gray-300 py-6">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" class="text-emerald-400 underline font-bold hover:text-emerald-300">鴻綸科技官方網站</a></p>
     </div>
 
     <div id="historyModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
@@ -611,24 +619,25 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=18"></script>
-    <script src="js/dialog.js?v=18"></script>
-    <script src="js/entry.js?v=18"></script>
-    <script src="js/home.js?v=18"></script>
-    <script src="js/share.js?v=18"></script>
-    <script src="js/settings.js?v=18"></script>
-    <script src="js/generate.js?v=18"></script>
-    <script src="js/sheet.js?v=18"></script>
-    <script src="js/answer.js?v=18"></script>
-    <script src="js/bank.js?v=18"></script>
-    <script src="js/handoff.js?v=18"></script>
-    <script src="js/export.js?v=18"></script>
-    <script src="js/account.js?v=18"></script>
-    <script src="js/admin.js?v=18"></script>
+    <script src="js/core.js?v=26"></script>
+    <script src="js/dialog.js?v=26"></script>
+    <script src="js/entry.js?v=26"></script>
+    <script src="js/home.js?v=26"></script>
+    <script src="js/share.js?v=26"></script>
+    <script src="js/settings.js?v=26"></script>
+    <script src="js/generate.js?v=26"></script>
+    <script src="js/sheet.js?v=26"></script>
+    <script src="js/answer.js?v=26"></script>
+    <script src="js/bank.js?v=26"></script>
+    <script src="js/handoff.js?v=26"></script>
+    <script src="js/router.js?v=26"></script>
+    <script src="js/export.js?v=26"></script>
+    <script src="js/account.js?v=26"></script>
+    <script src="js/admin.js?v=26"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=18">
+<link rel="stylesheet" href="css/paper.css?v=26">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -642,6 +651,7 @@
     <div class="pp-card">
       <div class="font-bold mb-2">① 上傳現成卷子</div>
       <p class="text-sm text-gray-600 mb-3">可以是掃描檔、手機拍的照片，或直接丟 PDF（會自動轉成圖片）。最多 10 頁、整份 5MB。</p>
+      <figure class="lq-photo-tip"><img src="assets/illust/paper-photo-guide.webp" alt="" class="lq-illust" loading="lazy"><figcaption>拍照小訣竅：手機在正上方、紙張放平、四邊對齊畫面，辨識最準。</figcaption></figure>
       <div onclick="document.getElementById('ppFile').click()"
            class="border-2 border-dashed border-emerald-300 p-6 text-center cursor-pointer hover:bg-emerald-50 rounded-xl">
         <p class="text-lg text-emerald-600 font-bold">📂 點此選擇卷子（圖片或 PDF）</p>
@@ -721,10 +731,11 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=18"></script>
-<script src="js/paper-student.js?v=18"></script>
+<script src="js/paper-teacher.js?v=26"></script>
+<script src="js/paper-student.js?v=26"></script>
+<script src="js/paper-focus.js?v=26"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=18"></script>
+    <script src="js/guide.js?v=26"></script>
 
 </body>
 </html>

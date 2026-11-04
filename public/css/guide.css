@@ -63,3 +63,9 @@
 
 /* 引導模式下，每一步上方已經有「第 N 步：…」標題，原本的區塊小標題就不重複出現 */
 #inputForm.lg-wizard-on .section-title { display: none; }
+
+/* 第 2 步：年級科目選好前下一步淡一點，選好後亮起並輕輕彈一下，取代原本的自動跳轉 */
+#lgNext.lg-wait { opacity: 0.55; }
+#lgNext.is-ready { animation: lgNextNudge 0.4s ease 1; box-shadow: 0 6px 18px rgba(26, 115, 232, 0.35); }
+@keyframes lgNextNudge { 0% { transform: scale(0.96); } 55% { transform: scale(1.06); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { #lgNext.is-ready { animation: none; } }
