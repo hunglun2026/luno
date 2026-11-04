@@ -4,7 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#fbfcfe">
     <title>刻度・互動式評量</title>
+    <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
+    <script src="js/theme.js?v=18"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -16,38 +20,99 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=17">
+    <link rel="stylesheet" href="css/guide.css?v=18">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=17">
-    <link rel="stylesheet" href="css/sheet.css?v=17">
+    <link rel="stylesheet" href="css/app.css?v=18">
+    <link rel="stylesheet" href="css/sheet.css?v=18">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=17">
+    <link rel="stylesheet" href="css/tailwind.css?v=18">
+    <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
+    <link rel="stylesheet" href="css/landing.css?v=18">
+    <link rel="stylesheet" href="css/theme.css?v=18">
 <link rel="canonical" href="https://luno.hunglun.com/">
 <!--seo-games--><script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "@id": "https://luno.hunglun.com/#app", "name": "刻度・互動式評量", "url": "https://luno.hunglun.com/", "description": "刻度・互動式評量", "applicationCategory": "EducationalApplication", "operatingSystem": "All", "inLanguage": "zh-TW", "isAccessibleForFree": true, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TWD"}, "creator": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}, "publisher": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "鴻綸科技", "item": "https://www.hunglun.com/"}, {"@type": "ListItem", "position": 2, "name": "學習專區", "item": "https://www.hunglun.com/tools/games"}, {"@type": "ListItem", "position": 3, "name": "刻度・互動式評量", "item": "https://luno.hunglun.com/"}]}]}</script>
 </head>
 <body class="text-slate-800">
 
-    <!-- ① 鴻綸特效歡迎頁：每個分頁第一次進來播一次，約 2.5 秒自動進到選身分（guide.js） -->
-    <section id="lqWelcome" class="lg-welcome no-print" hidden aria-label="鴻綸科技歡迎頁">
-        <div class="lg-aurora" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-        <canvas id="lqParticles" class="lg-particles" aria-hidden="true"></canvas>
-        <div class="lg-welcome-badge">
-            <img src="assets/badge-medallion.webp" alt="鴻綸科技 圓形品牌徽章">
+    <!-- ① 歡迎頁：停住，按「進入」才到選身分（guide.js）。使用說明放在這頁下方。
+         分享／監看／設定連結（網址帶參數）和這個分頁看過的，不顯示 -->
+    <section id="lqWelcome" class="ld-welcome no-print" hidden aria-label="刻度歡迎頁">
+        <div class="ld-wrap">
+            <header class="ld-top">
+                <div>
+                    <img src="assets/logo-light.png?v=18" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=18" alt="" class="ld-logo is-dark" aria-hidden="true">
+                </div>
+                <div class="ld-actions">
+                    <a class="ld-tbtn" href="#lqGuide"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></a>
+                    <button type="button" class="ld-tbtn" data-theme-toggle onclick="toggleTheme()"><span class="ph-duotone ph-moon"></span><span class="lab">深色</span></button>
+                </div>
+            </header>
+
+            <div class="ld-hero">
+                <div>
+                    <h1 class="ld-title">刻度</h1>
+                    <p class="ld-tag">互動式評量</p>
+                    <p class="ld-lead">老師、家長輸入年級和科目，十幾秒就有一份試卷。學生可以在手機上直接寫，寫完自動對答案。</p>
+                    <div class="ld-cta-row">
+                        <button type="button" id="lqEnter" class="ld-btn ld-btn-primary" onclick="this.dataset.clicked = '1'">進入<span class="ph-duotone ph-arrow-right"></span></button>
+                        <a class="ld-btn ld-btn-ghost" href="#lqGuide">使用說明</a>
+                    </div>
+                </div>
+                <div class="ld-vr" aria-hidden="true">
+                    <div class="ld-draw">
+                        <div class="scale"><div class="ticks"></div><div class="spine"></div></div>
+                        <span class="num" style="top:0">0</span><span class="num" style="top:10%">10</span><span class="num" style="top:20%">20</span><span class="num" style="top:30%">30</span><span class="num" style="top:40%">40</span><span class="num" style="top:50%">50</span><span class="num" style="top:60%">60</span><span class="num" style="top:70%">70</span><span class="num" style="top:80%">80</span><span class="num" style="top:90%">90</span><span class="num" style="top:100%">100</span>
+                    </div>
+                </div>
+            </div>
+
+            <section class="ld-guide" id="lqGuide">
+                <h2>使用說明</h2>
+                <div class="ld-guide-cols">
+                    <div>
+                        <h3>教師或家長：出題給學生</h3>
+                        <ol>
+                            <li>登入教師帳號，依序選出題方式、年級、科目、範圍。</li>
+                            <li>按「開始出題」，約 10 到 30 秒出一份試卷。</li>
+                            <li>可以列印、下載 Word 或 PDF，也可以到「答案卷」看標準答案。</li>
+                            <li>要讓學生在手機上作答，按「發送測驗」，把 6 位數代碼或連結傳給學生。</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <h3>學生：寫測驗或自己練習</h3>
+                        <ol>
+                            <li>按「我是學生」，填學校、年級、班級與姓名。</li>
+                            <li>老師給你 6 位數代碼：輸入後按「進入」，也可以貼上老師傳的連結。</li>
+                            <li>沒有代碼，就按「我要練習」，選年級與科目。</li>
+                            <li>寫完按最下面的藍色鈕交卷，系統自動對答案並顯示解析。</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <h3>只有一支手機：訪客模式</h3>
+                        <ol>
+                            <li>按「訪客快速開始」，不用登入，一份最多 20 題。</li>
+                            <li>出好題後按「交給學生作答」，設 4 位數密碼。</li>
+                            <li>學生交卷後只會看到「已交卷」，看不到分數與對錯。</li>
+                            <li>手機交還後輸入密碼，就能看分數、正確答案與解析。</li>
+                        </ol>
+                    </div>
+                </div>
+                <a class="ld-guide-more" href="manual.html" target="_blank" rel="noopener">看完整使用說明書（附畫面截圖）→</a>
+            </section>
+
+            <footer class="ld-foot">
+                <span>Created by Hunglun Technology Steve</span>
+                <span>有任何問題？<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">鴻綸科技官方網站</a>　<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">作者信箱</a>　<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">作者 Line</a>　LINE ID <button type="button" class="hl-line-id" onclick="copyLineId(this)">safezone0619</button></span>
+            </footer>
         </div>
-        <h1 class="lg-welcome-title">刻度</h1>
-        <div class="lg-ticks" aria-hidden="true"></div>
-        <p class="lg-welcome-sub">互動式評量</p>
-        <p class="lg-welcome-en">鴻綸科技　HUNGLUN TECHNOLOGY</p>
-        <img src="assets/logo-dark.png?v=17" alt="鴻綸科技 x Google for Education" class="lg-welcome-logo">
-        <button type="button" id="lqWelcomeSkip" class="lg-skip" onclick="this.dataset.clicked = '1'">略過 →</button>
-        <div class="lg-welcome-bar" aria-hidden="true"></div>
     </section>
     <script>
         // 歡迎頁要「一開始」就蓋上去，不能等 window.onload：網路慢時，底下的選身分頁會先露出來還能點，
-        // 等整頁載完歡迎頁才跳出來，順序就反了。分享／監看／設定連結（網址帶參數）和這個分頁看過的，不播。
+        // 等整頁載完歡迎頁才跳出來，順序就反了。分享／監看／設定連結（網址帶參數）和這個分頁看過的，不顯示。
         (function () {
             try {
-                // 只認這個站自己用的參數；FB／LINE 自動加的 fbclid 這類不算，照樣播歡迎頁
+                // 只認這個站自己用的參數；FB／LINE 自動加的 fbclid 這類不算，照樣顯示歡迎頁
                 var q = new URLSearchParams(location.search);
                 var isLink = ['share', 'live', 'result', 'paper', 'grade'].some(function (k) { return q.has(k); });
                 if (!isLink && !sessionStorage.getItem('lun_welcome_seen')) {
@@ -57,76 +122,51 @@
         })();
     </script>
 
+    <!-- ② 選身分（guide.js）：頂端是訪客快速開始，下面教師、家長、學生三列。
+         教師要登入才不限題數；登入、API Key 那幾步（#hlStepAuth／#hlStepApiKey）也在這個畫面裡 -->
     <section id="hlSplash" class="hl-splash no-print">
-        <div class="hl-work-card hl-splash-card hl-scrollbar">
-            <h1 class="hl-splash-title lg-splash-title">刻度</h1>
-            <div class="lg-ticks" aria-hidden="true"></div>
-            <h2 class="hl-splash-subtitle lg-splash-sub">互動式評量</h2>
+        <div class="ld-wrap ld-card">
+            <header class="ld-top">
+                <div>
+                    <img src="assets/logo-light.png?v=18" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=18" alt="" class="ld-logo is-dark" aria-hidden="true">
+                </div>
+                <div class="ld-actions">
+                    <button type="button" class="ld-tbtn" onclick="Guide.openGuide()"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></button>
+                    <button type="button" class="ld-tbtn" data-theme-toggle onclick="toggleTheme()"><span class="ph-duotone ph-moon"></span><span class="lab">深色</span></button>
+                </div>
+            </header>
 
-            <!-- ② 選身分（guide.js）：教師、家長、學生三張一樣大的卡；教師帳號登入、管理員人少，收成下面的小連結。
-                 教師卡不用登入就直接進一步一頁的出題流程（7 月拿掉舊進場頁的原因就是「點三層才看得到出題」，不能再變回去） -->
-            <div id="hlStepIdentity" class="hl-identity-step">
-                <div class="lg-identity">
+            <div id="hlStepIdentity" class="ld-pick">
+                <div>
+                    <button type="button" class="ld-back" onclick="Guide.toWelcome()"><span class="ph-duotone ph-arrow-left"></span>回歡迎頁</button>
+                    <h2>你要怎麼使用？</h2>
+                    <p class="ld-sub">沒有帳號也能馬上開始。</p>
                     <button type="button" id="lgContinue" class="lg-continue" hidden onclick="Guide.continueLast()"></button>
-                    <p class="lg-identity-q">請選擇你的身分</p>
-                    <div class="lg-role-cards">
-                        <button type="button" class="lg-role-card is-teacher" onclick="Guide.pick('teacher')">
-                            <span class="lg-role-icon"><span class="ph-duotone ph-presentation"></span></span>
-                            <span class="lg-role-name">我是教師</span>
-                            <span class="lg-role-desc">出題、發測驗、看進度</span>
-                        </button>
-                        <button type="button" class="lg-role-card is-parent" onclick="Guide.pick('parent')">
-                            <span class="lg-role-icon"><span class="ph-duotone ph-users-three"></span></span>
-                            <span class="lg-role-name">我是家長</span>
-                            <span class="lg-role-desc">看孩子的作答與進度</span>
-                        </button>
-                        <button type="button" class="lg-role-card is-student" onclick="Guide.pick('student')">
-                            <span class="lg-role-icon"><span class="ph-duotone ph-student"></span></span>
-                            <span class="lg-role-name">我是學生</span>
-                            <span class="lg-role-desc">輸入測驗代碼或自己練習</span>
-                        </button>
+                    <button type="button" class="ld-guest" onclick="Guide.pick('guest')">
+                        <span class="ic"><span class="ph-duotone ph-device-mobile"></span></span>
+                        <span><b>訪客快速開始</b><span class="d">一支手機出題兼作答，免登入，一份最多 20 題</span></span>
+                        <span class="go ph-duotone ph-arrow-right"></span>
+                    </button>
+                    <p class="ld-or">或選擇你的身分</p>
+                    <div class="ld-rows">
+                        <button type="button" class="ld-row" onclick="Guide.pick('teacher')"><span class="ic"><span class="ph-duotone ph-presentation"></span></span>
+                            <div><b>我是教師</b><span class="d">出題不限題數、發測驗、看全班即時進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
+                        <button type="button" class="ld-row" onclick="Guide.pick('parent')"><span class="ic"><span class="ph-duotone ph-users-three"></span></span>
+                            <div><b>我是家長</b><span class="d">看孩子的作答與進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
+                        <button type="button" class="ld-row" onclick="Guide.pick('student')"><span class="ic"><span class="ph-duotone ph-student"></span></span>
+                            <div><b>我是學生</b><span class="d">輸入測驗代碼，或自己練習</span></div><span class="go ph-duotone ph-caret-right"></span></button>
                     </div>
-                    <div class="lg-role-more">
-                        <button type="button" onclick="Guide.pick('teacherLogin')">教師帳號登入</button>
+                    <div class="ld-more">
                         <button type="button" onclick="Guide.pick('admin')">管理員登入</button>
                         <a href="manual.html" target="_blank" rel="noopener">使用說明書</a>
                     </div>
-
-                    <!-- 歡迎頁就看得到的簡要使用說明：三種身分各一段，點開才展開，避免一進來就一大片字 -->
-                    <div class="lg-howto" id="lgHowto">
-                        <p class="lg-howto-title">第一次來？30 秒看懂怎麼用</p>
-                        <details class="lg-howto-item">
-                            <summary>我是教師或家長：出題給學生</summary>
-                            <ol>
-                                <li>按上面「我是教師」，<b>不用登入</b>就能出題。</li>
-                                <li>依序選出題方式、年級、科目、範圍，按「開始出題」，約 10 到 30 秒出一份試卷。</li>
-                                <li>題目出來後，可以直接列印、下載 Word 或 PDF，也可以到「答案卷」看標準答案。</li>
-                                <li>想讓學生在手機上作答：按「發送測驗」，把 6 位數代碼或連結傳給學生（這個要先登入教師帳號）。</li>
-                                <li>只有一支手機、不想登入：按「交給學生作答」，看下面第三項。</li>
-                            </ol>
-                        </details>
-                        <details class="lg-howto-item">
-                            <summary>我是學生：寫測驗或自己練習</summary>
-                            <ol>
-                                <li>按「我是學生」，填學校、年級、班級與姓名。</li>
-                                <li>老師給你 6 位數代碼：輸入後按「進入」。也可以貼上老師傳的連結。</li>
-                                <li>沒有代碼也可以按「我要練習」，選年級與科目，刻度幫你出一份練習卷。</li>
-                                <li>寫完按最下面的藍色鈕交卷，系統會自動對答案並顯示解析。</li>
-                            </ol>
-                        </details>
-                        <details class="lg-howto-item">
-                            <summary>只有一支手機：交給學生作答（不用登入）</summary>
-                            <ol>
-                                <li>家長或老師先用這支手機出好題目。</li>
-                                <li>按「交給學生作答」，設定 4 位數密碼（請記住它），學生暱稱可以不填。</li>
-                                <li>把手機遞給學生。學生寫完交卷，只會看到「已交卷」，看不到分數與對錯。</li>
-                                <li>手機交還後，按頂端的「家長／教師」或成績卡上的「查看詳解」，輸入密碼，就能看分數、正確答案與解析。</li>
-                                <li>還有下一位同學：按「換下一位」，不用重新出題，成績名單會一起留著。答錯的題目也能再重做一次。</li>
-                                <li>注意：密碼與成績只存在這個畫面裡，重新整理或關掉頁面就會消失。</li>
-                            </ol>
-                        </details>
-                        <a class="lg-howto-more" href="manual.html" target="_blank" rel="noopener">看完整使用說明書（附畫面截圖）→</a>
-                    </div>
+                </div>
+                <div class="ld-vr is-mark" aria-label="一份試卷的題數：訪客最多 20 題，教師帳號不限">
+                    <div class="scale"><div class="ticks"></div><div class="spine"></div><div class="on"></div><div class="fade"></div></div>
+                    <span class="num" style="top:0">0</span><span class="num" style="top:10%">10</span><span class="num n20" style="top:20%">20</span><span class="num" style="top:30%">30</span><span class="num" style="top:40%">40</span><span class="num" style="top:50%">50</span><span class="num" style="top:60%">60</span><span class="num" style="top:70%">70</span><span class="num" style="top:80%">80</span><span class="num" style="top:90%">90</span><span class="num" style="top:100%">100</span>
+                    <div class="flag" style="top:5%"><b>訪客</b><small>0 到 20 題</small></div>
+                    <div class="flag is-teacher" style="top:55%"><b>教師帳號</b><small>題數不限</small></div>
                 </div>
             </div>
 
@@ -149,26 +189,10 @@
                 </div>
             </div>
 
-            <div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--hl-border);width:100%;max-width:40rem;">
-                <div class="hl-logo-lockup" style="margin:0 auto 1.25rem;max-width:24rem;">
-                    <img src="assets/logo-light.png?v=17" alt="鴻綸科技 x Google for Education" class="hl-logo-light">
-                    <img src="assets/logo-dark.png?v=17" alt="鴻綸科技 x Google for Education" class="hl-logo-dark">
-                </div>
-                <p style="font-size:0.875rem;font-weight:700;color:var(--hl-text-secondary);margin-bottom:0.75rem;">Created by Hunglun Technology Steve</p>
-                <p style="font-size:0.8125rem;color:var(--hl-text-secondary);margin-bottom:0.75rem;">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" style="color:var(--hl-blue);font-weight:700;text-decoration:underline;">鴻綸科技官方網站</a></p>
-                <div class="hl-contact-bar" style="justify-content:center;">
-                    <span class="hl-contact-label">技術支援與回報</span>
-                    <div style="width:1px;height:1rem;background:var(--hl-border);"></div>
-                    <a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer" class="hl-contact-btn mail">
-                        <span class="ph-duotone ph-envelope-simple" style="font-size:1rem;"></span> 作者信箱
-                    </a>
-                    <a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer" class="hl-contact-btn line">💬 作者 Line</a>
-                </div>
-                <!-- 電腦版點 LINE 連結不會自動開 App，一定要給可以搜尋的 ID -->
-                <p class="hl-line-hint">💻 使用電腦版請在 LINE 搜尋 ID
-                    <button type="button" class="hl-line-id" onclick="copyLineId(this)">safezone0619</button>
-                    加入好友</p>
-            </div>
+            <footer class="ld-foot">
+                <span>Created by Hunglun Technology Steve</span>
+                <span>有任何問題？<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">鴻綸科技官方網站</a>　<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">作者信箱</a>　<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">作者 Line</a>　LINE ID <button type="button" class="hl-line-id" onclick="copyLineId(this)">safezone0619</button></span>
+            </footer>
         </div>
     </section>
 
@@ -203,6 +227,7 @@
                 <button type="button" onclick="openSuperadminPanel()" id="superadminBtn" class="hidden lq-appbar-btn">管理後台</button>
                 <button type="button" onclick="openAccountModal()" id="accountBtn" class="hidden lq-appbar-btn">我的帳號</button>
                 <span id="accountStatus" class="lq-appbar-visits"></span>
+                <button type="button" class="lq-appbar-btn" data-theme-toggle onclick="toggleTheme()" aria-label="切換深淺色"><span class="ph-duotone ph-moon" style="font-size:1.1rem;"></span><span class="lab is-optional">深色</span></button>
                 <button type="button" onclick="openIdentitySplash()" id="lqLoginBtn" class="lq-appbar-btn is-primary">登入</button>
             </div>
         </div>
@@ -586,24 +611,24 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=17"></script>
-    <script src="js/dialog.js?v=17"></script>
-    <script src="js/entry.js?v=17"></script>
-    <script src="js/home.js?v=17"></script>
-    <script src="js/share.js?v=17"></script>
-    <script src="js/settings.js?v=17"></script>
-    <script src="js/generate.js?v=17"></script>
-    <script src="js/sheet.js?v=17"></script>
-    <script src="js/answer.js?v=17"></script>
-    <script src="js/bank.js?v=17"></script>
-    <script src="js/handoff.js?v=17"></script>
-    <script src="js/export.js?v=17"></script>
-    <script src="js/account.js?v=17"></script>
-    <script src="js/admin.js?v=17"></script>
+    <script src="js/core.js?v=18"></script>
+    <script src="js/dialog.js?v=18"></script>
+    <script src="js/entry.js?v=18"></script>
+    <script src="js/home.js?v=18"></script>
+    <script src="js/share.js?v=18"></script>
+    <script src="js/settings.js?v=18"></script>
+    <script src="js/generate.js?v=18"></script>
+    <script src="js/sheet.js?v=18"></script>
+    <script src="js/answer.js?v=18"></script>
+    <script src="js/bank.js?v=18"></script>
+    <script src="js/handoff.js?v=18"></script>
+    <script src="js/export.js?v=18"></script>
+    <script src="js/account.js?v=18"></script>
+    <script src="js/admin.js?v=18"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=17">
+<link rel="stylesheet" href="css/paper.css?v=18">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -696,10 +721,10 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=17"></script>
-<script src="js/paper-student.js?v=17"></script>
+<script src="js/paper-teacher.js?v=18"></script>
+<script src="js/paper-student.js?v=18"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=17"></script>
+    <script src="js/guide.js?v=18"></script>
 
 </body>
 </html>

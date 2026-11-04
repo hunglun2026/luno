@@ -86,6 +86,8 @@
             if (countVal === 'Custom') countVal = document.getElementById('c_count').value.trim();
             const total = parseInt(countVal);
             if (!total) { failGen("❌ 請設定【題數】！"); return null; }
+            // 訪客一份最多 20 題（選單已經藏掉超過的選項，這裡再擋一次，防止改畫面繞過）；上限數字見 guide.js 的 GUEST_MAX
+            if (window.guestMode && total > 20) { failGen("❌ 訪客一份最多 20 題，要出更多題請登入教師帳號"); return null; }
 
             let typeVal = document.getElementById('qType').value;
             if (typeVal === 'Custom') typeVal = document.getElementById('c_qType').value.trim();

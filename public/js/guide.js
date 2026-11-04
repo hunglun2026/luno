@@ -12,7 +12,7 @@
     var SS_WELCOME = 'lun_welcome_seen'; // 這個分頁看過歡迎頁（關分頁才重播）
     var SS_ROLE = 'lun_role_session';    // 這個分頁目前的身分（重新整理直接回到原畫面）
     var LS_ROLE = 'lun_last_role';       // 這台裝置上次選的身分（給「繼續當老師」用）
-    var WELCOME_MS = 2600;
+    var GUEST_MAX = 20;                  // 訪客一份最多幾題
 
     var STEP_INFO = {
         1: { title: '要怎麼出題？', hint: '選一種方式，下一步就開始填條件' },
@@ -34,84 +34,41 @@
     function $(id) { return document.getElementById(id); }
     function reducedMotion() { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
-    // ========== ① 歡迎特效頁 ==========
-    var particlesStop = null;
-
-    function startParticles(canvas) {
-        var ctx = canvas.getContext('2d');
-        var colors = ['#1A73E8', '#EA4335', '#FBBC04', '#34A853', '#ffffff'];
-        var dpr = Math.min(window.devicePixelRatio || 1, 2);
-        var dots = [];
-        var running = true;
-        function resize() {
-            canvas.width = canvas.clientWidth * dpr;
-            canvas.height = canvas.clientHeight * dpr;
-        }
-        resize();
-        for (var i = 0; i < 46; i++) {
-            dots.push({
-                x: Math.random() * canvas.width,
-                y: Math.random() * canvas.height,
-                r: (Math.random() * 1.8 + 0.6) * dpr,
-                vy: -(Math.random() * 0.4 + 0.15) * dpr,
-                vx: (Math.random() - 0.5) * 0.25 * dpr,
-                c: colors[i % colors.length],
-                a: Math.random() * 0.6 + 0.3
-            });
-        }
-        function frame() {
-            if (!running) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            dots.forEach(function (d) {
-                d.x += d.vx;
-                d.y += d.vy;
-                if (d.y < -10) { d.y = canvas.height + 10; d.x = Math.random() * canvas.width; }
-                ctx.globalAlpha = d.a;
-                ctx.fillStyle = d.c;
-                ctx.beginPath();
-                ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-                ctx.fill();
-            });
-            requestAnimationFrame(frame);
-        }
-        window.addEventListener('resize', resize);
-        requestAnimationFrame(frame);
-        return function () { running = false; window.removeEventListener('resize', resize); };
+    // ========== ① 歡迎頁：停住，按「進入」才往下 ==========
+    // 歡迎頁（#lqWelcome）由 index.html 的行內腳本在載入時蓋上去；這裡只負責「進入」、回到歡迎頁、捲到使用說明。
+    function leaveWelcome() {
+        var w = $('lqWelcome');
+        if (!w || w.hidden) return;
+        sSet(SS_WELCOME, '1');
+        w.classList.add('is-leaving');
+        setTimeout(function () { w.hidden = true; w.classList.remove('is-leaving'); }, 350);
     }
 
-    function playWelcome(done) {
+    function bindWelcome() {
+        var enter = $('lqEnter');
+        if (!enter || enter.dataset.bound) return;
+        enter.dataset.bound = '1';
+        function go() { leaveWelcome(); showIdentity(); }
+        enter.addEventListener('click', go);
+        // 頁面還沒載完就按了「進入」（那時 guide 還沒接上），onclick 屬性先記下來，這裡一啟動就照辦
+        if (enter.dataset.clicked) go();
+    }
+
+    // 身分頁的「回歡迎頁」：再蓋一次歡迎頁，不清身分
+    function toWelcome(scrollToGuide) {
         var w = $('lqWelcome');
-        if (!w) { done(); return; }
+        if (!w) return;
         w.hidden = false;
-        if (!reducedMotion()) particlesStop = startParticles($('lqParticles'));
-        var finished = false;
-        function finish() {
-            if (finished) return;
-            finished = true;
-            clearTimeout(timer);
-            sSet(SS_WELCOME, '1');
-            w.classList.add('is-leaving');
-            done();
-            setTimeout(function () {
-                w.hidden = true;
-                if (particlesStop) particlesStop();
-            }, 650);
+        w.classList.remove('is-leaving');
+        w.scrollTop = 0;
+        if (scrollToGuide) {
+            var g = $('lqGuide');
+            if (g) g.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' });
         }
-        // 從頁面開始載入就算時間（歡迎頁那時已經蓋上去了），網路慢也不會多等一輪；至少留 0.8 秒讓字浮出來
-        var remain = Math.max(800, WELCOME_MS - (window.performance ? performance.now() : 0));
-        var timer = setTimeout(finish, remain);
-        // 頁面還沒載完就按了「略過」（那時 guide 還沒接上），onclick 屬性先記下來，這裡一啟動就照辦
-        var skip = $('lqWelcomeSkip');
-        skip.addEventListener('click', finish);
-        if (skip.dataset.clicked) finish();
-        // 歡迎頁期間按 Enter／Esc 也能直接往下
-        document.addEventListener('keydown', function onKey(e) {
-            if (e.key === 'Enter' || e.key === 'Escape') { document.removeEventListener('keydown', onKey); finish(); }
-        });
     }
 
     // ========== ② 選身分 ==========
-    var ROLE_LABEL = { teacher: '教師', student: '學生' };
+    var ROLE_LABEL = { teacher: '教師', student: '學生', guest: '訪客' };
 
     function renderContinue() {
         var btn = $('lgContinue');
@@ -131,16 +88,25 @@
         openIdentitySplash();
     }
 
+    function loggedInTeacher() {
+        var u = window.currentUser;
+        return !!(u && (u.role === 'teacher' || u.role === 'superadmin'));
+    }
+
     // step：要停在老師第幾步（設定連結用 4），沒給就從第 1 步開始
     function pick(role, step) {
         sSet(SS_ROLE, role);
-        if (role === 'teacher' || role === 'student') lSet(LS_ROLE, role);
-        forceTeacher = role === 'teacher' || role === 'teacherLogin';
+        if (ROLE_LABEL[role]) lSet(LS_ROLE, role);
+        setGuest(role === 'guest');
+        forceTeacher = role === 'teacher' || role === 'teacherLogin' || role === 'guest';
         cur = step || 1;
-        if (role === 'teacher') {
-            splashSelectIdentity('guest');            // 免登入直接進出題（既有路徑）
+        if (role === 'guest') {
+            splashSelectIdentity('guest');            // 免登入直接進出題（既有路徑）；題數上限由訪客模式管
+        } else if (role === 'teacher') {
+            // 教師要登入才不限題數；這個分頁已經登入過的直接進，不再叫他登入第二次
+            splashSelectIdentity(loggedInTeacher() ? 'guest' : 'teacher');
         } else if (role === 'teacherLogin') {
-            splashSelectIdentity('teacher');          // 老師帳號登入表單（既有）
+            splashSelectIdentity('teacher');          // 教師帳號登入表單（既有）
         } else if (role === 'student') {
             var u = window.currentUser;
             if ((u && u.role === 'student') || getStudentProfile()) {
@@ -297,10 +263,18 @@
         $('lgDots').innerHTML = html;
     }
 
+    function stepInfo() {
+        if (cur === 2 && sourceType() === '2') return STEP2_FILE;
+        if (cur === 4 && window.guestMode) {
+            return { title: STEP_INFO[4].title, hint: '訪客一份最多 ' + GUEST_MAX + ' 題；要出更多題，請登入教師帳號' };
+        }
+        return STEP_INFO[cur];
+    }
+
     function refresh() {
         if (!$('lgWizHead')) return;
         var list = steps();
-        var info = (cur === 2 && sourceType() === '2') ? STEP2_FILE : STEP_INFO[cur];
+        var info = stepInfo();
         $('lgStepTitle').textContent = '第 ' + (list.indexOf(cur) + 1) + ' 步：' + info.title;
         $('lgStepHint').textContent = info.hint;
         renderDots();
@@ -354,13 +328,53 @@
     function startWizard(step) {
         $('inputForm').classList.add('lg-wizard-on');
         buildChrome();
+        applyGuestLimits();
         go(step || cur || 1);
     }
 
     function toIdentity() {
         sDel(SS_ROLE);
         forceTeacher = false;
+        setGuest(false);
+        applyGuestLimits(); // 離開訪客模式：題數選單還原
         showIdentity();
+    }
+
+    // ========== ④ 訪客模式：免登入、一份最多 20 題 ==========
+    // 這只管前端：藏掉超過上限的選項，並在 generate.js 的 readGenForm() 再擋一次（防改畫面）。
+    // 伺服器端沒有依訪客限題，要根治得在 Worker 加；目前只靠前端與出題冷卻保護額度。
+    var countHtml = null; // 題數選單原本的選項，離開訪客模式時還原
+
+    function setGuest(on) {
+        window.guestMode = !!on;
+        document.body.classList.toggle('guest-mode', !!on);
+    }
+
+    function applyGuestLimits() {
+        var sel = $('count');
+        if (!sel) return;
+        if (countHtml === null) countHtml = sel.innerHTML;
+        var custom = $('c_count');
+        if (!window.guestMode) {
+            if (sel.innerHTML !== countHtml) {
+                var keep = sel.value;
+                sel.innerHTML = countHtml;
+                sel.value = keep;
+            }
+            return;
+        }
+        Array.prototype.slice.call(sel.options).forEach(function (o) {
+            var n = parseInt(o.value, 10);
+            if (o.value === 'Custom' || (n && n > GUEST_MAX)) o.remove();
+        });
+        if (custom) custom.style.display = 'none';
+        if (!sel.querySelector('option[value="15"]')) {
+            var o15 = new Option('15 題', '15');
+            var o20 = sel.querySelector('option[value="20"]');
+            sel.add(o15, o20 || null);
+        }
+        var n = parseInt(sel.value, 10);
+        if (!n || n > GUEST_MAX) sel.value = '10';
     }
 
     // ========== 包住既有函式 ==========
@@ -414,10 +428,12 @@
         patch();
         addAppbarButton();
         renderContinue();
+        bindWelcome();
 
-        // 「複製設定連結」帶來的：條件都填好了，跳過歡迎頁直接到老師最後一步
+        // 「複製設定連結」帶來的：條件都填好了，跳過歡迎頁直接到出題最後一步。
+        // 已登入的教師照舊；沒登入的用訪客身分進（題數超過 20 會被收到 20）
         if (opts.fromSettingsLink) {
-            pick('teacher', 4);
+            pick(loggedInTeacher() ? 'teacher' : 'guest', 4);
             return;
         }
         var role = sGet(SS_ROLE);
@@ -426,12 +442,15 @@
             else showIdentity();
             return;
         }
-        playWelcome(showIdentity);
+        // 第一次進來：歡迎頁已由 index.html 的行內腳本蓋上，停在那裡等「進入」；先把身分頁備在底下
+        showIdentity();
     }
 
     window.Guide = {
         start: start,
         pick: function (role) { pick(role); },
+        toWelcome: function () { toWelcome(false); },
+        openGuide: function () { toWelcome(true); },
         toIdentity: toIdentity,
         continueLast: function () { var r = ($('lgContinue') || {}).dataset; if (r && r.role) pick(r.role); }
     };

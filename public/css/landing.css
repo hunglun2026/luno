@@ -1,0 +1,201 @@
+/* 刻度｜歡迎頁與身分頁（2026-11-04 重做）＋深淺色主題的共用色票。
+   歡迎頁停住，按「進入」才到身分頁；使用說明放在歡迎頁下方。
+   試卷、作答卷的深色處理在 theme.css；這裡只管進站那兩頁與登入步驟。 */
+
+:root {
+    --ld-accent: #1a73e8; --ld-accent-2: #1456b8; --ld-on-accent: #ffffff; --ld-accent-text: #1a73e8;
+    --ld-bg: #fbfcfe; --ld-panel: #f1f5fb; --ld-text: #0b1b3a; --ld-muted: #46556f; --ld-line: #dbe3ef;
+    --ld-tick: #2b3a5a; --ld-tick-soft: #8b98b3; --ld-hover: #eef3fb;
+}
+[data-theme="dark"] {
+    --ld-accent: #4c8ff0; --ld-accent-2: #2f78e0; --ld-on-accent: #06142e; --ld-accent-text: #8ab4f8;
+    --ld-bg: #0a1226; --ld-panel: #111c38; --ld-text: #f2f6fc; --ld-muted: #aab7d0; --ld-line: #22335c;
+    --ld-tick: #cbd6ea; --ld-tick-soft: #5c6e92; --ld-hover: #111c38;
+}
+
+/* ---------- 共用：頂列、按鈕、頁尾 ---------- */
+.ld-wrap { max-width: 84rem; margin: 0 auto; padding: 0 2.25rem; }
+.ld-top { display: flex; align-items: center; justify-content: space-between; padding: 1.6rem 0; }
+.ld-logo { height: 5.2rem; vertical-align: middle; }
+.ld-logo.is-dark { display: none; }
+[data-theme="dark"] .ld-logo.is-dark { display: inline; }
+[data-theme="dark"] .ld-logo.is-light { display: none; }
+.ld-actions { display: flex; align-items: center; gap: 0.5rem; }
+.ld-tbtn {
+    display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.2rem;
+    border: 1px solid var(--ld-line); border-radius: 999px; background: transparent; color: var(--ld-text);
+    font: inherit; font-size: 1rem; font-weight: 500; text-decoration: none; cursor: pointer;
+}
+.ld-tbtn:hover { background: var(--ld-hover); }
+.ld-tbtn .ph-duotone { font-size: 1.25rem; }
+.ld-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.7rem; padding: 1.05rem 2.2rem;
+    border: 2px solid transparent; border-radius: 0.9rem; font: inherit; font-size: 1.2rem; font-weight: 700;
+    text-decoration: none; cursor: pointer; color: var(--ld-text); background: transparent;
+}
+.ld-btn .ph-duotone { font-size: 1.4rem; }
+.ld-btn-primary { background: var(--ld-accent); color: var(--ld-on-accent); box-shadow: 0 8px 20px rgba(26, 115, 232, 0.28); }
+.ld-btn-primary:hover { background: var(--ld-accent-2); }
+.ld-btn-ghost { border-color: var(--ld-line); }
+.ld-btn-ghost:hover { background: var(--ld-hover); }
+.ld-wrap :focus-visible, .ld-welcome :focus-visible { outline: 3px solid var(--ld-accent); outline-offset: 3px; border-radius: 6px; }
+
+.ld-foot {
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem 1.5rem;
+    margin-top: 2rem; padding: 1.6rem 0 2.4rem; border-top: 1px solid var(--ld-line); color: var(--ld-muted); font-size: 1rem;
+}
+.ld-foot a { color: var(--ld-accent-text); font-weight: 500; }
+.ld-foot .hl-line-id { color: var(--ld-text); background: var(--ld-panel); border-color: var(--ld-line); }
+
+/* ---------- 直立刻度尺：0 在上，往下量到 100 ---------- */
+.ld-vr { position: relative; width: 100%; height: 34rem; }
+.ld-vr .scale { position: absolute; left: 0; top: 0; bottom: 0; width: 6rem; }
+.ld-vr .ticks {
+    position: absolute; inset: 0;
+    background:
+        linear-gradient(180deg, var(--ld-tick) 0 2px, transparent 2px) 0 0 / 100% 10% repeat-y,
+        linear-gradient(180deg, var(--ld-tick) 0 1.5px, transparent 1.5px) 0 0 / 62% 5% repeat-y,
+        linear-gradient(180deg, var(--ld-tick-soft) 0 1px, transparent 1px) 0 0 / 34% 1% repeat-y;
+}
+.ld-vr .ticks::after { content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 2px; background: var(--ld-tick); }
+.ld-vr .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--ld-tick); }
+.ld-vr .num {
+    position: absolute; left: 7rem; transform: translateY(-50%); font-size: 1.15rem; font-weight: 300;
+    color: var(--ld-muted); font-variant-numeric: tabular-nums;
+}
+.ld-draw { position: absolute; inset: 0; animation: ld-draw 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.15s both; }
+@keyframes ld-draw {
+    from { clip-path: inset(-2rem -2rem 100% -2rem); }
+    to { clip-path: inset(-2rem -2rem -2rem -2rem); }
+}
+/* 身分頁的尺：0 到 20 題亮（訪客），之後淡（教師帳號） */
+.ld-vr.is-mark .fade { position: absolute; left: 0; width: 100%; top: 20%; bottom: 0; background: var(--ld-bg); opacity: 0.62; pointer-events: none; }
+.ld-vr.is-mark .on { position: absolute; left: 0; top: 0; height: 20%; width: 6px; background: var(--ld-accent); }
+.ld-vr.is-mark .num.n20 { color: var(--ld-accent-text); font-weight: 700; }
+.ld-vr .flag { position: absolute; left: 10.5rem; font-size: 1.15rem; line-height: 1.4; }
+.ld-vr .flag b { display: block; font-size: 1.25rem; font-weight: 700; color: var(--ld-accent-text); }
+.ld-vr .flag.is-teacher b { color: var(--ld-text); }
+.ld-vr .flag small { color: var(--ld-muted); font-size: 1rem; }
+
+/* ---------- ① 歡迎頁：停住，按「進入」 ---------- */
+.ld-welcome {
+    position: fixed; inset: 0; z-index: 300; overflow-y: auto; overscroll-behavior: contain;
+    background: var(--ld-bg); color: var(--ld-text); font-size: 1.0625rem; line-height: 1.7; transition: opacity 0.35s ease;
+}
+.ld-welcome[hidden] { display: none; }
+.ld-welcome.is-leaving { opacity: 0; pointer-events: none; }
+.ld-welcome { scroll-behavior: smooth; }
+.ld-hero {
+    display: grid; grid-template-columns: 1fr 22rem; gap: 4rem; align-items: center;
+    min-height: calc(100vh - 15rem); padding: 0.5rem 0 3.5rem;
+}
+.ld-title { margin: 0; font-size: 6rem; font-weight: 500; letter-spacing: 0.04em; line-height: 1.05; }
+.ld-tag { margin: 1.1rem 0 0; font-size: 2rem; font-weight: 300; line-height: 1.4; }
+.ld-lead { margin: 1.4rem 0 0; max-width: 36rem; color: var(--ld-muted); font-size: 1.25rem; line-height: 1.9; }
+.ld-cta-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.4rem; }
+
+.ld-guide { border-top: 1px solid var(--ld-line); padding: 4rem 0 2rem; }
+.ld-guide h2 { margin: 0 0 2.2rem; font-size: 2.4rem; font-weight: 500; }
+.ld-guide-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
+.ld-guide h3 { margin: 0 0 0.8rem; font-size: 1.35rem; font-weight: 700; }
+.ld-guide ol { margin: 0; padding-left: 1.4rem; color: var(--ld-muted); font-size: 1.05rem; line-height: 1.85; list-style: decimal; }
+.ld-guide li + li { margin-top: 0.35rem; }
+.ld-guide-more { display: inline-block; margin-top: 2.4rem; font-size: 1.1rem; font-weight: 700; color: var(--ld-accent-text); text-decoration: underline; text-underline-offset: 4px; }
+
+/* ---------- ② 身分頁（也承載登入、API Key 那幾步） ---------- */
+#hlSplash {
+    --hl-text: var(--ld-text); --hl-text-secondary: var(--ld-muted); --hl-card-bg: var(--ld-bg); --hl-border: var(--ld-line);
+    display: block; min-height: 100vh; padding: 0 0 50px; margin-bottom: -50px;
+    background: var(--ld-bg); color: var(--ld-text); font-size: 1.0625rem; line-height: 1.7;
+}
+#hlSplash .ld-card { max-width: none; }
+#hlSplash .hl-identity-step.hidden, #hlStepIdentity.hidden { display: none; }
+#hlStepAuth, #hlStepApiKey { max-width: 30rem; margin: 0 auto; padding: 1rem 0 3rem; align-items: stretch; text-align: left; }
+#hlStepAuth .hl-back-link, #hlStepApiKey .hl-back-link { align-self: flex-start; color: var(--ld-muted); font-size: 1.05rem; }
+#hlStepAuth h3 { color: var(--ld-text) !important; }
+#hlStepAuth div[style*="color:#5f6368"], #hlStepAuth div[style*="color:#80868b"] { color: var(--ld-muted) !important; }
+
+.ld-pick { display: grid; grid-template-columns: 1fr 22rem; gap: 4rem; align-items: start; padding: 1rem 0 3rem; min-height: calc(100vh - 15rem); text-align: left; }
+.ld-back { display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 1.2rem; padding: 0.3rem 0; border: 0; background: transparent; color: var(--ld-muted); font: inherit; font-size: 1.05rem; cursor: pointer; }
+.ld-back:hover { color: var(--ld-text); }
+.ld-pick h2 { margin: 0 0 0.6rem; font-size: 3rem; font-weight: 500; color: var(--ld-text); }
+.ld-sub { margin: 0 0 2rem; color: var(--ld-muted); font-size: 1.2rem; }
+.lg-continue {
+    display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 1.2rem; padding: 0.7rem 1.25rem;
+    border: 2px solid var(--ld-accent); border-radius: 999px; background: transparent; color: var(--ld-accent-text);
+    font: inherit; font-weight: 700; cursor: pointer;
+}
+.lg-continue[hidden] { display: none; }
+.lg-continue:hover { background: var(--ld-accent); color: var(--ld-on-accent); }
+
+.ld-guest {
+    display: flex; align-items: center; gap: 1.4rem; width: 100%; padding: 1.6rem 1.8rem; border: 0; border-radius: 1.2rem; text-align: left; cursor: pointer;
+    background: var(--ld-accent); color: var(--ld-on-accent); font: inherit; box-shadow: 0 10px 24px rgba(26, 115, 232, 0.3);
+}
+.ld-guest:hover { background: var(--ld-accent-2); }
+.ld-guest .ic { flex: none; display: grid; place-items: center; width: 4rem; height: 4rem; border-radius: 1rem; background: rgba(255, 255, 255, 0.2); font-size: 2.3rem; }
+[data-theme="dark"] .ld-guest .ic { background: rgba(6, 20, 46, 0.18); }
+.ld-guest b { display: block; font-size: 1.55rem; font-weight: 700; line-height: 1.3; }
+.ld-guest .d { display: block; margin-top: 0.2rem; font-size: 1.1rem; opacity: 0.95; }
+.ld-guest .go { margin-left: auto; font-size: 2rem; }
+.ld-or { margin: 2.4rem 0 0.4rem; font-size: 1.05rem; font-weight: 500; color: var(--ld-muted); }
+.ld-rows { border-top: 1px solid var(--ld-line); }
+.ld-row {
+    display: flex; align-items: center; gap: 1.3rem; width: 100%; padding: 1.35rem 0.4rem; border: 0; border-bottom: 1px solid var(--ld-line);
+    background: transparent; color: var(--ld-text); font: inherit; text-align: left; cursor: pointer;
+}
+.ld-row:hover { background: var(--ld-hover); }
+.ld-row .ic { flex: none; display: grid; place-items: center; width: 3.4rem; height: 3.4rem; border-radius: 0.9rem; background: var(--ld-panel); color: var(--ld-accent-text); font-size: 2rem; }
+.ld-row b { display: block; font-size: 1.4rem; font-weight: 700; line-height: 1.3; }
+.ld-row .d { display: block; color: var(--ld-muted); font-size: 1.08rem; }
+.ld-row .need { margin-left: auto; flex: none; padding: 0.15rem 0.8rem; border: 1px solid var(--ld-line); border-radius: 999px; color: var(--ld-muted); font-size: 0.95rem; }
+.ld-row .go { flex: none; margin-left: auto; color: var(--ld-muted); font-size: 1.5rem; }
+.ld-row .need + .go { margin-left: 0.6rem; }
+.ld-pick > div { min-width: 0; }
+.ld-more { display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; margin-top: 1.4rem; font-size: 1rem; }
+.ld-more button, .ld-more a { padding: 0.4rem 0; border: 0; background: none; color: var(--ld-muted); font: inherit; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.ld-more button:hover, .ld-more a:hover { color: var(--ld-accent-text); }
+
+/* ---------- 訪客模式：只剩出題與「交給學生作答」，沒有需要登入的發送 ---------- */
+body.guest-mode #shareBtnsWrap { display: none; }
+body.guest-mode #btnAnswerMode { background: var(--ld-accent); border-color: var(--ld-accent); color: var(--ld-on-accent); }
+body.guest-mode #btnAnswerMode .lq-icon { color: inherit; }
+
+@media (max-width: 900px) {
+    .ld-wrap { padding: 0 1.1rem; }
+    .ld-logo { height: 3.1rem; }
+    .ld-hero, .ld-pick { grid-template-columns: 1fr; gap: 2rem; min-height: 0; }
+    .ld-vr { display: none; }
+    .ld-title { font-size: 4.6rem; }
+    .ld-tag { font-size: 1.5rem; }
+    .ld-lead { font-size: 1.1rem; }
+    .ld-btn { width: 100%; }
+    .ld-guide-cols { grid-template-columns: 1fr; gap: 2rem; }
+    .ld-guide h2 { font-size: 1.9rem; }
+    /* 手機身分頁：三個身分要在第一屏看完（844 高的手機），所以間距都收緊 */
+    .ld-top { padding: 1rem 0; }
+    .ld-pick { padding-top: 0; }
+    .ld-back { margin-bottom: 0.3rem; }
+    .ld-pick h2 { font-size: 2rem; margin-bottom: 0.3rem; }
+    .ld-sub { margin-bottom: 1.1rem; font-size: 1.05rem; }
+    .ld-guest { padding: 1rem 1.1rem; gap: 1rem; }
+    .ld-guest .ic { width: 3.2rem; height: 3.2rem; font-size: 1.9rem; }
+    .ld-guest b { font-size: 1.3rem; }
+    .ld-guest .d { font-size: 1rem; }
+    .ld-or { margin-top: 1.3rem; }
+    .ld-row { padding: 0.9rem 0.2rem; gap: 1rem; }
+    .ld-row .ic { width: 3rem; height: 3rem; font-size: 1.8rem; }
+    .ld-row b { font-size: 1.25rem; }
+    .ld-row .d { font-size: 1rem; line-height: 1.5; }
+    .ld-row .need { display: none; }
+    .ld-row .need + .go { margin-left: auto; } /* 「需登入」標籤藏起來後，箭頭要自己靠右 */
+    .ld-tbtn .lab { display: none; }
+}
+/* 主畫面頂列：手機上深淺色鈕只留圖示，不然頂列會多撐出 5px 橫向捲動 */
+@media (max-width: 640px) {
+    .lq-appbar-btn .lab { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ld-draw { animation: none; }
+    .ld-welcome { scroll-behavior: auto; transition: none; }
+}

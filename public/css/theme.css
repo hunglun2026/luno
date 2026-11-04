@@ -1,0 +1,107 @@
+/* 刻度｜深色主題對「主畫面」的覆蓋（進站頁在 landing.css）。色票變數 --ld-* 定義在 landing.css。
+   原則：頂列、出題表單、卡片、對話框跟著主題走；試卷與作答卷是「紙」，永遠白底黑字（要列印、匯出 Word／PDF）。
+   所以覆蓋 Tailwind 灰階類別時都排除這幾個區域：#resultSection、#answerModeContainer、.a4-page（寫成 PAPER）。 */
+
+[data-theme="dark"] { color-scheme: dark; }
+[data-theme="dark"] body { background: var(--ld-bg); color: var(--ld-text); }
+
+/* ---------- 紙：永遠淺色，原生控制項（捲軸、下拉）也用淺色 ---------- */
+#resultSection, #answerModeContainer, .a4-page, .pp-stage, #paperContainer {
+    color-scheme: light;
+    color: #1f2937;
+}
+#answerModeContainer { background: #f3f4f6; }
+
+/* ---------- 頂列、身分列 ---------- */
+[data-theme="dark"] .lq-appbar { background: rgba(10, 18, 38, 0.92); border-color: var(--ld-line); }
+[data-theme="dark"] .lq-appbar-name { color: var(--ld-text); }
+[data-theme="dark"] .lq-appbar-tag { color: var(--ld-muted); border-left-color: var(--ld-line); }
+[data-theme="dark"] .lq-appbar-visits, [data-theme="dark"] .lq-appbar-sub { color: var(--ld-muted); }
+[data-theme="dark"] .lq-appbar-btn:not(.is-primary) { color: var(--ld-muted); }
+[data-theme="dark"] .lq-appbar-btn:not(.is-primary):hover { background: var(--ld-hover); color: var(--ld-text); }
+[data-theme="dark"] .lq-role-chip.is-guest { background: rgba(251, 191, 36, 0.15); color: #fcd34d; border-color: rgba(251, 191, 36, 0.4); }
+
+/* ---------- 卡片、出題表單 ---------- */
+[data-theme="dark"] .lq-card,
+[data-theme="dark"] .lq-hero,
+[data-theme="dark"] .lq-mode,
+[data-theme="dark"] .lq-practice-loading-card,
+[data-theme="dark"] .lq-dlg-box { background: var(--ld-panel); border-color: var(--ld-line); color: var(--ld-text); }
+[data-theme="dark"] .lq-mode.is-active { background: rgba(76, 143, 240, 0.14); }
+[data-theme="dark"] .lq-hero-title, [data-theme="dark"] .lq-mode-name, [data-theme="dark"] .section-title,
+[data-theme="dark"] .lq-practice-loading-title, [data-theme="dark"] .lq-step { color: var(--ld-text); }
+[data-theme="dark"] .lq-hero-sub, [data-theme="dark"] .lq-hero-points li, [data-theme="dark"] .lq-mode-desc,
+[data-theme="dark"] .lq-empty-title, [data-theme="dark"] .lq-empty-sub, [data-theme="dark"] .lq-steps,
+[data-theme="dark"] .lq-disclaimer summary, [data-theme="dark"] .lq-disclaimer-more,
+[data-theme="dark"] .lq-practice-loading-sub, [data-theme="dark"] .lq-steps-reset { color: var(--ld-muted); }
+[data-theme="dark"] .lq-steps { border-bottom-color: var(--ld-line); }
+[data-theme="dark"] .lq-step b { background: rgba(76, 143, 240, 0.2); color: var(--ld-accent-text); }
+[data-theme="dark"] .lq-step-arrow, [data-theme="dark"] .lq-disclaimer-more { border-color: var(--ld-line); color: var(--ld-tick-soft); }
+[data-theme="dark"] .lq-practice-bar { background: var(--ld-line); }
+[data-theme="dark"] .lq-dlg-overlay { background: rgba(2, 6, 18, 0.7); }
+
+[data-theme="dark"] .lq-input,
+[data-theme="dark"] .input-custom { background: #0d1730; color: var(--ld-text); border-color: var(--ld-line); }
+[data-theme="dark"] .lq-input:hover { border-color: var(--ld-tick-soft); }
+[data-theme="dark"] .lq-input::placeholder, [data-theme="dark"] .input-custom::placeholder { color: #7d8cab; }
+[data-theme="dark"] .source-btn { border-color: var(--ld-line); color: var(--ld-text); }
+
+/* 出題精靈（guide.css）：第 4 步上方的條件摘要、「用上次的條件直接出題」、步驟圓點 */
+[data-theme="dark"] .lg-summary { background: rgba(255, 255, 255, 0.06); color: var(--ld-text); }
+[data-theme="dark"] .lg-summary span { color: var(--ld-muted); }
+[data-theme="dark"] .lg-quick { background: rgba(76, 143, 240, 0.14); border-color: var(--ld-accent); color: var(--ld-text); }
+[data-theme="dark"] .lg-quick b { color: var(--ld-accent-text); }
+[data-theme="dark"] .lg-dot:not(.is-cur) { background: var(--ld-panel); }
+[data-theme="dark"] .lg-dot.is-done { color: var(--ld-accent-text); border-color: var(--ld-accent-text); }
+
+/* 年級、科目膠囊 */
+[data-theme="dark"] .lq-chip:not(.is-active) { background: var(--ld-panel); color: var(--ld-muted); border-color: var(--ld-line); }
+[data-theme="dark"] .lq-chip-custom { color: var(--ld-muted); }
+
+/* ---------- 按鈕 ---------- */
+[data-theme="dark"] .lq-btn-secondary, [data-theme="dark"] .lq-btn-tool, [data-theme="dark"] .lq-btn-danger {
+    background: var(--ld-panel); border-color: var(--ld-line); color: var(--ld-text);
+}
+[data-theme="dark"] .lq-btn-danger { color: #f87171; }
+[data-theme="dark"] .lq-btn-secondary:hover:not(:disabled), [data-theme="dark"] .lq-btn-tool:hover:not(:disabled) { background: var(--ld-hover); color: var(--ld-text); border-color: var(--ld-tick-soft); }
+[data-theme="dark"] .lq-btn-danger:hover:not(:disabled) { background: var(--hl-red); color: #fff; }
+[data-theme="dark"] .lq-btn-ghost { color: var(--ld-muted); }
+[data-theme="dark"] .lq-btn-ghost:hover:not(:disabled) { color: var(--ld-text); background: rgba(255, 255, 255, 0.06); }
+[data-theme="dark"] #btnGlobalBack { background: var(--ld-panel); color: var(--ld-text); border-color: var(--ld-line); }
+
+/* ---------- Tailwind 灰階／色塊類別（紙的區域除外） ---------- */
+[data-theme="dark"] .text-gray-300:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-gray-400:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-gray-500:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-gray-600:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { color: var(--ld-muted); }
+[data-theme="dark"] .text-slate-700:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-slate-800:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { color: var(--ld-text); }
+[data-theme="dark"] .text-red-600:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-red-700:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { color: #f87171; }
+[data-theme="dark"] .text-blue-600:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-blue-700:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-blue-800:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { color: var(--ld-accent-text); }
+[data-theme="dark"] .text-emerald-600:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-emerald-700:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-emerald-800:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-emerald-900:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { color: #6ee7b7; }
+[data-theme="dark"] .text-amber-700:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .text-amber-800:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { color: #fcd34d; }
+[data-theme="dark"] .bg-white:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { background-color: var(--ld-panel); }
+[data-theme="dark"] .bg-gray-50:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .bg-gray-100:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { background-color: #0f1a36; }
+[data-theme="dark"] .bg-gray-200:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { background-color: #1a2a52; }
+[data-theme="dark"] .bg-red-50:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { background-color: rgba(239, 68, 68, 0.12); }
+[data-theme="dark"] .bg-indigo-50:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { background-color: rgba(99, 102, 241, 0.14); }
+[data-theme="dark"] .bg-emerald-50:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .bg-emerald-50\/70:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { background-color: rgba(16, 185, 129, 0.1); }
+[data-theme="dark"] .border-gray-100:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .border-gray-200:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { border-color: var(--ld-line); }
+[data-theme="dark"] .border-emerald-100:not(:is(#resultSection, #answerModeContainer, .a4-page) *),
+[data-theme="dark"] .border-emerald-300:not(:is(#resultSection, #answerModeContainer, .a4-page) *) { border-color: rgba(16, 185, 129, 0.35); }
+
+/* js 字串裡寫死的行內淺色底（只有一處）：學生首頁「登入才有…」的黃色提示，行內樣式要用屬性選擇器加 !important 才蓋得過 */
+[data-theme="dark"] .lq-card[style*="#fffbeb"] { background: rgba(251, 191, 36, 0.12) !important; border-color: rgba(251, 191, 36, 0.35) !important; }
+
+/* 對話框裡的輸入欄 */
+[data-theme="dark"] .lq-dlg-box .lq-input { background: #0d1730; }
