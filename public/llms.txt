@@ -1,9 +1,9 @@
-# 刻度・互動式評量
+# 刻度 互動式評量
 
-> 刻度・互動式評量
+> 刻度 互動式評量
 
 鴻綸科技（https://www.hunglun.com/）製作的免費學習網站，免註冊、免安裝，收錄於官網學習專區 https://www.hunglun.com/tools/games 。
 
 ## 頁面
-- [刻度・互動式評量](https://luno.hunglun.com/): 刻度・互動式評量
+- [刻度 互動式評量](https://luno.hunglun.com/): 刻度 互動式評量
 - [刻度 使用說明書](https://luno.hunglun.com/manual): 刻度互動式評量的完整使用說明：老師出題、發測驗、看全班進度，學生作答與練習，家長查看，一步一步配實際畫面。
