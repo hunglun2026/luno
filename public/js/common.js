@@ -46,3 +46,27 @@
             return escapeHtml(JSON.stringify(String(v == null ? '' : v)));
         }
 
+
+        // 登入憑證（2026-11-05）：每個分頁各自一份，同一台電腦同一個瀏覽器可以同時登入不同帳號
+        // （例：一個分頁當老師出題，另一個分頁當學生作答），互不覆蓋。
+        // - 分頁自己的登入放 sessionStorage（重新整理不會掉；空字串代表「這個分頁已登出」）
+        // - localStorage 只記「最後一次登入」，給沒有自己登入過的新分頁當預設
+        const LQ_TOKEN_KEY = 'lun_session_token';
+        function lqGetToken() {
+            try {
+                const s = sessionStorage.getItem(LQ_TOKEN_KEY);
+                if (s !== null) return s;
+                return localStorage.getItem(LQ_TOKEN_KEY) || '';
+            } catch (e) { return ''; }
+        }
+        function lqSetToken(t) {
+            try { sessionStorage.setItem(LQ_TOKEN_KEY, t); } catch (e) {}
+            try { localStorage.setItem(LQ_TOKEN_KEY, t); } catch (e) {}
+        }
+        function lqClearToken() {
+            try {
+                const mine = lqGetToken();
+                sessionStorage.setItem(LQ_TOKEN_KEY, '');
+                if (localStorage.getItem(LQ_TOKEN_KEY) === mine) localStorage.removeItem(LQ_TOKEN_KEY);
+            } catch (e) {}
+        }

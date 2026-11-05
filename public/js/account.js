@@ -1,11 +1,11 @@
 // Luno 綸諾｜帳號系統：登入註冊、班級歷史、監考式即時監看。2026-10-21 從 index.html 原樣拆出，檔案順序見 index.html 底部
         // ==================== 帳號系統：登入/註冊/班級歷史/監考式即時監看 ====================
-        // session token存在localStorage.lun_session_token，每次要驗證身分的請求帶X-Session-Token header。
+        // session token每個分頁各存一份（common.js 的 lqGetToken/lqSetToken），每次要驗證身分的請求帶X-Session-Token header。
         // 登入非必要：學生/家長不登入一樣能用既有分享連結作答/查看，登入是額外功能(存班級歷史/監考監看)。
         window.currentUser = null;
 
         async function initAuthUI() {
-            const token = localStorage.getItem('lun_session_token');
+            const token = lqGetToken();
             if (!token) {
                 updateAccountUI();
                 // 2026-11-05 起學生也要登入：不再用本機的免登入學生資料自動進首頁
@@ -14,7 +14,7 @@
             try {
                 const res = await fetch(API_BASE + "/api/auth/me", { headers: { 'X-Session-Token': token } });
                 const data = await res.json();
-                if (data.error) { localStorage.removeItem('lun_session_token'); window.currentUser = null; }
+                if (data.error) { lqClearToken(); window.currentUser = null; }
                 else {
                     window.currentUser = data.user;   // 要進哪個畫面由 core.js 啟動流程與 guide.js 決定
                 }
@@ -74,7 +74,7 @@
         }
 
         function doLogout() {
-            localStorage.removeItem('lun_session_token');
+            lqClearToken();
             window.currentUser = null;
             updateAccountUI();
             // 畫面內容都是依身分算出來的，登出後直接回選身分頁（除了訪客，其他身分都要登入）
@@ -147,7 +147,7 @@
                 });
                 const data = await res.json();
                 if (data.error) { showAuthError(data.error.message); return; }
-                localStorage.setItem('lun_session_token', data.token);
+                lqSetToken(data.token);
                 window.currentUser = data.user;
                 updateAccountUI();
                 renderAccountLoggedInBody();
@@ -164,7 +164,7 @@
                 });
                 const data = await res.json();
                 if (data.error) { showAuthError(data.error.message); return; }
-                localStorage.setItem('lun_session_token', data.token);
+                lqSetToken(data.token);
                 window.currentUser = data.user;
                 updateAccountUI();
                 renderAccountLoggedInBody();
@@ -202,7 +202,7 @@
         async function doJoinClass() {
             const classCode = document.getElementById('joinClassCode').value.trim();
             if (!classCode) return;
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             try {
                 const res = await fetch(API_BASE + "/api/auth/join-class", {
                     method: 'POST',
@@ -220,7 +220,7 @@
         async function doLinkChild() {
             const studentUsername = document.getElementById('linkChildUsername').value.trim();
             if (!studentUsername) return;
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             try {
                 const res = await fetch(API_BASE + "/api/parent/link-child", {
                     method: 'POST',
@@ -235,7 +235,7 @@
         }
 
         async function loadMyChildren() {
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             const box = document.getElementById('parentChildrenBox');
             if (!box) return;
             try {
@@ -256,7 +256,7 @@
         async function saveToClassHistory() {
             if (!window.currentUser || window.currentUser.role !== 'teacher') return;
             if (!window.currentItems || window.currentItems.length === 0) { lqAlert('目前沒有題目可以存'); return; }
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             const title = window.docTitle || '測驗';
             try {
                 const res = await fetch(API_BASE + "/api/history", {
@@ -271,7 +271,7 @@
         }
 
         async function openClassHistory() {
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             const list = document.getElementById('classHistoryList');
             list.innerHTML = "<div class='text-center text-gray-500 py-8'>⏳ 載入中...</div>";
             document.getElementById('classHistoryModal').classList.remove('hidden');
@@ -307,7 +307,7 @@
 
         async function deleteClassHistoryItem(id) {
             if (!(await askConfirm('確定刪除這筆班級歷史記錄？', { danger: true }))) return;
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             try {
                 const res = await fetch(API_BASE + "/api/history/" + id, {
                     method: 'DELETE', headers: { 'X-Session-Token': token }

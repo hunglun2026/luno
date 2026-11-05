@@ -8,7 +8,7 @@
     // token 失效時 App 會清掉它並導回 /start?switch=1，不會繞圈
     var q = new URLSearchParams(location.search);
     var token = null;
-    try { token = localStorage.getItem('lun_session_token'); } catch (e) {}
+    try { token = lqGetToken(); } catch (e) {}
     if (token && !q.has('switch')) { location.replace('/app'); return; }
 
     var guest = document.querySelector('[data-role="guest"]');

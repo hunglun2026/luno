@@ -185,7 +185,7 @@
         // 不能只呼叫 doLogout()——那只更新出題工具那邊的帳號列，學生首頁會停在原畫面看起來沒登出。
         async function studentLogout() {
             if (!(await askConfirm('要登出嗎？登出後要重新輸入帳號密碼才能看到跨裝置的練習紀錄。', { okText: '登出' }))) return;
-            localStorage.removeItem('lun_session_token');
+            lqClearToken();
             localStorage.removeItem(STUDENT_PROFILE_KEY);
             window.currentUser = null;
             location.href = '/start?switch=1';
@@ -282,7 +282,7 @@
         async function loadParentPanelChildren() {
             const box = document.getElementById('parentPanelChildren');
             if (!box) return;
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             try {
                 const res = await fetch(API_BASE + "/api/parent/children", { headers: { 'X-Session-Token': token } });
                 const data = await res.json();
@@ -304,7 +304,7 @@
         async function parentPanelLinkChild(btnEl) {
             const studentUsername = (document.getElementById('parentPanelChildInput').value || '').trim();
             if (!studentUsername) return;
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             if (btnEl) btnEl.disabled = true;
             try {
                 const res = await fetch(API_BASE + "/api/parent/link-child", {
@@ -468,7 +468,7 @@
             }
             const body = document.getElementById('quizEntryBody');
             body.innerHTML = "<div class='text-center text-gray-500 py-6'>⏳ 載入已連結的孩子...</div>";
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             try {
                 const res = await fetch(API_BASE + "/api/parent/children", { headers: { 'X-Session-Token': token } });
                 const data = await res.json();

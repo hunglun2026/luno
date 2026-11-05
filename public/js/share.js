@@ -59,7 +59,7 @@
                 try {
                     const res = await fetch(API_BASE + "/api/code", {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'X-Session-Token': localStorage.getItem('lun_session_token') || '' },
+                        headers: { 'Content-Type': 'application/json', 'X-Session-Token': lqGetToken() || '' },
                         body: JSON.stringify({ shareId: shareId })
                     });
                     const data = await res.json();
@@ -258,7 +258,7 @@
             window.liveViewRefresh = async function() {
                 const body = document.getElementById('liveDashboardBody');
                 // 授權優先序：連結金鑰(免登入) → 老師帳號的session token → 管理者密碼(沒有前兩者時才問)
-                const sessionToken = localStorage.getItem('lun_session_token') || '';
+                const sessionToken = lqGetToken() || '';
                 let adminPass = sessionStorage.getItem('linquiz_admin') || '';
                 if (!dashKey && (!sessionToken || window.__liveNeedAdminPass) && !adminPass) {
                     adminPass = (await askText('請輸入管理者密碼以查看班級即時進度：', { secret: true })) || '';
@@ -331,7 +331,7 @@
                 // 金鑰(免登入老師)或老師/管理員帳號都可以停，帶哪個有就送哪個
                 const headers = { 'Content-Type': 'application/json' };
                 if (key) headers['X-Dash-Key'] = key;
-                const token = localStorage.getItem('lun_session_token') || '';
+                const token = lqGetToken() || '';
                 if (token) headers['X-Session-Token'] = token;
                 const res = await fetch(API_BASE + "/api/live-revoke", {
                     method: 'POST', headers,

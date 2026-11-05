@@ -16,7 +16,7 @@
         }
 
         async function loadAdminUsers() {
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             const q = (document.getElementById('adminSearchInput').value || '').trim();
             const listEl = document.getElementById('adminUsersList');
             listEl.innerHTML = "<div class='text-center text-gray-500 py-8'>⏳ 載入中...</div>";
@@ -75,7 +75,7 @@
         }
 
         async function doAdminCreateUser() {
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             const username = document.getElementById('adminNewUsername').value.trim();
             const password = document.getElementById('adminNewPassword').value;
             const displayName = document.getElementById('adminNewDisplayName').value.trim();
@@ -121,7 +121,7 @@
         }
 
         async function doAdminUpdateUser(id) {
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             const displayName = document.getElementById('adminEditDisplayName').value.trim();
             const role = document.getElementById('adminEditRole').value;
             const newPassword = document.getElementById('adminEditNewPassword').value;
@@ -146,7 +146,7 @@
 
         async function deleteAdminUser(id, username) {
             if (!(await askConfirm('確定要刪除帳號「' + username + '」？此動作無法復原，若是老師帳號會一併刪除其班級與歷史記錄。', { danger: true }))) return;
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             try {
                 const res = await fetch(API_BASE + "/api/admin/users/" + id, {
                     method: 'DELETE', headers: { 'X-Session-Token': token }
@@ -217,7 +217,7 @@
             if (btnEl) btnEl.disabled = true;
             try {
                 const headers = { 'Content-Type': 'application/json' };
-                const token = localStorage.getItem('lun_session_token') || '';
+                const token = lqGetToken() || '';
                 if (token) headers['X-Session-Token'] = token;
                 if (window.currentDashKey) headers['X-Dash-Key'] = window.currentDashKey;
                 const res = await fetch(API_BASE + "/api/live-revoke", {
@@ -266,7 +266,7 @@
 
         async function openProctorDetailParent(studentUsername) {
             document.getElementById('proctorModal').classList.remove('hidden');
-            const token = localStorage.getItem('lun_session_token') || '';
+            const token = lqGetToken() || '';
             const refresh = async () => {
                 const bodyEl = document.getElementById('proctorModalBody');
                 try {

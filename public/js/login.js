@@ -51,7 +51,7 @@
         }
 
         function splashLoginSuccess(data) {
-            localStorage.setItem('lun_session_token', data.token);
+            lqSetToken(data.token);
             try { sessionStorage.removeItem(SS_ROLE); } catch (e) {}
             location.href = '/app';
         }
@@ -100,17 +100,5 @@
             const role = new URLSearchParams(location.search).get('role');
             if (!SPLASH_ROLE_LABEL[role]) { location.replace('/start?switch=1'); return; }
             splashKind = role;
-            const token = localStorage.getItem('lun_session_token');
-            if (token) {
-                try {
-                    const res = await fetch(API_BASE + "/api/auth/me", { headers: { 'X-Session-Token': token } });
-                    const data = await res.json();
-                    if (!data.error && data.user) {
-                        const want = SPLASH_ROLE_TO_API[role];
-                        const got = data.user.role;
-                        if (got === want || (role === 'teacher' && got === 'superadmin')) { location.replace('/app'); return; }
-                    }
-                } catch (e) {}
-            }
             renderSplashAuthForm('login');
         })();
