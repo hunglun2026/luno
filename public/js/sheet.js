@@ -153,6 +153,8 @@
             const studentHome = document.getElementById('studentHome');
             if (studentHome) studentHome.classList.add('hidden');
             document.getElementById('resultSection').classList.remove('hidden');
+            const ocrApp = document.getElementById('ocrApp');
+            if (ocrApp) ocrApp.classList.add('hidden');
 
             const container = document.getElementById('paperContainer');
             container.innerHTML = "";

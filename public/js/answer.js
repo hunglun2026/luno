@@ -390,18 +390,27 @@
             gradeAnswers();
         }
 
-        function gradeAnswers() {
+        async function gradeAnswers() {
             // 交卷是關鍵事件，不等節流窗，立刻把最終狀態送出去讓老師/家長看到已完成
             pushLiveProgress(true);
             const items = window.currentItems || [];
             let totalScore = 0, maxScore = 0, needReview = 0;
             window.gradedDetails = {};
+            items.forEach((q, i) => { gradeOneQuestion(i); });
+            // 填空、簡答：標了 g 的題目（紙本卷拍照轉題目）請 AI 依參考答案批改，失敗或次數用完就維持文字比對（ai-grade.js）
+            if (items.some(aiGradeEligible)) {
+                const waitEl = document.getElementById('scoreResult');
+                if (waitEl) waitEl.innerHTML = "<div class='lq-card p-5 text-center text-sm text-gray-600'>⏳ AI 正在依參考答案批改填空與簡答題…</div>";
+                applyAiGrades(await aiRegradeTextAnswers());
+            }
+            let aiCount = 0;
             items.forEach((q, i) => {
-                const r = gradeOneQuestion(i);
+                const r = (window.gradedDetails || {})[i];
                 maxScore += (q.s || 0);
                 if (!r) return;
                 totalScore += r.score;
                 if (r.reviewNeeded) needReview++;
+                if (r.aiGraded) aiCount++;
             });
 
             const pct = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
@@ -422,7 +431,7 @@
                     "<button onclick='handoffUnlock()' class='lq-btn lq-btn-ghost px-4 py-2 text-sm'>🔓 家長／教師查看詳解</button></div>";
             } else {
                 resultHTML += "<div class='text-3xl font-bold mb-1' style='color:var(--hl-blue);'>" + totalScore + " / " + maxScore + " 分</div>";
-                resultHTML += "<div class='text-sm text-gray-500 mb-3'>約 " + pct + " 分" + (needReview > 0 ? "（含填空/簡答題的文字比對估算，建議自行核對）" : "（選擇/複選題自動判分）") + "</div>";
+                resultHTML += "<div class='text-sm text-gray-500 mb-3'>約 " + pct + " 分" + (needReview > 0 ? "（含填空/簡答題的文字比對估算，建議自行核對）" : (aiCount > 0 ? "（填空與簡答題由 AI 依參考答案批改）" : "（選擇/複選題自動判分）")) + "</div>";
                 resultHTML += "<button onclick='shareResult(this)' class='lq-btn lq-btn-share px-4 py-2 text-sm'>📤 分享結果給家長/老師</button>";
                 resultHTML += "<div id='shareResultMsg' class='text-xs text-gray-500 mt-2'></div>";
             }

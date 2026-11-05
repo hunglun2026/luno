@@ -14,6 +14,8 @@
 //   就自動 fallback 到 gemini-3.1-flash-lite，不會整批直接失敗
 
 import { handleBank, retryPendingBank } from "./bank.js";
+import { handleOcr } from "./ocr.js";
+import { handleGradeAnswer } from "./grade.js";
 
 const COOLDOWN_MS = 30000;
 // 一次出題（第 0 批通過冷卻後）最多還能打幾次後續批次／重試；用完要重新走冷卻。
@@ -76,6 +78,16 @@ export default {
     // 題庫（收題＋驗證，邏輯在 bank.js；共用工具以 deps 傳入，避免循環 import）
     if (url.pathname.startsWith("/api/bank/")) {
       return handleBank(request, env, ctx, { json, CORS_HEADERS, getApiKeys, GEMINI_MODELS, adminPassMatches });
+    }
+
+    // 紙本考卷拍照 OCR（邏輯在 ocr.js；不保存圖片）
+    if (url.pathname === "/api/ocr-paper") {
+      return handleOcr(request, env, ctx, { json, CORS_HEADERS, getApiKeys, GEMINI_MODELS, adminPassMatches, verifySession });
+    }
+
+    // 填空、簡答依參考答案 AI 批改（邏輯在 grade.js；題目與答案由伺服器從分享讀）
+    if (url.pathname === "/api/grade-answer") {
+      return handleGradeAnswer(request, env, ctx, { json, CORS_HEADERS, getApiKeys, GEMINI_MODELS, adminPassMatches, verifySession });
     }
 
     if (url.pathname === "/api/generate") {

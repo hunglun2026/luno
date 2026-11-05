@@ -115,35 +115,9 @@ async function ppEnsurePaper() {
     return ppPaper;
 }
 
-// 大張掃描圖直接上傳會超過 5MB，所以一律先在瀏覽器縮到長邊 1600px 再送。
+// 大張掃描圖直接上傳會超過 5MB，所以一律先在瀏覽器縮到長邊 1600px 再送（縮圖與 PDF 轉圖在 page-images.js，OCR 流程共用）。
 // 1600px 對「看得清楚題目字」跟「AI 抓得到座標」都夠用，再高只是浪費容量。
-function ppCanvasToBlob(canvas, quality) {
-    return new Promise(function (resolve) {
-        canvas.toBlob(function (b) { resolve(b); }, 'image/jpeg', quality || 0.85);
-    });
-}
-
-async function ppShrinkImage(source) {
-    const MAX = 1600;
-    const w = source.width || source.naturalWidth;
-    const h = source.height || source.naturalHeight;
-    const scale = Math.min(1, MAX / Math.max(w, h));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(w * scale);
-    canvas.height = Math.round(h * scale);
-    canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
-    return await ppCanvasToBlob(canvas, 0.85);
-}
-
-function ppLoadImage(url) {
-    return new Promise(function (resolve, reject) {
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = function () { resolve(img); };
-        img.onerror = function () { reject(new Error('圖片載入失敗')); };
-        img.src = url;
-    });
-}
+function ppLoadImage(url) { return lqLoadImage(url); }   // paper-student.js 也用
 
 async function ppHandleFiles(el) {
     const files = Array.from(el.files || []);
@@ -155,26 +129,7 @@ async function ppHandleFiles(el) {
 
     try {
         await ppEnsurePaper();
-        const blobs = [];
-        for (const f of files) {
-            if (f.type === 'application/pdf') {
-                await loadScript(LIB_URLS.pdfjs);
-                window.pdfjsLib.GlobalWorkerOptions.workerSrc = LIB_URLS.pdfjsWorker;
-                const pdf = await window.pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise;
-                for (let p = 1; p <= pdf.numPages && blobs.length < 10; p++) {
-                    const page = await pdf.getPage(p);
-                    const viewport = page.getViewport({ scale: 2 });
-                    const canvas = document.createElement('canvas');
-                    canvas.width = viewport.width;
-                    canvas.height = viewport.height;
-                    await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
-                    blobs.push(await ppShrinkImage(canvas));
-                }
-            } else if (/^image\//.test(f.type)) {
-                const img = await ppLoadImage(URL.createObjectURL(f));
-                blobs.push(await ppShrinkImage(img));
-            }
-        }
+        const blobs = (await lqFilesToPageBlobs(files, { maxEdge: 1600, quality: 0.85, maxPages: 10 })).map(function (x) { return x.blob; });
 
         if (!blobs.length) throw new Error('沒有可用的圖片或 PDF');
 

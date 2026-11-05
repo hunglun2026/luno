@@ -338,6 +338,10 @@
             const inputForm = document.getElementById('inputForm');
             const resultSection = document.getElementById('resultSection');
 
+            // 拍照轉題目的畫面：回到出題表單
+            const ocrApp = document.getElementById('ocrApp');
+            if (ocrApp && !ocrApp.classList.contains('hidden')) { ocrExit(); return; }
+
             // 分享連結／即時監看連結開的分頁：站內沒有上一步(網址本身就是入口)，回站台首頁
             if (window.isSharedView || location.search) {
                 location.href = '/';
@@ -369,12 +373,14 @@
             // 上方本來就有「換身分／登出」可以離開，不再多一顆返回鈕
             const onHome = isViewVisible(document.getElementById('inputForm'))
                 || isViewVisible(document.getElementById('studentHome'));
-            btn.classList.toggle('hidden', onHome);
+            // 拍照轉題目那頁頂端自己有「回上一頁」，浮動的會蓋到底部連結
+            const onOcr = isViewVisible(document.getElementById('ocrApp'));
+            btn.classList.toggle('hidden', onHome || onOcr);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
             const obs = new MutationObserver(updateGlobalBackBtn);
-            ['inputForm', 'studentHome', 'resultSection'].forEach(function (id) {
+            ['inputForm', 'studentHome', 'resultSection', 'ocrApp'].forEach(function (id) {
                 const el = document.getElementById(id);
                 if (el) obs.observe(el, { attributes: true, attributeFilter: ['class'] });
             });
