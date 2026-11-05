@@ -28,12 +28,18 @@
             return n === ancestor ? y : null;
         }
 
-        async function dlPDF() {
+        // which：'quiz' 題目卷、'key' 答案卷；沒給就照目前看到的 A4 頁。
+        // 線上作答畫面時 A4 是 display:none，截不到圖，所以匯出前先切過去、匯出完切回原本的畫面
+        async function dlPDF(which) {
             if (window._exporting) return;
             window._exporting = true;
+            const before = window.currentSheet || 'answer';
             try {
+                const target = which || (before === 'answer' ? 'quiz' : before);
+                if (target !== before) switchSheet(target);
                 await dlPDFInner();
             } finally {
+                if ((window.currentSheet || 'answer') !== before) switchSheet(before);
                 window._exporting = false;
             }
         }

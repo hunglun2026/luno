@@ -194,7 +194,8 @@
 
             // 「每題即時看結果」是需要登入的功能：即時回饋會一題一題回報到伺服器(老師/家長監看也靠這個)，
             // 未登入者只給「全部寫完再送出」，並直接告訴他登入就能解鎖
-            const canInstant = !!window.currentUser;
+            // 老師／訪客自己預覽（不是學生從連結進來）也開放，才看得到學生會看到的即時回饋
+            const canInstant = !!window.currentUser || !window.isSharedView;
             html += "<div class='lq-card p-4 mb-5' id='ansModeBox'>" +
                 "<div class='text-sm text-gray-500 mb-3 text-center font-semibold'>請選擇作答模式</div>" +
                 "<div class='flex items-center justify-center gap-4 sm:gap-6 text-sm flex-wrap'>" +

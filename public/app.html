@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="刻度 互動式評量">
     <meta name="robots" content="noindex">
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=32"></script>
+    <script src="js/theme.js?v=34"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -27,15 +27,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式出題（老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=32">
+    <link rel="stylesheet" href="css/guide.css?v=34">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=32">
-    <link rel="stylesheet" href="css/sheet.css?v=32">
+    <link rel="stylesheet" href="css/app.css?v=34">
+    <link rel="stylesheet" href="css/sheet.css?v=34">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=32">
+    <link rel="stylesheet" href="css/tailwind.css?v=34">
     <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=32">
-    <link rel="stylesheet" href="css/theme.css?v=32">
+    <link rel="stylesheet" href="css/landing.css?v=34">
+    <link rel="stylesheet" href="css/theme.css?v=34">
 </head>
 <body class="text-slate-800">
 
@@ -297,7 +297,8 @@
     <div id="resultSection" class="hidden w-full min-h-screen bg-gray-600 pb-20">
         <div class="sticky-header sticky top-0 text-white p-2 sm:p-3 shadow-lg z-50 flex flex-wrap justify-center items-center gap-2 sm:gap-4">
             <div class="flex gap-1 order-1 bg-black/25 p-1 rounded-xl shadow-inner">
-                <button onclick="switchSheet('quiz')" id="btnQuiz" class="lq-btn lq-btn-dark is-active px-3 sm:px-4 py-1.5 text-sm sm:text-base">題目卷</button>
+                <button onclick="switchSheet('answer')" id="btnOnline" class="lq-btn lq-btn-dark is-active px-3 sm:px-4 py-1.5 text-sm sm:text-base">線上作答</button>
+                <button onclick="switchSheet('quiz')" id="btnQuiz" class="lq-btn lq-btn-dark px-3 sm:px-4 py-1.5 text-sm sm:text-base">題目卷</button>
                 <button onclick="switchSheet('key')" id="btnKey" class="lq-btn lq-btn-dark px-3 sm:px-4 py-1.5 text-sm sm:text-base">答案卷</button>
             </div>
 
@@ -309,12 +310,14 @@
                  老師分不出哪些只是換畫面、哪些會真的送出去。
                  現在左邊是切換(上面那組連體按鈕)，這裡只放動作，低頻的收進「更多」 -->
             <div class="flex gap-2 flex-wrap justify-center order-2 sm:order-3 items-center">
+                <button onclick="openEditItems()" id="btnEditItems" class="lq-btn lq-btn-dark lq-iconbtn px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="編輯題目"><span class="ph-duotone ph-pencil-simple lq-icon lq-icon-amber"></span><span class="lq-lab"> 編輯題目</span></button>
                 <button onclick="openHandoffSetup()" id="btnAnswerMode" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-device-mobile lq-icon lq-icon-sky"></span> 交給學生作答</button>
                 <div class="relative inline-block" id="downloadMenuWrap">
-                    <button onclick="toggleDownloadMenu()" class="lq-btn lq-btn-dark lq-iconbtn px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="下載"><span class="ph-duotone ph-download-simple lq-icon lq-icon-blue"></span><span class="lq-lab"> 下載 ▾</span></button>
+                    <button onclick="toggleDownloadMenu()" class="lq-btn lq-btn-dark lq-iconbtn px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="下載"><span class="ph-duotone ph-download-simple lq-icon lq-icon-blue"></span><span class="lq-lab"> 下載與列印 ▾</span></button>
                     <div id="downloadMenu" class="hidden absolute right-0 mt-1 bg-white text-slate-800 rounded-lg shadow-xl border z-50 overflow-hidden w-56">
                         <button onclick="dlDoc(); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-doc lq-icon text-blue-600"></span> Word (.docx)</button>
-                        <button onclick="dlPDF(); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-pdf lq-icon text-red-600"></span> PDF</button>
+                        <button onclick="dlPDF('quiz'); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-pdf lq-icon text-red-600"></span> PDF（題目卷，可列印）</button>
+                        <button onclick="dlPDF('key'); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-pdf lq-icon text-red-600"></span> PDF（答案卷）</button>
                         <div class="px-4 py-2 text-xs text-gray-400 border-t">🖨️ 要列印請先下載PDF，開啟後用PDF閱讀器本身的列印功能</div>
                     </div>
                 </div>
@@ -337,7 +340,7 @@
         <!-- 提示從工具列裡搬出來：它在那裡佔了一整段寬度，窄螢幕還會逼出一整行。
              放在試卷正上方反而更貼近它要講的東西，也讓老師關掉就不再打擾 -->
         <div id="editHint" class="lq-edit-hint no-print mt-4 hidden">
-            <span>💡 試卷上的任何文字都可以直接點下去修改，改完會一起帶進下載的 Word／PDF。</span>
+            <span>💡 這是列印用的版面。要修改題目、選項、答案，請按上方「編輯題目」，改完線上作答、分享、Word、PDF 都會一起更新。</span>
             <button type="button" onclick="dismissEditHint()" aria-label="不再顯示這個提示">知道了 ✕</button>
         </div>
         <div id="paperContainer" class="max-w-5xl mx-auto pt-2"></div>
@@ -385,6 +388,29 @@
             <div id="quizCodeValue" class="font-black mb-3" style="font-size:3.2rem; letter-spacing:0.15em; color:var(--hl-blue);">000 000</div>
             <div class="text-xs text-gray-400 mb-5">代碼已複製到剪貼簿，30 天內有效。學生也可以直接用分享連結進入。</div>
             <button onclick="closeQuizCodeModal()" class="lq-btn lq-btn-primary w-full py-2">關閉</button>
+        </div>
+    </div>
+
+    <!-- 編輯題目：改 window.currentItems（js/edit-items.js） -->
+    <div id="editItemsModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
+        <div class="lq-card w-full max-h-[80vh] overflow-y-auto p-5" style="max-width:44rem;box-shadow: var(--lq-shadow-lg);">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-bold text-lg">✏️ 編輯題目</h3>
+                <button type="button" onclick="closeEditItems()" class="text-gray-400 hover:text-gray-600 text-xl" aria-label="關閉">✕</button>
+            </div>
+            <label class="text-xs text-gray-500">試卷標題</label>
+            <input id="eiTitle" class="lq-input w-full mb-3" maxlength="60">
+            <div id="editItemsBody"></div>
+            <div class="flex flex-wrap gap-2 justify-between mt-2">
+                <span class="flex gap-2">
+                    <button type="button" onclick="eiAdd()" class="lq-btn lq-btn-ghost px-3 py-2 text-sm">＋ 新增一題</button>
+                    <button type="button" onclick="eiNormalize()" class="lq-btn lq-btn-ghost px-3 py-2 text-sm">配分重算成 100</button>
+                </span>
+                <span class="flex gap-2">
+                    <button type="button" onclick="closeEditItems()" class="lq-btn lq-btn-ghost px-3 py-2 text-sm">取消</button>
+                    <button type="button" onclick="saveEditItems()" class="lq-btn lq-btn-primary px-4 py-2 text-sm">儲存</button>
+                </span>
+            </div>
         </div>
     </div>
 
@@ -462,26 +488,27 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/common.js?v=32"></script>
-    <script src="js/core.js?v=32"></script>
-    <script src="js/dialog.js?v=32"></script>
-    <script src="js/entry.js?v=32"></script>
-    <script src="js/home.js?v=32"></script>
-    <script src="js/share.js?v=32"></script>
-    <script src="js/settings.js?v=32"></script>
-    <script src="js/generate.js?v=32"></script>
-    <script src="js/sheet.js?v=32"></script>
-    <script src="js/answer.js?v=32"></script>
-    <script src="js/bank.js?v=32"></script>
-    <script src="js/handoff.js?v=32"></script>
-    <script src="js/router.js?v=32"></script>
-    <script src="js/export.js?v=32"></script>
-    <script src="js/account.js?v=32"></script>
-    <script src="js/admin.js?v=32"></script>
+    <script src="js/common.js?v=34"></script>
+    <script src="js/core.js?v=34"></script>
+    <script src="js/dialog.js?v=34"></script>
+    <script src="js/entry.js?v=34"></script>
+    <script src="js/home.js?v=34"></script>
+    <script src="js/share.js?v=34"></script>
+    <script src="js/settings.js?v=34"></script>
+    <script src="js/generate.js?v=34"></script>
+    <script src="js/sheet.js?v=34"></script>
+    <script src="js/edit-items.js?v=34"></script>
+    <script src="js/answer.js?v=34"></script>
+    <script src="js/bank.js?v=34"></script>
+    <script src="js/handoff.js?v=34"></script>
+    <script src="js/router.js?v=34"></script>
+    <script src="js/export.js?v=34"></script>
+    <script src="js/account.js?v=34"></script>
+    <script src="js/admin.js?v=34"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=32">
+<link rel="stylesheet" href="css/paper.css?v=34">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -576,11 +603,11 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=32"></script>
-<script src="js/paper-student.js?v=32"></script>
-<script src="js/paper-focus.js?v=32"></script>
+<script src="js/paper-teacher.js?v=34"></script>
+<script src="js/paper-student.js?v=34"></script>
+<script src="js/paper-focus.js?v=34"></script>
     <!-- 引導式出題（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=32"></script>
+    <script src="js/guide.js?v=34"></script>
 
 </body>
 </html>

@@ -66,13 +66,13 @@
                     optsHTML += "<div class='q-opts'>";
                     q.o.forEach((o, oi) => {
                         let label = String.fromCharCode(65+oi);
-                        optsHTML += "<div class='q-opt editable-text' contenteditable='true'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
+                        optsHTML += "<div class='q-opt'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
                     });
                     optsHTML += "</div>";
                 }
                 let answerSpace = (!q.o || q.o.length === 0) ? "<div class='writing-space'></div>" : "";
                 box.innerHTML = regenBtnHTML(idx) +
-                    "<div class='q-text editable-text' contenteditable='true'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
+                    "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
                     optsHTML + answerSpace;
 
                 let numBox = qItem.querySelector('.q-num-box');
@@ -125,6 +125,7 @@
                 if (!newQ || !newQ.q) throw new Error("AI 回傳格式異常，請再試一次");
 
                 window.currentItems[idx] = newQ;
+                touchItems();   // 題目變了：分享連結、線上作答畫面都要重做
                 updateQuestionDOM(idx, newQ);
                 const ansContainer = document.getElementById('answerModeContainer');
                 if (ansContainer) ansContainer.dataset.rendered = '';
@@ -134,6 +135,15 @@
                 btnEl.disabled = false;
                 btnEl.innerHTML = originalLabel;
             }
+        }
+
+        // 題目內容有任何變動（編輯、單題重出）都要呼叫：
+        // itemsVersion 讓 getOrCreateShareId 知道舊的分享連結內容過時了；線上作答畫面也要重畫
+        window.itemsVersion = window.itemsVersion || 0;
+        function touchItems() {
+            window.itemsVersion++;
+            const ans = document.getElementById('answerModeContainer');
+            if (ans) ans.dataset.rendered = '';
         }
 
         // 切到「試卷結果」畫面：藏輸入表單與學生首頁，清空舊試卷與作答區
@@ -174,7 +184,7 @@
                 optsHTML += "<div class='q-opts'>";
                 q.o.forEach((o, oi) => {
                     let label = String.fromCharCode(65+oi);
-                    optsHTML += "<div class='q-opt editable-text' contenteditable='true'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
+                    optsHTML += "<div class='q-opt'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
                 });
                 optsHTML += "</div>";
             }
@@ -185,7 +195,7 @@
                "<div class='q-num-box'>" + prefix + "</div>" +
                "<div class='q-content-box'>" +
                    regenBtnHTML(qIdx) +
-                   "<div class='q-text editable-text' contenteditable='true'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
+                   "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
                    optsHTML +
                    answerSpace +
                "</div></div>";
@@ -196,7 +206,6 @@
             const kDiv = document.createElement('div');
             kDiv.className = "a4-page key-page";
             kDiv.style.display = 'none';
-            kDiv.contentEditable = "true";
             let kHtml = "<h2 style='text-align:center; font-size:18pt; font-weight:bold; margin-bottom:20px;'>解析卷</h2>";
             items.forEach((q, i) => {
                 const ans = answerKeyText(q);
@@ -223,11 +232,10 @@
                 const pageNum = pageIdx + 1;
                 const pageDiv = document.createElement('div');
                 pageDiv.className = "a4-page quiz-page";
-                pageDiv.contentEditable = "true";
 
                 let headerHTML = "";
                 if (pageNum === 1) {
-                    headerHTML = "<div class='paper-header' contenteditable='true'>" +
+                    headerHTML = "<div class='paper-header'>" +
                         "<h2>"+escapeHtml(title)+"</h2>" +
                         "<div class='paper-info'>" +
                         "<span>"+escapeHtml(sub)+"</span><span>班級：＿＿＿＿ 姓名：＿＿＿＿ 座號：＿＿＿＿</span></div></div>";
@@ -287,6 +295,8 @@
             let paperContainer = document.getElementById('paperContainer');
             let b1 = document.getElementById('btnQuiz');
             let b2 = document.getElementById('btnKey');
+            let b0 = document.getElementById('btnOnline');
+            window.currentSheet = t;
 
             qs.forEach(e => e.style.display = (t === 'quiz') ? 'block' : 'none');
             ks.forEach(e => e.style.display = (t === 'key') ? 'block' : 'none');
@@ -295,6 +305,7 @@
 
             if (b1) b1.classList.toggle('is-active', t === 'quiz');
             if (b2) b2.classList.toggle('is-active', t === 'key');
+            if (b0) b0.classList.toggle('is-active', t === 'answer');
 
             updateEditHintVisibility(t);
 

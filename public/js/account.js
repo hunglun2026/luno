@@ -303,6 +303,8 @@
             window.currentItems = h.items;
             closeClassHistory();
             renderPaperFixed(h.items, h.title);
+            window.itemsVersion = (window.itemsVersion || 0) + 1;
+            switchSheet('answer');
         }
 
         async function deleteClassHistoryItem(id) {

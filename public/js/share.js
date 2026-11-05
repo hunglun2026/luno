@@ -186,6 +186,11 @@
             const hintText = hintBar ? hintBar.querySelector('span') : null;
             const hintClose = hintBar ? hintBar.querySelector('button') : null;
 
+            // 學生／家長從連結進來：不能切換檢視、不能編輯題目（編輯鈕與線上作答鈕只給出題的老師）
+            ['btnOnline', 'btnEditItems'].forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
             if (window.sharedMode === 'student') {
                 if (btnQuiz) btnQuiz.classList.add('hidden');
                 if (btnKey) btnKey.classList.add('hidden');

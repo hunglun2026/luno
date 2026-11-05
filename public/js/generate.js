@@ -279,10 +279,12 @@
             renderPaperFixed(allItems);
             submitToBank(cfg, allItems);
 
-            // 學生的「我要練習」：出完題直接進線上作答(他要的是寫，不是看考卷排版)，
-            // 姓名/班級也先幫他填好，省得每次重打
+            // 一律以線上、手機可直接測驗為主（Steve 2026-11-05）：出完題直接是線上作答畫面，
+            // 要列印的 A4 題目卷／答案卷、PDF、Word 要按工具列的其他鈕才出現。
+            // 學生的「我要練習」多一步：姓名/班級先幫他填好，省得每次重打
+            window.itemsVersion = (window.itemsVersion || 0) + 1;
+            switchSheet('answer');
             if (window.practiceMode) {
-                switchSheet('answer');
                 const info = window.practiceStudentInfo || {};
                 setTimeout(function () {
                     const setVal = function (id, v) { const el = document.getElementById(id); if (el && v) el.value = v; };

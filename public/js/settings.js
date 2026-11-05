@@ -197,9 +197,11 @@
         }
 
         // --- 出題紀錄（存在這台裝置的 localStorage，最多留20筆） ---
-        function saveQuizToHistory() {
+        // replace=true：編輯題目後更新最新那一筆，不要多存一份
+        function saveQuizToHistory(replace) {
             try {
                 let hist = JSON.parse(localStorage.getItem('lun_history') || '[]');
+                if (replace && hist.length) hist.shift();
                 hist.unshift({
                     id: Date.now(),
                     title: window.docName || '未命名試卷',
@@ -247,6 +249,8 @@
             window.currentSettings = h.settings;
             closeHistory();
             renderPaperFixed(h.items);
+            window.itemsVersion = (window.itemsVersion || 0) + 1;
+            switchSheet('answer');
         }
         async function deleteHistory(i) {
             if (!(await askConfirm('確定刪除這筆歷史紀錄？', { danger: true }))) return;
