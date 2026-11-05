@@ -1,53 +1,50 @@
 <!DOCTYPE html>
-<!-- build retry: 2026-07-25 -->
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#fbfcfe">
-    <!-- 圖示：直立刻度尺加琥珀游標（2026-11-05 取代舊的公司徽章）；原圖與切圖腳本在 ../圖片/favicon/ -->
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <title>刻度 互動式評量</title>
     <meta name="application-name" content="刻度 互動式評量">
     <meta name="apple-mobile-web-app-title" content="刻度 互動式評量">
+    <meta name="description" content="老師、家長輸入年級和科目，十幾秒就有一份試卷；學生在手機上直接作答，寫完自動對答案。鴻綸科技出品。">
+    <!-- 舊連結相容：以前分享出去的連結都是 /?share=…、/?live=…、/?result=…、/?paper=…、/?grade=…（那時整個 App 就在首頁），
+         現在 App 搬到 /app，帶這些參數進來的一律轉過去，參數與 # 原封不動。只認這個站自己的參數，FB／LINE 加的 fbclid 不算 -->
+    <script>
+        (function () {
+            var q = new URLSearchParams(location.search);
+            if (['share', 'live', 'result', 'paper', 'grade'].some(function (k) { return q.has(k); })) {
+                location.replace('/app' + location.search + location.hash);
+                return;
+            }
+            // 舊的 /#lqGuide 之類錨點：拿掉，從頂端開始，進場特效才看得到
+            if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+        })();
+    </script>
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=29"></script>
-    <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
-         但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
-         首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
-         免得上游改版時線上無預警壞掉 -->
-    <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.24/dist/dotlottie-wc.js"></script>
+    <script src="js/theme.js?v=30"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
-    <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=29">
-    <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=29">
-    <link rel="stylesheet" href="css/sheet.css?v=29">
-    <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=29">
-    <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=29">
-    <link rel="stylesheet" href="css/theme.css?v=29">
-<link rel="canonical" href="https://luno.hunglun.com/">
+    <link rel="stylesheet" href="css/tailwind.css?v=30">
+    <link rel="stylesheet" href="css/landing.css?v=30">
+    <link rel="canonical" href="https://luno.hunglun.com/">
 <!--seo-games--><script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "@id": "https://luno.hunglun.com/#app", "name": "刻度 互動式評量", "url": "https://luno.hunglun.com/", "description": "刻度 互動式評量", "applicationCategory": "EducationalApplication", "operatingSystem": "All", "inLanguage": "zh-TW", "isAccessibleForFree": true, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TWD"}, "creator": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}, "publisher": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "鴻綸科技", "item": "https://www.hunglun.com/"}, {"@type": "ListItem", "position": 2, "name": "學習專區", "item": "https://www.hunglun.com/tools/games"}, {"@type": "ListItem", "position": 3, "name": "刻度 互動式評量", "item": "https://luno.hunglun.com/"}]}]}</script>
 </head>
-<body class="text-slate-800">
+<body class="ld-page">
 
-    <!-- ① 歡迎頁：停住，按「進入」才到選身分（guide.js）。使用說明放在這頁下方。
-         分享／監看／設定連結（網址帶參數）和這個分頁看過的，不顯示 -->
-    <section id="lqWelcome" class="ld-welcome no-print" hidden aria-label="刻度歡迎頁">
+    <section id="lqWelcome" class="ld-welcome no-print" aria-label="刻度歡迎頁">
         <div class="ld-wrap">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=29" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=29" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=30" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=30" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <button type="button" class="ld-tbtn" data-theme-toggle onclick="toggleTheme()"><span class="ph-duotone ph-moon"></span><span class="lab">深色</span></button>
@@ -56,18 +53,18 @@
 
             <div class="ld-hero">
                 <div class="ld-copy">
-                    <div class="ld-float ld-icon-m" aria-hidden="true"><div class="ld-tilt"><img src="assets/hero-icon.webp?v=29" width="480" height="480" alt=""></div></div>
+                    <div class="ld-float ld-icon-m" aria-hidden="true"><div class="ld-tilt"><img src="assets/hero-icon.webp?v=30" width="480" height="480" alt=""></div></div>
                     <h1 class="ld-title"><span>刻</span><span>度</span></h1>
                     <span class="ld-measure" aria-hidden="true"><b></b></span>
                     <p class="ld-tag">互動式評量</p>
                     <p class="ld-lead">老師、家長輸入年級和科目，十幾秒就有一份試卷。學生可以在手機上直接寫，寫完自動對答案。</p>
                     <div class="ld-cta-row">
-                        <button type="button" id="lqEnter" class="ld-btn ld-btn-primary" onclick="this.dataset.clicked = '1'">進入<span class="ph-duotone ph-arrow-right"></span></button>
-                        <button type="button" class="ld-btn ld-btn-ghost" onclick="Guide.openGuide()">使用說明</button>
+                        <a id="lqEnter" class="ld-btn ld-btn-primary" href="/start">進入<span class="ph-duotone ph-arrow-right"></span></a>
+                        <button type="button" class="ld-btn ld-btn-ghost" onclick="document.getElementById('lqGuide').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })">使用說明</button>
                     </div>
                 </div>
                 <div class="ld-vr" aria-hidden="true">
-                    <div class="ld-float ld-icon-d"><div class="ld-tilt"><img src="assets/hero-icon.webp?v=29" width="480" height="480" alt=""></div></div>
+                    <div class="ld-float ld-icon-d"><div class="ld-tilt"><img src="assets/hero-icon.webp?v=30" width="480" height="480" alt=""></div></div>
                     <div class="ld-draw">
                         <div class="scale"><div class="ticks"></div><div class="spine"></div></div>
                         <span class="num" style="top:0">0</span><span class="num" style="top:10%">10</span><span class="num" style="top:20%">20</span><span class="num" style="top:30%">30</span><span class="num" style="top:40%">40</span><span class="num" style="top:50%">50</span><span class="num" style="top:60%">60</span><span class="num" style="top:70%">70</span><span class="num" style="top:80%">80</span><span class="num" style="top:90%">90</span><span class="num" style="top:100%">100</span>
@@ -115,641 +112,7 @@
             </footer>
         </div>
     </section>
-    <script>
-        // 歡迎頁要「一開始」就蓋上去，不能等 window.onload：網路慢時，底下的選身分頁會先露出來還能點，
-        // 等整頁載完歡迎頁才跳出來，順序就反了。分享／監看／設定連結（網址帶參數）和這個分頁看過的，不顯示。
-        (function () {
-            try {
-                // 只認這個站自己用的參數；FB／LINE 自動加的 fbclid 這類不算，照樣顯示歡迎頁
-                var q = new URLSearchParams(location.search);
-                var isLink = ['share', 'live', 'result', 'paper', 'grade'].some(function (k) { return q.has(k); });
-                if (!isLink && !sessionStorage.getItem('lun_welcome_seen')) {
-                    document.getElementById('lqWelcome').hidden = false;
-                    // 網址帶 #錨點（舊連結 /#lqGuide）會讓歡迎頁一載入就捲到說明區，進場特效就看不到；
-                    // 這站是單頁，沒有真的子頁面，直接把錨點拿掉並從頂端開始
-                    if (location.hash) {
-                        history.replaceState(null, '', location.pathname + location.search);
-                        window.addEventListener('load', function () { document.getElementById('lqWelcome').scrollTop = 0; });
-                    }
-                }
-            } catch (e) {}
-        })();
-    </script>
 
-    <!-- ② 選身分（guide.js）：頂端是訪客模式，下面教師、家長、學生三列。
-         教師要登入才不限題數；登入、API Key 那幾步（#hlStepAuth／#hlStepApiKey）也在這個畫面裡 -->
-    <section id="hlSplash" class="hl-splash no-print">
-        <div class="ld-wrap ld-card">
-            <header class="ld-top">
-                <div>
-                    <img src="assets/logo-light.png?v=29" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=29" alt="" class="ld-logo is-dark" aria-hidden="true">
-                </div>
-                <div class="ld-actions">
-                    <button type="button" class="ld-tbtn" data-theme-toggle onclick="toggleTheme()"><span class="ph-duotone ph-moon"></span><span class="lab">深色</span></button>
-                </div>
-            </header>
-
-            <!-- 進場流程只有這一顆返回鈕，身分、登入、API Key 三個畫面都在同一個位置（entry.js splashGoBack） -->
-            <button type="button" id="lqSplashBack" class="ld-back" onclick="splashGoBack()"><span class="ph-duotone ph-arrow-left"></span>回上一頁</button>
-
-            <div id="hlStepIdentity" class="ld-pick">
-                <div>
-                    <h2>你要怎麼使用？</h2>
-                    <p class="ld-sub">訪客模式免登入，其他身分都要先登入。</p>
-                    <button type="button" class="ld-guest" onclick="Guide.pick('guest')">
-                        <span class="ic"><span class="ph-duotone ph-device-mobile"></span></span>
-                        <span><b>訪客模式</b><span class="d">一支手機出題兼作答，免登入，一份最多 20 題</span></span>
-                        <span class="go ph-duotone ph-arrow-right"></span>
-                    </button>
-                    <p class="ld-or">或選擇你的身分</p>
-                    <div class="ld-rows">
-                        <button type="button" class="ld-row" onclick="Guide.pick('teacher')"><span class="ic"><span class="ph-duotone ph-presentation"></span></span>
-                            <div><b>我是教師</b><span class="d">登入後出題不限題數、發測驗、看全班即時進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
-                        <button type="button" class="ld-row" onclick="Guide.pick('parent')"><span class="ic"><span class="ph-duotone ph-users-three"></span></span>
-                            <div><b>我是家長</b><span class="d">看孩子的作答與進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
-                        <button type="button" class="ld-row" onclick="Guide.pick('student')"><span class="ic"><span class="ph-duotone ph-student"></span></span>
-                            <div><b>我是學生</b><span class="d">登入後輸入測驗代碼，或自己練習</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
-                    </div>
-                    <div class="ld-more">
-                        <button type="button" onclick="Guide.pick('admin')">管理員登入</button>
-                        <a href="manual.html" target="_blank" rel="noopener">使用說明書</a>
-                    </div>
-                </div>
-                <div class="ld-vr is-mark" aria-label="一份試卷的題數：訪客最多 20 題，教師帳號不限">
-                    <div class="scale"><div class="ticks"></div><div class="spine"></div><div class="on"></div><div class="fade"></div></div>
-                    <span class="num" style="top:0">0</span><span class="num" style="top:10%">10</span><span class="num n20" style="top:20%">20</span><span class="num" style="top:30%">30</span><span class="num" style="top:40%">40</span><span class="num" style="top:50%">50</span><span class="num" style="top:60%">60</span><span class="num" style="top:70%">70</span><span class="num" style="top:80%">80</span><span class="num" style="top:90%">90</span><span class="num" style="top:100%">100</span>
-                    <div class="flag" style="top:5%"><b>訪客</b><small>0 到 20 題</small></div>
-                    <div class="flag is-teacher" style="top:55%"><b>教師帳號</b><small>題數不限</small></div>
-                </div>
-            </div>
-
-            <div id="hlStepAuth" class="hl-identity-step hidden">
-                <div id="hlAuthFormBody" style="width:100%; max-width:22rem;"></div>
-            </div>
-
-            <div id="hlStepApiKey" class="hl-identity-step hidden">
-                <div style="width:100%; max-width:22rem; display:flex; flex-direction:column; gap:1rem;">
-                    <button type="button" id="hlEnterBuiltin" class="hl-enter-btn hl-clickable">
-                        <span>直接進入</span>
-                        <span class="ph-duotone ph-rocket-launch" style="font-size:1.75rem;"></span>
-                    </button>
-                    <button type="button" id="hlEnterOwnKey" class="hl-enter-btn hl-clickable" style="background:#fff; color:var(--hl-blue); border:2px solid var(--hl-blue); box-shadow:none;">
-                        <span>我有自己的 API Key</span>
-                        <span class="ph-duotone ph-key" style="font-size:1.75rem;"></span>
-                    </button>
-                </div>
-            </div>
-
-            <footer class="ld-foot">
-                <span>Created by Hunglun Technology Steve　<a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知</a></span>
-                <span>有任何問題？<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">鴻綸科技官方網站</a>　<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">作者信箱</a>　<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">作者 Line</a>　LINE ID <button type="button" class="hl-line-id" onclick="copyLineId(this)">safezone0619</button></span>
-            </footer>
-        </div>
-    </section>
-
-    <!-- 學生首頁：學生要的是「進老師的測驗」和「自己練習」，不是出題參數表單，
-         所以登入身分是學生時走這個畫面，不進 #inputForm -->
-    <div id="studentHome" class="hidden max-w-2xl mx-auto p-4 no-print min-h-screen"></div>
-
-    <!-- 學生按「開始練習」時蓋在畫面上的出題進度。
-         之前是把老師那張出題表單顯示出來借用它的進度條，學生會莫名其妙看到一整頁出題參數 -->
-    <div id="practiceLoading" class="hidden no-print">
-        <div class="lq-practice-loading-card">
-            <img src="assets/illust/loading.webp" alt="" class="lq-illust" style="max-width:11rem" width="640" height="480">
-            <div class="lq-practice-spinner" aria-hidden="true"></div>
-            <div class="lq-practice-loading-title">刻度正在出題…</div>
-            <div id="practiceLoadingSub" class="lq-practice-loading-sub">請稍候，大約十幾秒</div>
-            <div class="lq-practice-bar"><div id="practiceBar" class="lq-practice-bar-fill"></div></div>
-        </div>
-    </div>
-
-    <!-- 全站頂部列：只在主畫面顯示(進場頁與列印時隱藏) -->
-    <header id="lqAppbar" class="lq-appbar no-print hidden">
-        <div class="lq-appbar-inner">
-            <div class="lq-appbar-brand">
-                <img src="assets/app-mark.webp" alt="" class="lq-appbar-mark" aria-hidden="true">
-                <span class="lq-appbar-name">刻度</span>
-                <span class="lq-appbar-tag">互動式評量</span>
-            </div>
-            <div class="lq-appbar-actions">
-                <span class="lq-appbar-visits">已服務 <span id="visitCount">--</span> 人次</span>
-                <button type="button" onclick="openUsageGuide()" class="lq-appbar-btn is-optional">使用說明</button>
-                <button type="button" onclick="openHistory()" id="historyBtn" class="lq-appbar-btn">出題紀錄</button>
-                <button type="button" onclick="unlockAdmin()" id="adminBtn" class="lq-appbar-btn is-optional">解除冷卻</button>
-                <button type="button" onclick="openSuperadminPanel()" id="superadminBtn" class="hidden lq-appbar-btn">管理後台</button>
-                <button type="button" onclick="openAccountModal()" id="accountBtn" class="hidden lq-appbar-btn">我的帳號</button>
-                <span id="accountStatus" class="lq-appbar-visits"></span>
-                <button type="button" class="lq-appbar-btn" data-theme-toggle onclick="toggleTheme()" aria-label="切換深淺色"><span class="ph-duotone ph-moon" style="font-size:1.1rem;"></span><span class="lab is-optional">深色</span></button>
-                <button type="button" onclick="openIdentitySplash()" id="lqLoginBtn" class="lq-appbar-btn is-primary">登入</button>
-            </div>
-        </div>
-    </header>
-
-    <div id="inputForm" class="hidden max-w-5xl mx-auto p-4 no-print min-h-screen">
-        <!-- 家長專用：孩子狀況面板(出題工具家長跟老師一樣完整，只是上方多這一塊) -->
-        <div id="parentPanel" class="hidden mb-6"></div>
-
-        <div class="lq-hero">
-            <div class="lq-hero-copy">
-                <h1 class="lq-hero-title">選好條件，直接產出可以印的考卷</h1>
-                <p class="lq-hero-sub">依年級、科目、範圍與難度出題，附完整答案卷，可下載 Word（.docx）與 PDF，也能直接讓學生線上作答。</p>
-                <ul class="lq-hero-points">
-                    <li>不用帳號，選好條件就能出題</li>
-                    <li>手邊現成的紙本考卷也能直接派出去</li>
-                    <li>學生作答完自動判分，手寫題有 AI 批改建議</li>
-                </ul>
-            </div>
-            <img src="assets/art/hero.webp" alt="老師在教室用平板檢視剛出好的考卷" class="lq-hero-art" loading="eager" decoding="async"
-                 onerror="this.style.display='none'">
-        </div>
-
-        <div class="lq-card p-6 sm:p-8">
-            <!-- 三步流程說明：從置中的藍色橫幅改成靠左的細列。
-                 它是「第一次來的人看一眼」的東西,不該每次進來都佔掉一整塊視覺重量 -->
-            <div class="lq-steps">
-                <span class="lq-step"><b>1</b> 填年級、科目、範圍</span>
-                <span class="lq-step-arrow" aria-hidden="true">→</span>
-                <span class="lq-step"><b>2</b> 按開始出題</span>
-                <span class="lq-step-arrow" aria-hidden="true">→</span>
-                <span class="lq-step"><b>3</b> 下載、列印、線上作答或分享</span>
-                <button onclick="clearAllSettings()" class="lq-steps-reset">重置表單</button>
-            </div>
-
-            <div id="apiKeyBox" data-gstep="4" class="mb-8 bg-emerald-50/70 p-4 sm:p-5 rounded-xl border border-emerald-100">
-                <label class="block font-bold mb-2 text-lg text-emerald-800">🔑 你自己的 Google API Key（選填）</label>
-                <div class="flex gap-2">
-                    <input type="password" id="userKey" onchange="localStorage.setItem('lun_key',this.value)" class="lq-input" placeholder="貼上您的 AIza... 金鑰（不填則使用刻度內建額度）">
-                    <button onclick="let x=document.getElementById('userKey');x.type=x.type==='password'?'text':'password'" class="lq-btn lq-btn-secondary px-3 text-lg" aria-label="顯示/隱藏金鑰">👁️</button>
-                </div>
-                <p class="text-sm text-emerald-700 mt-2 font-bold">💡 不填：使用刻度內建額度，每次出題間隔 30 秒冷卻。填入自己的 Key：不受冷卻限制，用量算在自己的額度上。</p>
-                <div class="flex justify-between items-center mt-3 text-sm flex-wrap gap-2">
-                    <div class="flex gap-4">
-                        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-emerald-700 underline font-bold hover:text-emerald-900">👉 申請 Google API Key</a>
-                        <a href="https://youtube.com/shorts/Tv8jERHp7kM" target="_blank" class="text-blue-600 underline font-bold hover:text-blue-800">📚 申請教學</a>
-                    </div>
-                    <button onclick="window.forgetKey()" class="lq-btn lq-btn-danger text-xs px-3 py-1.5">🗑️ 清除記憶 / 登出</button>
-                </div>
-            </div>
-            <button type="button" id="showKeyBoxLink" data-gstep="4" onclick="showApiKeyBox()" class="hidden lq-btn lq-btn-ghost text-xs mb-8">🔑 其實我有自己的 API Key，改用這個</button>
-
-            <div class="mb-8" data-gstep="1">
-                <h3 class="section-title">選擇出題模式</h3>
-                <!-- 三選一改成卡片：插圖＋一句說明。原本三顆同寬的方框只有文字，
-                     第一次來的人看不出「上傳檔案」跟「現成卷子」差在哪 -->
-                <div class="lq-modes">
-                    <div id="btnSourceAI" class="lq-mode is-active" onclick="toggleSource('1')" role="button" tabindex="0">
-                        <img src="assets/art/mode-ai.webp" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
-                        <div class="lq-mode-text">
-                            <div class="lq-mode-name">出一份新的</div>
-                            <div class="lq-mode-desc">填好年級科目，刻度直接生出題目</div>
-                        </div>
-                    </div>
-                    <div id="btnSourceFile" class="lq-mode" onclick="toggleSource('2')" role="button" tabindex="0">
-                        <img src="assets/art/mode-upload.webp" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
-                        <div class="lq-mode-text">
-                            <div class="lq-mode-name">依課本或講義出</div>
-                            <div class="lq-mode-desc">上傳檔案或拍照，照著內容出題</div>
-                        </div>
-                    </div>
-                    <!-- 第三種模式跟前兩種不同：它不出新題目，而是把老師手上現成的卷子原樣變成線上作業，
-                         所以點下去直接切到專屬的原卷編輯畫面，不留在這張表單（題型/難度/題數那些欄位都用不到） -->
-                    <div id="btnSourcePaper" class="lq-mode" onclick="startPaperFlow()" role="button" tabindex="0">
-                        <img src="assets/art/mode-paper.webp" alt="" class="lq-mode-art" aria-hidden="true" onerror="this.style.display='none'">
-                        <div class="lq-mode-text">
-                            <div class="lq-mode-name">派現成的紙本卷</div>
-                            <div class="lq-mode-desc">手邊的卷子掃進來，學生線上作答</div>
-                        </div>
-                    </div>
-                    <input type="hidden" id="sourceType" value="1">
-                </div>
-            </div>
-
-            <h3 class="section-title">出題條件</h3>
-            <!-- 年級與科目：這兩個是「猜錯就整份考卷報廢」的欄位，所以不給預設值，一定要老師自己選。
-                 但也因此要讓他選得夠快——改成一排點就好的膠囊按鈕，免打字、免展開下拉。
-                 下拉/輸入框本體保留（只是隱藏），繼續當值的來源，
-                 startGen / getFormSettingsSnapshot / applySettings / clearAllSettings 全部不用改 -->
-            <div id="aiInputs" class="mb-4">
-                <div class="mb-4" data-gstep="2">
-                    <label class="font-bold text-sm">年級</label>
-                    <div id="gradeChips" class="lq-chip-wrap mt-1"></div>
-                    <select id="grade" onchange="checkCustom(this, 'c_grade')" class="lq-input hidden">
-                        <option value="" disabled selected>請選擇...</option>
-                        <option value="Custom">✍️ 自定義</option>
-                        <optgroup label="國小"><option>國小一年級</option><option>國小二年級</option><option>國小三年級</option><option>國小四年級</option><option>國小五年級</option><option>國小六年級</option></optgroup>
-                        <optgroup label="國中"><option>國中一年級</option><option>國中二年級</option><option>國中三年級</option></optgroup>
-                        <optgroup label="高中"><option>高中一年級</option><option>高中二年級</option><option>高中三年級</option></optgroup>
-                    </select>
-                    <input type="text" id="c_grade" class="input-custom" placeholder="請輸入年級">
-                </div>
-                <div class="mb-4" data-gstep="2">
-                    <label class="font-bold text-sm">科目</label>
-                    <div id="subjectChips" class="lq-chip-wrap mt-1"></div>
-                    <input type="text" id="subject" class="lq-input hidden" placeholder="例：自然">
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" data-gstep="3">
-                <div>
-                    <label class="font-bold text-sm">版本</label>
-                    <div id="publisherChips" class="lq-chip-group mt-1">
-                        <button type="button" class="lq-chip" data-pub="">不指定版本</button>
-                        <button type="button" class="lq-chip" data-pub="康軒版">康軒</button>
-                        <button type="button" class="lq-chip" data-pub="翰林版">翰林</button>
-                        <button type="button" class="lq-chip" data-pub="南一版">南一</button>
-                        <button type="button" class="lq-chip lq-chip-custom" data-pub="*">✍️ 其他</button>
-                    </div>
-                    <select id="publisher" onchange="checkCustom(this, 'c_publisher'); syncPublisherChips()" class="lq-input hidden">
-                        <!-- value 是存進 localStorage / 拿去比對的鍵，改名時刻意不動，只改顯示文字 -->
-                        <option value="由小綸自由發揮" selected>由刻度自由發揮 (不限版本)</option>
-                        <option value="Custom">✍️ 依照課本資訊填入</option>
-                    </select>
-                    <input type="text" id="c_publisher" class="input-custom" placeholder="請輸入自定義版本資訊" oninput="syncPublisherChips()">
-                </div>
-                <div>
-                    <label class="font-bold text-sm">範圍 <span class="text-gray-400 font-normal">（選填）</span></label>
-                    <input type="text" id="scope" class="lq-input" placeholder="不填＝整冊；也可填「第一課~第三課」">
-                </div>
-                </div>
-            </div>
-
-            <div id="fileInputs" style="display:none;" class="mb-6" data-gstep="2">
-                <div onclick="document.getElementById('fUp').click()" class="border-2 border-dashed border-emerald-300 p-8 text-center cursor-pointer hover:bg-emerald-50 hover:border-emerald-400 rounded-xl mb-3 transition">
-                    <p class="text-xl text-emerald-600 font-bold">📂 點此選擇檔案 / 圖片</p>
-                    <input type="file" id="fUp" multiple style="display:none;" onchange="handleFiles(this)">
-                </div>
-                <div id="fList" class="mt-3"></div>
-                <textarea id="uTxt" rows="3" class="lq-input mt-4" placeholder="或者在此貼上補充文字..."></textarea>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8" data-gstep="4">
-                <div>
-                    <label class="font-bold text-sm">題數</label>
-                    <select id="count" onchange="checkCustom(this, 'c_count')" class="lq-input">
-                        <option value="5">5 題</option><option value="10" selected>10 題</option><option value="20">20 題</option><option value="25">25 題</option><option value="50">50 題</option><option value="100">100 題</option>
-                        <option value="Custom">✍️ 自定義</option>
-                    </select>
-                    <input type="number" id="c_count" class="input-custom" placeholder="請輸入數字">
-                </div>
-                <div>
-                    <label class="font-bold text-sm">題型</label>
-                    <select id="qType" onchange="checkCustom(this, 'c_qType')" class="lq-input">
-                        <option value="全部單選題" selected>全部單選題</option>
-                        <option value="全部複選題">全部複選題</option>
-                        <!-- 原本寫死「混搭(10單選+10複選)」，但題數是另一個獨立欄位，
-                             老師選 5 題配這個題型就自相矛盾。改成不帶數字，由題數決定比例 -->
-                        <option value="智慧混搭(單選+複選各半)">智慧混搭（單選＋複選各半）</option>
-                        <option value="全部是非題">全部是非題（對／錯）</option>
-                        <option value="全部選擇式填空(單選,題幹留括號)">全部選擇式填空（克漏字）</option>
-                        <option value="綜合題型(單選+是非+填充)">綜合題型（單選＋是非＋填充）</option>
-                        <option value="全部填充題">全部填充題</option>
-                        <option value="全部簡答題(計算題)">全部簡答題(計算題)</option>
-                        <option value="Custom">✍️ 自定義</option>
-                    </select>
-                    <input type="text" id="c_qType" class="input-custom" placeholder="例: 20題單選">
-                </div>
-                <div>
-                    <label class="font-bold text-sm">難度</label>
-                    <!-- 舊版是 基礎/普通/進階/挑戰/熟練 五階，但「熟練」描述的是學生的學習狀態、
-                         不是題目難度，跟「進階/挑戰」語意重疊，老師看不出高低順序。收斂成四階並各附情境說明。
-                         （getDifficultyRubric() 仍保留「熟練」的定義，舊的儲存設定與分享連結不受影響） -->
-                    <select id="difficulty" onchange="checkCustom(this, 'c_diff')" class="lq-input">
-                        <option value="基礎">🐣 基礎：課本原文、觀念複習</option>
-                        <option value="普通" selected>⚖️ 普通：標準段考難度</option>
-                        <option value="進階">🚀 進階：跨概念、需要推理</option>
-                        <option value="挑戰">🏆 挑戰：多步驟思考、情境轉換</option>
-                        <option value="混合">🌈 混合：由易到難，一份卷子看出程度</option>
-                        <option value="Custom">✍️ 自定義</option>
-                    </select>
-                    <input type="text" id="c_diff" class="input-custom" placeholder="例: 進階">
-                </div>
-                <div>
-                    <label class="font-bold text-sm">輸出語言</label>
-                    <select id="lang" class="lq-input">
-                        <option value="繁體中文">繁體中文</option>
-                        <option value="English (英文)">English (英文)</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- 主 CTA 獨佔一排。原本正下方並排三顆同樣醒目的按鈕在跟它搶焦點，
-                 其中「清除所有條件」還是破壞性操作卻放在最順手的位置，已移到卡片右上角 -->
-            <button onclick="startGen()" id="btnGo" data-gstep="4" class="lq-btn lq-cta lq-btn-primary w-full py-4 rounded-xl text-xl">🚀 開始出題</button>
-            <div class="flex justify-center gap-4 mt-3" data-gstep="4">
-                <button onclick="saveDefaultSettings()" class="lq-btn lq-btn-ghost text-sm px-3 py-2"><span class="ph-duotone ph-floppy-disk lq-icon-chip"></span> 記住這些條件</button>
-                <button onclick="copySettingsLink()" class="lq-btn lq-btn-ghost text-sm px-3 py-2"><span class="ph-duotone ph-link-simple lq-icon-chip"></span> 複製設定連結</button>
-            </div>
-            <div id="loadingAnim" class="hidden justify-center mt-4">
-                <dotlottie-wc src="https://assets-v2.lottiefiles.com/a/35dde376-1178-11ee-9ed9-5fa2debad506/1LggE3RFrL.lottie" autoplay loop style="width:160px;height:160px;"></dotlottie-wc>
-            </div>
-            <div id="barBox" class="hidden mt-4 h-3 w-full bg-gray-200 rounded-full overflow-hidden"><div id="bar" class="progress-bar">0%</div></div>
-            <p id="status" class="text-center text-sm mt-2 text-blue-700 font-bold animate-pulse"></p>
-
-            <!-- 免責聲明摺疊起來：該講的一句都沒少，但它不需要每次出題都佔掉整個頁尾。
-                 第一句(試題要自己校對)最重要，留在摺疊標題上，不點開也看得到 -->
-            <details data-gstep="4" class="lq-disclaimer mt-10 pt-6 border-t border-gray-200">
-                <summary>
-                    <span>試題由 AI 產生，<strong>送出前請自行校對</strong></span>
-                    <span class="lq-disclaimer-more">使用規範</span>
-                </summary>
-                <ul class="list-disc list-inside text-sm text-gray-600 space-y-1 mt-3">
-                    <li>請確認擁有上傳教材的合法使用權。本工具不儲存使用者檔案，也不承擔版權責任。</li>
-                    <li>使用刻度內建額度時，每次出題間隔 30 秒；填自己的 API Key 就不受這個限制。</li>
-                    <li>公用電腦請務必使用「清除記憶 / 登出」。</li>
-                </ul>
-            </details>
-            <div>
-                <p class="text-center text-sm text-gray-500 mt-4">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline font-bold hover:text-blue-800">鴻綸科技官方網站</a></p>
-            </div>
-        </div>
-    </div>
-
-    <div id="resultSection" class="hidden w-full min-h-screen bg-gray-600 pb-20">
-        <div class="sticky-header sticky top-0 text-white p-2 sm:p-3 shadow-lg z-50 flex flex-wrap justify-center items-center gap-2 sm:gap-4">
-            <div class="flex gap-1 order-1 bg-black/25 p-1 rounded-xl shadow-inner">
-                <button onclick="switchSheet('quiz')" id="btnQuiz" class="lq-btn lq-btn-dark is-active px-3 sm:px-4 py-1.5 text-sm sm:text-base">題目卷</button>
-                <button onclick="switchSheet('key')" id="btnKey" class="lq-btn lq-btn-dark px-3 sm:px-4 py-1.5 text-sm sm:text-base">答案卷</button>
-            </div>
-
-            <div class="lq-header-divider hidden sm:block order-1"></div>
-
-            <div class="lq-header-divider hidden sm:block order-1"></div>
-
-            <!-- 動作區。原本這排把「檢視切換」跟「對外動作」混在一起，
-                 老師分不出哪些只是換畫面、哪些會真的送出去。
-                 現在左邊是切換(上面那組連體按鈕)，這裡只放動作，低頻的收進「更多」 -->
-            <div class="flex gap-2 flex-wrap justify-center order-2 sm:order-3 items-center">
-                <button onclick="openHandoffSetup()" id="btnAnswerMode" class="lq-btn lq-btn-dark px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-device-mobile lq-icon lq-icon-sky"></span> 交給學生作答</button>
-                <div class="relative inline-block" id="downloadMenuWrap">
-                    <button onclick="toggleDownloadMenu()" class="lq-btn lq-btn-dark lq-iconbtn px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="下載"><span class="ph-duotone ph-download-simple lq-icon lq-icon-blue"></span><span class="lq-lab"> 下載 ▾</span></button>
-                    <div id="downloadMenu" class="hidden absolute right-0 mt-1 bg-white text-slate-800 rounded-lg shadow-xl border z-50 overflow-hidden w-56">
-                        <button onclick="dlDoc(); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-doc lq-icon text-blue-600"></span> Word (.docx)</button>
-                        <button onclick="dlPDF(); closeDownloadMenu()" class="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-file-pdf lq-icon text-red-600"></span> PDF</button>
-                        <div class="px-4 py-2 text-xs text-gray-400 border-t">🖨️ 要列印請先下載PDF，開啟後用PDF閱讀器本身的列印功能</div>
-                    </div>
-                </div>
-                <!-- 原本是「分享 ▾」下拉，裡面四個選項（學生連結/家長連結/測驗代碼/儀表板）
-                     要老師在還沒看到內容前就先選一個，實測老師分不出差別。
-                     改成一顆按鈕開一個視窗，四種出口一次全部給，老師要哪個自己拿 -->
-                <div class="inline-block" id="shareBtnsWrap">
-                    <button onclick="openSendQuizModal()" class="lq-btn lq-btn-share px-2 sm:px-3 py-1.5 text-sm sm:text-base"><span class="ph-duotone ph-paper-plane-tilt lq-icon"></span> 發送測驗</button>
-                </div>
-                <!-- 低頻／破壞性動作收進來，不跟主要動作平起平坐 -->
-                <div class="relative inline-block" id="moreMenuWrap">
-                    <button onclick="toggleMoreMenu()" class="lq-btn lq-btn-dark lq-iconbtn px-2 sm:px-3 py-1.5 text-sm sm:text-base" aria-label="更多動作"><span class="ph-duotone ph-dots-three-outline lq-icon"></span><span class="lq-lab"> 更多 ▾</span></button>
-                    <div id="moreMenu" class="hidden absolute right-0 mt-1 bg-white text-slate-800 rounded-lg shadow-xl border z-50 overflow-hidden w-56">
-                        <button onclick="saveToClassHistory(); closeMoreMenu()" id="btnSaveHistory" class="hidden w-full text-left px-4 py-2 hover:bg-gray-100 text-sm flex items-center gap-2"><span class="ph-duotone ph-floppy-disk lq-icon text-blue-600"></span> 存入班級歷史</button>
-                        <button id="btnReload" onclick="restartWholeQuiz(); closeMoreMenu()" class="w-full text-left px-4 py-2 hover:bg-red-50 text-sm flex items-center gap-2 text-red-600 border-t"><span class="ph-duotone ph-arrow-clockwise lq-icon lq-icon-amber"></span> 重新出整份（清空目前題目）</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- 提示從工具列裡搬出來：它在那裡佔了一整段寬度，窄螢幕還會逼出一整行。
-             放在試卷正上方反而更貼近它要講的東西，也讓老師關掉就不再打擾 -->
-        <div id="editHint" class="lq-edit-hint no-print mt-4 hidden">
-            <span>💡 試卷上的任何文字都可以直接點下去修改，改完會一起帶進下載的 Word／PDF。</span>
-            <button type="button" onclick="dismissEditHint()" aria-label="不再顯示這個提示">知道了 ✕</button>
-        </div>
-        <div id="paperContainer" class="max-w-5xl mx-auto pt-2"></div>
-        <div id="answerModeContainer" class="no-print" style="display:none; background:#f3f4f6; min-height:100vh;"></div>
-        <p class="lq-foot no-print text-center text-sm text-gray-300 py-6">有任何問題？請點<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer" class="text-emerald-400 underline font-bold hover:text-emerald-300">鴻綸科技官方網站</a></p>
-    </div>
-
-    <div id="historyModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-lg w-full max-h-[80vh] overflow-y-auto p-6" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">📜 出題紀錄（僅存在這台裝置）</h3>
-                <button onclick="closeHistory()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="historyList"></div>
-        </div>
-    </div>
-
-
-    <!-- 帳號登入/註冊彈窗 -->
-    <div id="accountModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-md w-full max-h-[85vh] overflow-y-auto p-6" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg" id="accountModalTitle">👤 帳號</h3>
-                <button onclick="closeAccountModal()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="accountModalBody"></div>
-        </div>
-    </div>
-
-    <!-- 班級歷史列表(老師登入後專用) -->
-    <div id="classHistoryModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-lg w-full max-h-[80vh] overflow-y-auto p-6" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">📚 班級歷史（最多50份）</h3>
-                <button onclick="closeClassHistory()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="classHistoryList"></div>
-        </div>
-    </div>
-
-    <!-- 測驗代碼：投影在教室螢幕上讓學生輸入 -->
-    <div id="quizCodeModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-md w-full p-8 text-center" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="text-sm text-gray-500 mb-2">請學生到首頁輸入這組代碼</div>
-            <div id="quizCodeValue" class="font-black mb-3" style="font-size:3.2rem; letter-spacing:0.15em; color:var(--hl-blue);">000 000</div>
-            <div class="text-xs text-gray-400 mb-5">代碼已複製到剪貼簿，30 天內有效。學生也可以直接用分享連結進入。</div>
-            <button onclick="closeQuizCodeModal()" class="lq-btn lq-btn-primary w-full py-2">關閉</button>
-        </div>
-    </div>
-
-    <!-- 發送測驗：四種出口（代碼／學生連結／家長連結／老師儀表板）一次呈現，不用先選再看 -->
-    <div id="sendQuizModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-lg w-full max-h-[88vh] overflow-y-auto p-6" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">📤 發送這份測驗</h3>
-                <button onclick="closeSendQuizModal()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="sendQuizBody"></div>
-        </div>
-    </div>
-
-    <!-- 全域返回：作答頁/儀表板/監看頁/結果頁等各種畫面都看得到，回到上一頁或首頁 -->
-    <button id="btnGlobalBack" onclick="goBackOrHome()" class="hidden no-print" aria-label="回上一頁">← 回上一頁</button>
-
-    <!-- 「直接線上測驗」身分選擇：學生直接作答，家長/老師改走監看流程 -->
-    <div id="quizEntryModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-md w-full max-h-[85vh] overflow-y-auto p-6" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg" id="quizEntryTitle">📱 你是哪一種身分？</h3>
-                <button onclick="closeQuizEntryModal()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="quizEntryBody"></div>
-        </div>
-    </div>
-
-    <!-- 監考式即時監看詳情(老師/家長共用) -->
-    <div id="proctorModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-lg w-full max-h-[85vh] overflow-y-auto p-6" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">🔍 監考式即時監看</h3>
-                <button onclick="closeProctorModal()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="proctorModalBody"><div class="text-center text-gray-500 py-8">⏳ 載入中...</div></div>
-        </div>
-    </div>
-
-    <!-- 超級管理員後台：帳號列表/搜尋/刪除 -->
-    <div id="superadminModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6" style="box-shadow: var(--lq-shadow-lg);">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">🛡️ 帳號管理後台</h3>
-                <button onclick="closeSuperadminPanel()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div class="flex gap-2 mb-4 flex-wrap">
-                <input id="adminSearchInput" class="lq-input" style="flex:1;min-width:12rem;" placeholder="搜尋帳號/顯示名稱" oninput="debounceAdminSearch()">
-                <button onclick="openAdminCreateForm()" class="lq-btn lq-btn-primary px-4 whitespace-nowrap">➕ 建立帳號</button>
-            </div>
-            <div id="adminUsersList"></div>
-        </div>
-    </div>
-
-    <!-- 超級管理員後台：手動建立帳號 -->
-    <div id="adminCreateModal" class="hidden fixed inset-0 bg-black/50 z-[110] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">➕ 建立帳號</h3>
-                <button onclick="closeAdminCreateForm()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="adminCreateBody"></div>
-        </div>
-    </div>
-
-    <!-- 超級管理員後台：編輯帳號(改顯示名稱/角色/重設密碼) -->
-    <div id="adminEditModal" class="hidden fixed inset-0 bg-black/50 z-[110] flex items-center justify-center p-4 no-print">
-        <div class="lq-card max-w-md w-full p-6">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="font-bold text-lg">✏️ 編輯帳號</h3>
-                <button onclick="closeAdminEditForm()" class="lq-btn lq-btn-ghost text-2xl leading-none px-2 py-0" aria-label="關閉">&times;</button>
-            </div>
-            <div id="adminEditBody"></div>
-        </div>
-    </div>
-
-    <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=29"></script>
-    <script src="js/dialog.js?v=29"></script>
-    <script src="js/entry.js?v=29"></script>
-    <script src="js/home.js?v=29"></script>
-    <script src="js/share.js?v=29"></script>
-    <script src="js/settings.js?v=29"></script>
-    <script src="js/generate.js?v=29"></script>
-    <script src="js/sheet.js?v=29"></script>
-    <script src="js/answer.js?v=29"></script>
-    <script src="js/bank.js?v=29"></script>
-    <script src="js/handoff.js?v=29"></script>
-    <script src="js/router.js?v=29"></script>
-    <script src="js/export.js?v=29"></script>
-    <script src="js/account.js?v=29"></script>
-    <script src="js/admin.js?v=29"></script>
-<!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
-     學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
-     刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=29">
-
-<div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
-  <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
-  <div id="paperTeacher" class="hidden max-w-6xl mx-auto p-4">
-    <div class="flex flex-wrap items-center gap-2 mb-4">
-      <button class="pp-btn pp-btn-ghost" onclick="paperExit()">← 回上一頁</button>
-      <input id="ppTitle" class="pp-in flex-1 min-w-[180px]" placeholder="卷子名稱（例如：五年級數學第三單元小考）">
-      <span id="ppSaveHint" class="text-xs text-gray-500"></span>
-    </div>
-
-    <div class="pp-card">
-      <div class="font-bold mb-2">① 上傳現成卷子</div>
-      <p class="text-sm text-gray-600 mb-3">可以是掃描檔、手機拍的照片，或直接丟 PDF（會自動轉成圖片）。最多 10 頁、整份 5MB。</p>
-      <figure class="lq-photo-tip"><img src="assets/illust/paper-photo-guide.webp" alt="" class="lq-illust" loading="lazy"><figcaption>拍照小訣竅：手機在正上方、紙張放平、四邊對齊畫面，辨識最準。</figcaption></figure>
-      <div onclick="document.getElementById('ppFile').click()"
-           class="border-2 border-dashed border-emerald-300 p-6 text-center cursor-pointer hover:bg-emerald-50 rounded-xl">
-        <p class="text-lg text-emerald-600 font-bold">📂 點此選擇卷子（圖片或 PDF）</p>
-      </div>
-      <input type="file" id="ppFile" multiple accept="image/*,application/pdf" style="display:none" onchange="ppHandleFiles(this)">
-      <div id="ppUploadStatus" class="text-sm mt-2"></div>
-    </div>
-
-    <div id="ppStep2" class="hidden">
-      <div class="pp-card">
-        <div class="font-bold mb-2">② 標出學生要作答的位置</div>
-        <p class="text-sm text-gray-600 mb-3">
-          按「AI 自動抓」讓系統先幫你框一輪，再用滑鼠或手指把框拖到正確位置。
-          <span class="text-amber-700 font-bold">AI 抓不準是正常的</span>，它只負責省掉你從零開始框的力氣。
-        </p>
-        <div class="flex flex-wrap gap-2 items-center">
-          <button class="pp-btn pp-btn-main" onclick="ppDetect()">🤖 AI 自動抓這一頁</button>
-          <button class="pp-btn pp-btn-ghost" onclick="ppAddRegion()">➕ 自己加一個框</button>
-          <button class="pp-btn pp-btn-ghost" onclick="ppDeleteSelected()">🗑️ 刪除選取的框</button>
-          <span id="ppPageTabs" class="flex flex-wrap gap-1 ml-auto"></span>
-        </div>
-        <div id="ppDetectStatus" class="text-sm mt-2"></div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2">
-          <div id="ppStageWrap" class="pp-edit"></div>
-        </div>
-        <div>
-          <div class="pp-card">
-            <div class="font-bold mb-2">③ 每題設定與答案</div>
-            <p class="text-xs text-gray-500 mb-2">選擇題／填空題填了答案就會自動判分；手寫題交給你批改（可按 AI 協助）。</p>
-            <div id="ppRegionList" class="text-sm"></div>
-          </div>
-          <div class="pp-card">
-            <div class="font-bold mb-2">④ 派給學生</div>
-            <button class="pp-btn pp-btn-main w-full mb-2" onclick="ppPublish()">🔗 產生學生作答連結</button>
-            <button class="pp-btn pp-btn-ghost w-full" onclick="ppOpenGrading()">📝 打開批改台</button>
-            <div id="ppPublishBox" class="text-sm mt-2"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ---------- 學生：在原卷上作答 ---------- -->
-  <div id="paperStudentView" class="hidden max-w-3xl mx-auto p-4">
-    <div id="ppStuHeader" class="pp-card sticky top-0 z-20"></div>
-    <div id="ppStuInfo" class="pp-card hidden">
-      <div class="font-bold mb-2">先讓老師知道你是誰</div>
-      <div class="grid grid-cols-2 gap-2">
-        <input id="ppStuGrade" class="pp-in" placeholder="年級（例如 五年級）">
-        <input id="ppStuClass" class="pp-in" placeholder="班級（例如 3 班）">
-        <input id="ppStuSeat" class="pp-in" placeholder="座號">
-        <input id="ppStuName" class="pp-in" placeholder="姓名">
-      </div>
-      <div style="font-size:0.75rem;color:#5f6368;margin-top:0.5rem;line-height:1.5;">這些資料只給出這份考卷的老師看，用途與保存期限見<a href="privacy.html" target="_blank" rel="noopener" style="color:#1A73E8;text-decoration:underline;">個人資料蒐集告知</a>。</div>
-      <button class="pp-btn pp-btn-main w-full mt-3" onclick="ppStuStart()">開始作答</button>
-    </div>
-    <div id="ppStuBody" class="hidden">
-      <div id="ppStuStages"></div>
-      <button id="ppStuSubmitBtn" class="pp-btn pp-btn-main w-full my-4" onclick="ppStuSubmit()">✅ 送出答案</button>
-    </div>
-    <div id="ppStuResult" class="hidden pp-card"></div>
-  </div>
-
-  <!-- ---------- 老師：批改台 ---------- -->
-  <div id="paperGradeView" class="hidden max-w-6xl mx-auto p-4">
-    <div class="flex flex-wrap items-center gap-2 mb-4">
-      <button class="pp-btn pp-btn-ghost" onclick="paperExit()">← 回上一頁</button>
-      <div id="ppGradeTitle" class="font-bold text-lg"></div>
-      <button class="pp-btn pp-btn-ghost ml-auto" onclick="ppLoadSubmissions()">🔄 重新整理</button>
-    </div>
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-      <div class="lg:col-span-1"><div class="pp-card"><div class="font-bold mb-2">學生</div><div id="ppSubList" class="text-sm"></div></div></div>
-      <div class="lg:col-span-3"><div id="ppGradeBody" class="pp-card text-gray-500">左邊選一位學生開始批改。</div></div>
-    </div>
-  </div>
-</div>
-
-<script src="js/paper-teacher.js?v=29"></script>
-<script src="js/paper-student.js?v=29"></script>
-<script src="js/paper-focus.js?v=29"></script>
-    <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=29"></script>
-    <script src="js/welcome-fx.js?v=29"></script>
-
+    <script src="js/welcome-fx.js?v=30"></script>
 </body>
 </html>

@@ -13,9 +13,8 @@
             localStorage.setItem(STUDENT_PROFILE_KEY, JSON.stringify(prof));
         }
 
-        // 進入主畫面：所有「離開進場頁」的路徑都走這裡，才不會有的地方漏掉身分判斷
+        // 進入主畫面：依身分顯示對應首頁（學生首頁／家長面板／出題表單），所有進主畫面的路徑都走這裡
         function enterMainApp() {
-            document.getElementById('hlSplash').style.display = 'none';
             document.getElementById('lqAppbar').classList.remove('hidden');
             const u = window.currentUser;
             const isStudent = !!(u && u.role === 'student');
@@ -179,7 +178,7 @@
 
         function studentLeaveHome() {
             localStorage.removeItem(STUDENT_PROFILE_KEY);
-            location.href = location.origin + location.pathname;
+            location.href = '/start?switch=1';
         }
 
         // 學生首頁的登出：session token 與這台裝置的學生資料一起清掉，再回到進場頁。
@@ -189,7 +188,7 @@
             localStorage.removeItem('lun_session_token');
             localStorage.removeItem(STUDENT_PROFILE_KEY);
             window.currentUser = null;
-            location.href = location.origin + location.pathname;
+            location.href = '/start?switch=1';
         }
 
         async function joinByCode(btnEl) {
@@ -335,14 +334,13 @@
         }
 
         function goBackOrHome() {
-            const splash = document.getElementById('hlSplash');
             const studentHome = document.getElementById('studentHome');
             const inputForm = document.getElementById('inputForm');
             const resultSection = document.getElementById('resultSection');
 
             // 分享連結／即時監看連結開的分頁：站內沒有上一步(網址本身就是入口)，回站台首頁
             if (window.isSharedView || location.search) {
-                location.href = location.origin + location.pathname;
+                location.href = '/';
                 return;
             }
 
@@ -360,30 +358,18 @@
                 return;
             }
 
-            // 學生首頁／出題設定頁的上一步都是進場頁的身分選擇
-            if (isViewVisible(studentHome) || isViewVisible(inputForm)) {
-                if (studentHome) studentHome.classList.add('hidden');
-                if (inputForm) inputForm.classList.add('hidden');
-                if (splash) splash.style.display = '';
-                splashBackToIdentity();
-                window.scrollTo(0, 0);
-                updateGlobalBackBtn();
-                return;
-            }
-
-            location.href = location.origin + location.pathname;
+            // 學生首頁／出題設定頁是這一頁的起點，再往上一步就是選身分頁（真的換頁）
+            location.href = '/start?switch=1';
         }
 
         function updateGlobalBackBtn() {
             const btn = document.getElementById('btnGlobalBack');
             if (!btn) return;
-            const splash = document.getElementById('hlSplash');
-            const splashVisible = splash && splash.style.display !== 'none' && getComputedStyle(splash).display !== 'none';
-            // 進場頁是起點；出題設定頁與學生首頁各自是該身分的主畫面，
+            // 出題設定頁與學生首頁各自是該身分的主畫面，
             // 上方本來就有「換身分／登出」可以離開，不再多一顆返回鈕
             const onHome = isViewVisible(document.getElementById('inputForm'))
                 || isViewVisible(document.getElementById('studentHome'));
-            btn.classList.toggle('hidden', splashVisible || onHome);
+            btn.classList.toggle('hidden', onHome);
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -392,8 +378,6 @@
                 const el = document.getElementById(id);
                 if (el) obs.observe(el, { attributes: true, attributeFilter: ['class'] });
             });
-            const splash = document.getElementById('hlSplash');
-            if (splash) obs.observe(splash, { attributes: true, attributeFilter: ['class', 'style'] });
             updateGlobalBackBtn();
         });
 

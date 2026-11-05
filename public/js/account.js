@@ -16,9 +16,7 @@
                 const data = await res.json();
                 if (data.error) { localStorage.removeItem('lun_session_token'); window.currentUser = null; }
                 else {
-                    window.currentUser = data.user;
-                    // 學生/家長已經登入過，重新整理時直接進他的首頁(老師仍走進場頁選Key)
-                    if (!location.search && (data.user.role === 'student' || data.user.role === 'parent')) enterMainApp();
+                    window.currentUser = data.user;   // 要進哪個畫面由 core.js 啟動流程與 guide.js 決定
                 }
             } catch (e) { window.currentUser = null; }
             updateAccountUI();
@@ -79,12 +77,10 @@
             localStorage.removeItem('lun_session_token');
             window.currentUser = null;
             updateAccountUI();
-            // 學生首頁整頁內容都是依身分算出來的，只更新帳號列會看起來像沒登出，直接回進場頁
-            const sh = document.getElementById('studentHome');
-            if (sh && !sh.classList.contains('hidden')) {
-                localStorage.removeItem(STUDENT_PROFILE_KEY);
-                location.href = location.origin + location.pathname;
-            }
+            // 畫面內容都是依身分算出來的，登出後直接回選身分頁（除了訪客，其他身分都要登入）
+            localStorage.removeItem(STUDENT_PROFILE_KEY);
+            try { sessionStorage.removeItem('lun_role_session'); } catch (e) {}
+            location.href = '/start?switch=1';
         }
 
         function openAccountModal() {

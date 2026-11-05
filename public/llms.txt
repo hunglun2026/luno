@@ -6,4 +6,5 @@
 
 ## 頁面
 - [刻度 互動式評量](https://luno.hunglun.com/): 刻度 互動式評量
+- [個人資料蒐集告知](https://luno.hunglun.com/privacy): 蒐集機關、目的、資料類別、保存期間、當事人權利。
 - [刻度 使用說明書](https://luno.hunglun.com/manual): 刻度互動式評量的完整使用說明：老師出題、發測驗、看全班進度，學生作答與練習，家長查看，一步一步配實際畫面。

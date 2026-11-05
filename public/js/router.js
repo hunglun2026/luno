@@ -1,20 +1,17 @@
-/* 瀏覽器「上一頁」支援（2026-11-05）。
-   這個 SPA 靠 classList 切畫面，原本沒有歷史紀錄，手機滑動返回會直接離開網站。
-   做法：不改任何既有的切畫面函式，只觀察畫面「深度」，變深就 pushState，使用者按瀏覽器返回時
-   交給既有的 goBackOrHome()（home.js）退一層。
-   深度：0 進場頁／身分頁；1 出題設定或學生首頁；2 試卷、作答卷。
+/* 瀏覽器「上一頁」支援（2026-11-05；同日改成多頁式後簡化）。
+   /app 這一頁裡，出題表單或學生首頁是「頁面本身」，按瀏覽器返回就真的回到上一個網頁（選身分頁）；
+   只有「試卷、作答卷」是頁內切換出來的畫面，進去時才 pushState 一層，
+   使用者按瀏覽器返回時交給既有的 goBackOrHome()（home.js）退回出題表單。
    交接模式（手機已遞給學生）時返回會被擋回來，避免學生按返回跳出答題畫面。
    分享、監看、原卷連結（網址帶參數）不啟用，那些頁面沒有站內上一層。 */
 (function () {
     if (location.search || !window.history || !history.pushState) return;
-    var depth = 0;      // 目前歷史堆疊裡我們推到第幾層
+    var depth = 0;      // 目前歷史堆疊裡我們推到第幾層（0 是頁面本身，1 是試卷／作答卷）
     var ignorePop = false;
 
     function viewDepth() {
         function vis(id) { var el = document.getElementById(id); return isViewVisible(el); }
-        if (vis('resultSection')) return 2;
-        if (vis('studentHome') || vis('inputForm')) return 1;
-        return 0;
+        return vis('resultSection') ? 1 : 0;
     }
 
     function sync() {

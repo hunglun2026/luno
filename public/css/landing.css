@@ -145,13 +145,13 @@
 }
 
 /* ---------- ① 歡迎頁：停住，按「進入」 ---------- */
-.ld-welcome {
-    position: fixed; inset: 0; z-index: 300; overflow-y: auto; overscroll-behavior: contain;
-    background: var(--ld-bg); color: var(--ld-text); font-size: 1.0625rem; line-height: 1.7; transition: opacity 0.35s ease;
-}
-.ld-welcome[hidden] { display: none; }
-.ld-welcome.is-leaving { opacity: 0; pointer-events: none; }
-.ld-welcome { scroll-behavior: smooth; }
+/* 歡迎頁現在是 / 這個真頁面，照一般文件捲動（2026-11-05 改多頁式前它是蓋在 App 上的固定層） */
+body.ld-page { margin: 0; background: var(--ld-bg); color: var(--ld-text); font-family: 'Noto Sans TC', system-ui, sans-serif; }
+.ld-welcome { min-height: 100vh; background: var(--ld-bg); color: var(--ld-text); font-size: 1.0625rem; line-height: 1.7; }
+/* 選身分、登入頁的按鈕改成真連結（<a>），要跟原本的 <button> 長一樣 */
+a.ld-guest, a.ld-row, a.ld-back { text-decoration: none; }
+a.ld-guest { color: var(--ld-on-accent); }
+a.ld-row { color: var(--ld-text); }
 .ld-hero {
     display: grid; grid-template-columns: 1fr 22rem; gap: 4rem; align-items: center;
     min-height: calc(100vh - 15rem); padding: 0.5rem 0 3.5rem;
@@ -269,7 +269,6 @@ body.guest-mode #btnAnswerMode .lq-icon { color: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
     .ld-draw { animation: none; }
-    .ld-welcome { scroll-behavior: auto; transition: none; }
 }
 
 /* 身分頁點擊回饋：按下去有一點縮小，避免以為沒點到而連點 */

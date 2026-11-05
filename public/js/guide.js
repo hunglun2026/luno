@@ -1,15 +1,16 @@
-// 引導式進站：① 鴻綸特效歡迎頁 → ② 選身分（老師／學生）→ ③ 老師一步一頁出題。
+// 引導式出題：App（/app）進來之後，老師「一步一頁」出題精靈，以及訪客模式（免登入、一份最多 20 題）。
+//
+// 2026-11-05 改成多頁式：歡迎頁（/）、選身分（/start）、登入（/login）都是獨立頁面了，
+// 這裡不再管歡迎頁與選身分，只負責 /app 啟動時依身分進哪個畫面。
 //
 // 做法：不改任何既有函式，只在外面包一層。
-// - 「離開進場頁」原本都走 enterMainApp()，這裡把它包起來：跑完之後，若出題表單在畫面上，就切成一步一頁。
-//   所以免登入、帳號登入、選 API Key 那幾條既有路徑都自動接上，不必一處處改。
+// - 「進入主畫面」原本都走 enterMainApp()，這裡把它包起來：跑完之後，若出題表單在畫面上，就切成一步一頁。
 // - 一步一頁只是顯示／隱藏表單裡標了 data-gstep 的區塊，欄位 id 一個都沒動，
 //   startGen()、記住條件、設定連結的邏輯照舊。
-// 樣式在 guide.css。由 index.html 的 window.onload 最後呼叫 Guide.start()。
+// 樣式在 guide.css。由 core.js 的 window.onload 最後呼叫 Guide.start()。
 (function () {
     'use strict';
 
-    var SS_WELCOME = 'lun_welcome_seen'; // 這個分頁看過歡迎頁（關分頁才重播）
     var SS_ROLE = 'lun_role_session';    // 這個分頁目前的身分（重新整理直接回到原畫面）
     var GUEST_MAX = 20;                  // 訪客一份最多幾題
 
@@ -33,77 +34,22 @@
     function $(id) { return document.getElementById(id); }
     function reducedMotion() { return window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; }
 
-    // ========== ① 歡迎頁：停住，按「進入」才往下 ==========
-    // 歡迎頁（#lqWelcome）由 index.html 的行內腳本在載入時蓋上去；這裡只負責「進入」、回到歡迎頁、捲到使用說明。
-    function leaveWelcome() {
-        var w = $('lqWelcome');
-        if (!w || w.hidden) return;
-        sSet(SS_WELCOME, '1');
-        w.classList.add('is-leaving');
-        setTimeout(function () { w.hidden = true; w.classList.remove('is-leaving'); }, 350);
-    }
-
-    function bindWelcome() {
-        var enter = $('lqEnter');
-        if (!enter || enter.dataset.bound) return;
-        enter.dataset.bound = '1';
-        function go() { leaveWelcome(); showIdentity(); }
-        enter.addEventListener('click', go);
-        // 頁面還沒載完就按了「進入」（那時 guide 還沒接上），onclick 屬性先記下來，這裡一啟動就照辦
-        if (enter.dataset.clicked) go();
-    }
-
-    // 身分頁的「回歡迎頁」：再蓋一次歡迎頁，不清身分
-    function toWelcome(scrollToGuide) {
-        var w = $('lqWelcome');
-        if (!w) return;
-        w.hidden = false;
-        w.classList.remove('is-leaving');
-        w.scrollTop = 0;
-        if (scrollToGuide) {
-            var g = $('lqGuide');
-            if (g) g.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' });
-        }
-    }
-
-    // ========== ② 選身分 ==========
-    function showIdentity() {
-        // openIdentitySplash() 已包過：會收起主畫面並回到身分那一步
-        openIdentitySplash();
-    }
-
+    // ========== ① 進哪個畫面 ==========
     function loggedInTeacher() {
         var u = window.currentUser;
         return !!(u && (u.role === 'teacher' || u.role === 'superadmin'));
     }
 
+    // role：guest 訪客、teacher 教師（含管理員）、student 學生、parent 家長。
     // step：要停在老師第幾步（設定連結用 4），沒給就從第 1 步開始
-    function pick(role, step) {
-        sSet(SS_ROLE, role);
+    function enterAs(role, step) {
         setGuest(role === 'guest');
-        forceTeacher = role === 'teacher' || role === 'teacherLogin' || role === 'guest';
+        forceTeacher = role === 'teacher' || role === 'guest';
         cur = step || 1;
-        if (role === 'guest') {
-            splashSelectIdentity('guest');            // 免登入直接進出題（既有路徑）；題數上限由訪客模式管
-        } else if (role === 'teacher') {
-            // 教師要登入才不限題數；這個分頁已經登入過的直接進，不再叫他登入第二次
-            splashSelectIdentity(loggedInTeacher() ? 'guest' : 'teacher');
-        } else if (role === 'teacherLogin') {
-            splashSelectIdentity('teacher');          // 教師帳號登入表單（既有）
-        } else if (role === 'student') {
-            var u = window.currentUser;
-            if (u && u.role === 'student') {
-                $('hlStepIdentity').classList.add('hidden');
-                enterMainApp();                       // 已登入的學生：直接到學生首頁
-            } else {
-                splashSelectIdentity('student');      // 學生要登入或註冊（2026-11-05 起不再有免登入練習）
-            }
-        } else {
-            splashSelectIdentity(role);               // parent／admin 走既有登入
-        }
+        enterMainApp();   // 已包過：出題表單顯示時會接上一步一頁；學生與家長由 enterMainApp 依登入身分分流
     }
 
-    // ========== ③ 老師一步一頁 ==========
+    // ========== ② 老師一步一頁 ==========
     function sourceType() { return ($('sourceType') || {}).value || '1'; }
     function steps() { return sourceType() === '2' ? [1, 2, 4] : [1, 2, 3, 4]; }
 
@@ -315,13 +261,10 @@
 
     function toIdentity() {
         sDel(SS_ROLE);
-        forceTeacher = false;
-        setGuest(false);
-        applyGuestLimits(); // 離開訪客模式：題數選單還原
-        showIdentity();
+        location.href = '/start?switch=1';   // 真的換頁：選身分頁，瀏覽器上一頁可以回來
     }
 
-    // ========== ④ 訪客模式：免登入、一份最多 20 題 ==========
+    // ========== ③ 訪客模式：免登入、一份最多 20 題 ==========
     // 這只管前端：藏掉超過上限的選項，並在 generate.js 的 readGenForm() 再擋一次（防改畫面）。
     // 伺服器端沒有依訪客限題，要根治得在 Worker 加；目前只靠前端與出題冷卻保護額度。
     var countHtml = null; // 題數選單原本的選項，離開訪客模式時還原
@@ -372,16 +315,6 @@
             updateGlobalBackBtn();
         };
 
-        // 回到身分頁：把主畫面收起來（原本只把進場頁叫回來，下面的表單還在）
-        var origOpen = window.openIdentitySplash;
-        window.openIdentitySplash = function () {
-            ['inputForm', 'studentHome', 'resultSection'].forEach(function (id) {
-                var el = $(id);
-                if (el) el.classList.add('hidden');
-            });
-            origOpen.apply(this, arguments);
-        };
-
         // 學生首頁的「換身分」「登出」會重新整理頁面：先清掉這個分頁記住的身分，才會回到身分頁
         ['studentLeaveHome', 'studentLogout'].forEach(function (name) {
             var orig = window[name];
@@ -403,34 +336,31 @@
     }
 
     // ========== 入口 ==========
+    // 依序判斷：設定連結 → 這個分頁選了訪客 → 已登入 → 都不是就回選身分頁（分享、監看、原卷連結在 core.js 先處理掉，不會走到這裡）
     function start(opts) {
         opts = opts || {};
         patch();
         addAppbarButton();
-        bindWelcome();
 
-        // 「複製設定連結」帶來的：條件都填好了，跳過歡迎頁直接到出題最後一步。
-        // 已登入的教師照舊；沒登入的用訪客身分進（題數超過 20 會被收到 20）
         if (opts.fromSettingsLink) {
-            pick(loggedInTeacher() ? 'teacher' : 'guest', 4);
+            // 「複製設定連結」帶來的：條件都填好了，直接到出題最後一步。已登入的教師照舊；沒登入的用訪客身分進
+            enterAs(loggedInTeacher() ? 'teacher' : 'guest', 4);
             return;
         }
-        var role = sGet(SS_ROLE);
-        if (sGet(SS_WELCOME)) {
-            if (role) pick(role);
-            else showIdentity();
+        var u = window.currentUser;
+        if (sGet(SS_ROLE) === 'guest') { enterAs('guest'); return; }
+        if (u) {
+            if (u.role === 'student') enterAs('student');
+            else if (u.role === 'parent') enterAs('parent');
+            else enterAs('teacher');
             return;
         }
-        // 第一次進來：歡迎頁已由 index.html 的行內腳本蓋上，停在那裡等「進入」；先把身分頁備在底下
-        showIdentity();
+        location.replace('/start?switch=1');
     }
 
     window.Guide = {
         start: start,
         refresh: function () { refresh(); },
-        pick: function (role) { pick(role); },
-        toWelcome: function () { toWelcome(false); },
-        openGuide: function () { toWelcome(true); },
         toIdentity: toIdentity
     };
 })();

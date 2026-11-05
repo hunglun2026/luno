@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="theme-color" content="#fbfcfe">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <title>選擇身分｜刻度 互動式評量</title>
+    <meta name="application-name" content="刻度 互動式評量">
+    <meta name="apple-mobile-web-app-title" content="刻度 互動式評量">
+    <meta name="description" content="選擇你的身分：訪客模式免登入，教師、家長、學生登入後使用。">
+    <meta name="robots" content="noindex">
+    <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
+    <script src="js/theme.js?v=30"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
+    <link rel="stylesheet" href="assets/brand.css">
+    <link rel="stylesheet" href="css/tailwind.css?v=30">
+    <link rel="stylesheet" href="css/landing.css?v=30">
+</head>
+<body class="ld-page">
+
+    <!-- 選身分頁：頂部「回上一頁」固定在頂列正下方左側，登入頁用同一個位置 -->
+    <section id="hlSplash" class="hl-splash">
+        <div class="ld-wrap ld-card">
+            <header class="ld-top">
+                <div>
+                    <a href="/" aria-label="回刻度首頁"><img src="assets/logo-light.png?v=30" alt="鴻綸科技 x Google for Education" class="ld-logo is-light"><img src="assets/logo-dark.png?v=30" alt="" class="ld-logo is-dark" aria-hidden="true"></a>
+                </div>
+                <div class="ld-actions">
+                    <button type="button" class="ld-tbtn" data-theme-toggle onclick="toggleTheme()"><span class="ph-duotone ph-moon"></span><span class="lab">深色</span></button>
+                </div>
+            </header>
+
+            <a id="lqSplashBack" class="ld-back" href="/"><span class="ph-duotone ph-arrow-left"></span>回上一頁</a>
+
+            <div id="hlStepIdentity" class="ld-pick">
+                <div>
+                    <h2>你要怎麼使用？</h2>
+                    <p class="ld-sub">訪客模式免登入，其他身分都要先登入。</p>
+                    <a class="ld-guest" href="/app" data-role="guest">
+                        <span class="ic"><span class="ph-duotone ph-device-mobile"></span></span>
+                        <span><b>訪客模式</b><span class="d">一支手機出題兼作答，免登入，一份最多 20 題</span></span>
+                        <span class="go ph-duotone ph-arrow-right"></span>
+                    </a>
+                    <p class="ld-or">或選擇你的身分</p>
+                    <div class="ld-rows">
+                        <a class="ld-row" href="/login?role=teacher"><span class="ic"><span class="ph-duotone ph-presentation"></span></span>
+                            <div><b>我是教師</b><span class="d">登入後出題不限題數、發測驗、看全班即時進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></a>
+                        <a class="ld-row" href="/login?role=parent"><span class="ic"><span class="ph-duotone ph-users-three"></span></span>
+                            <div><b>我是家長</b><span class="d">看孩子的作答與進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></a>
+                        <a class="ld-row" href="/login?role=student"><span class="ic"><span class="ph-duotone ph-student"></span></span>
+                            <div><b>我是學生</b><span class="d">登入後輸入測驗代碼，或自己練習</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></a>
+                    </div>
+                    <div class="ld-more">
+                        <a href="/login?role=admin">管理員登入</a>
+                        <a href="/manual">使用說明書</a>
+                    </div>
+                </div>
+                <div class="ld-vr is-mark" aria-label="一份試卷的題數：訪客最多 20 題，教師帳號不限">
+                    <div class="scale"><div class="ticks"></div><div class="spine"></div><div class="on"></div><div class="fade"></div></div>
+                    <span class="num" style="top:0">0</span><span class="num" style="top:10%">10</span><span class="num n20" style="top:20%">20</span><span class="num" style="top:30%">30</span><span class="num" style="top:40%">40</span><span class="num" style="top:50%">50</span><span class="num" style="top:60%">60</span><span class="num" style="top:70%">70</span><span class="num" style="top:80%">80</span><span class="num" style="top:90%">90</span><span class="num" style="top:100%">100</span>
+                    <div class="flag" style="top:5%"><b>訪客</b><small>0 到 20 題</small></div>
+                    <div class="flag is-teacher" style="top:55%"><b>教師帳號</b><small>題數不限</small></div>
+                </div>
+            </div>
+            <footer class="ld-foot">
+                <span>Created by Hunglun Technology Steve　<a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知</a></span>
+                <span>有任何問題？<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">鴻綸科技官方網站</a>　<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">作者信箱</a>　<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">作者 Line</a>　LINE ID <button type="button" class="hl-line-id" onclick="copyLineId(this)">safezone0619</button></span>
+            </footer>
+        </div>
+    </section>
+    <script src="js/start.js?v=30"></script>
+</body>
+</html>
