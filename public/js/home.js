@@ -18,7 +18,7 @@
             document.getElementById('hlSplash').style.display = 'none';
             document.getElementById('lqAppbar').classList.remove('hidden');
             const u = window.currentUser;
-            const isStudent = (u && u.role === 'student') || (!u && !!getStudentProfile());
+            const isStudent = !!(u && u.role === 'student');
             const isParent = u && u.role === 'parent';
 
             document.getElementById('studentHome').classList.toggle('hidden', !isStudent);

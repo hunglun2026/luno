@@ -14,7 +14,7 @@
     <meta name="application-name" content="刻度 互動式評量">
     <meta name="apple-mobile-web-app-title" content="刻度 互動式評量">
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=27"></script>
+    <script src="js/theme.js?v=28"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -26,15 +26,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=27">
+    <link rel="stylesheet" href="css/guide.css?v=28">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=27">
-    <link rel="stylesheet" href="css/sheet.css?v=27">
+    <link rel="stylesheet" href="css/app.css?v=28">
+    <link rel="stylesheet" href="css/sheet.css?v=28">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=27">
+    <link rel="stylesheet" href="css/tailwind.css?v=28">
     <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=27">
-    <link rel="stylesheet" href="css/theme.css?v=27">
+    <link rel="stylesheet" href="css/landing.css?v=28">
+    <link rel="stylesheet" href="css/theme.css?v=28">
 <link rel="canonical" href="https://luno.hunglun.com/">
 <!--seo-games--><script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "@id": "https://luno.hunglun.com/#app", "name": "刻度 互動式評量", "url": "https://luno.hunglun.com/", "description": "刻度 互動式評量", "applicationCategory": "EducationalApplication", "operatingSystem": "All", "inLanguage": "zh-TW", "isAccessibleForFree": true, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TWD"}, "creator": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}, "publisher": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "鴻綸科技", "item": "https://www.hunglun.com/"}, {"@type": "ListItem", "position": 2, "name": "學習專區", "item": "https://www.hunglun.com/tools/games"}, {"@type": "ListItem", "position": 3, "name": "刻度 互動式評量", "item": "https://luno.hunglun.com/"}]}]}</script>
 </head>
@@ -46,8 +46,8 @@
         <div class="ld-wrap">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=27" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=27" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=28" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=28" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <a class="ld-tbtn" href="#lqGuide"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></a>
@@ -97,7 +97,7 @@
                     <div>
                         <h3>只有一支手機：訪客模式</h3>
                         <ol>
-                            <li>按「訪客快速開始」，不用登入，一份最多 20 題。</li>
+                            <li>按「訪客模式」，不用登入，一份最多 20 題。</li>
                             <li>出好題後按「交給學生作答」，設 4 位數密碼。</li>
                             <li>學生交卷後只會看到「已交卷」，看不到分數與對錯。</li>
                             <li>手機交還後輸入密碼，就能看分數、正確答案與解析。</li>
@@ -108,7 +108,7 @@
             </section>
 
             <footer class="ld-foot">
-                <span>Created by Hunglun Technology Steve</span>
+                <span>Created by Hunglun Technology Steve　<a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知</a></span>
                 <span>有任何問題？<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">鴻綸科技官方網站</a>　<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">作者信箱</a>　<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">作者 Line</a>　LINE ID <button type="button" class="hl-line-id" onclick="copyLineId(this)">safezone0619</button></span>
             </footer>
         </div>
@@ -128,14 +128,14 @@
         })();
     </script>
 
-    <!-- ② 選身分（guide.js）：頂端是訪客快速開始，下面教師、家長、學生三列。
+    <!-- ② 選身分（guide.js）：頂端是訪客模式，下面教師、家長、學生三列。
          教師要登入才不限題數；登入、API Key 那幾步（#hlStepAuth／#hlStepApiKey）也在這個畫面裡 -->
     <section id="hlSplash" class="hl-splash no-print">
         <div class="ld-wrap ld-card">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=27" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=27" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=28" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=28" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <button type="button" class="ld-tbtn" onclick="Guide.openGuide()"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></button>
@@ -147,11 +147,11 @@
                 <div>
                     <button type="button" class="ld-back" onclick="Guide.toWelcome()"><span class="ph-duotone ph-arrow-left"></span>回歡迎頁</button>
                     <h2>你要怎麼使用？</h2>
-                    <p class="ld-sub">沒有帳號也能馬上開始。</p>
+                    <p class="ld-sub">訪客模式免登入，其他身分都要先登入。</p>
                     <button type="button" id="lgContinue" class="lg-continue" hidden onclick="Guide.continueLast()"></button>
                     <button type="button" class="ld-guest" onclick="Guide.pick('guest')">
                         <span class="ic"><span class="ph-duotone ph-device-mobile"></span></span>
-                        <span><b>訪客快速開始</b><span class="d">一支手機出題兼作答，免登入，一份最多 20 題</span></span>
+                        <span><b>訪客模式</b><span class="d">一支手機出題兼作答，免登入，一份最多 20 題</span></span>
                         <span class="go ph-duotone ph-arrow-right"></span>
                     </button>
                     <p class="ld-or">或選擇你的身分</p>
@@ -161,7 +161,7 @@
                         <button type="button" class="ld-row" onclick="Guide.pick('parent')"><span class="ic"><span class="ph-duotone ph-users-three"></span></span>
                             <div><b>我是家長</b><span class="d">看孩子的作答與進度</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
                         <button type="button" class="ld-row" onclick="Guide.pick('student')"><span class="ic"><span class="ph-duotone ph-student"></span></span>
-                            <div><b>我是學生</b><span class="d">輸入測驗代碼，或自己練習</span></div><span class="go ph-duotone ph-caret-right"></span></button>
+                            <div><b>我是學生</b><span class="d">登入後輸入測驗代碼，或自己練習</span></div><span class="need">需登入</span><span class="go ph-duotone ph-caret-right"></span></button>
                     </div>
                     <div class="ld-more">
                         <button type="button" onclick="Guide.pick('admin')">管理員登入</button>
@@ -196,7 +196,7 @@
             </div>
 
             <footer class="ld-foot">
-                <span>Created by Hunglun Technology Steve</span>
+                <span>Created by Hunglun Technology Steve　<a href="privacy.html" target="_blank" rel="noopener">個人資料蒐集告知</a></span>
                 <span>有任何問題？<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">鴻綸科技官方網站</a>　<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">作者信箱</a>　<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">作者 Line</a>　LINE ID <button type="button" class="hl-line-id" onclick="copyLineId(this)">safezone0619</button></span>
             </footer>
         </div>
@@ -625,25 +625,25 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=27"></script>
-    <script src="js/dialog.js?v=27"></script>
-    <script src="js/entry.js?v=27"></script>
-    <script src="js/home.js?v=27"></script>
-    <script src="js/share.js?v=27"></script>
-    <script src="js/settings.js?v=27"></script>
-    <script src="js/generate.js?v=27"></script>
-    <script src="js/sheet.js?v=27"></script>
-    <script src="js/answer.js?v=27"></script>
-    <script src="js/bank.js?v=27"></script>
-    <script src="js/handoff.js?v=27"></script>
-    <script src="js/router.js?v=27"></script>
-    <script src="js/export.js?v=27"></script>
-    <script src="js/account.js?v=27"></script>
-    <script src="js/admin.js?v=27"></script>
+    <script src="js/core.js?v=28"></script>
+    <script src="js/dialog.js?v=28"></script>
+    <script src="js/entry.js?v=28"></script>
+    <script src="js/home.js?v=28"></script>
+    <script src="js/share.js?v=28"></script>
+    <script src="js/settings.js?v=28"></script>
+    <script src="js/generate.js?v=28"></script>
+    <script src="js/sheet.js?v=28"></script>
+    <script src="js/answer.js?v=28"></script>
+    <script src="js/bank.js?v=28"></script>
+    <script src="js/handoff.js?v=28"></script>
+    <script src="js/router.js?v=28"></script>
+    <script src="js/export.js?v=28"></script>
+    <script src="js/account.js?v=28"></script>
+    <script src="js/admin.js?v=28"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=27">
+<link rel="stylesheet" href="css/paper.css?v=28">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -714,6 +714,7 @@
         <input id="ppStuSeat" class="pp-in" placeholder="座號">
         <input id="ppStuName" class="pp-in" placeholder="姓名">
       </div>
+      <div style="font-size:0.75rem;color:#5f6368;margin-top:0.5rem;line-height:1.5;">這些資料只給出這份考卷的老師看，用途與保存期限見<a href="privacy.html" target="_blank" rel="noopener" style="color:#1A73E8;text-decoration:underline;">個人資料蒐集告知</a>。</div>
       <button class="pp-btn pp-btn-main w-full mt-3" onclick="ppStuStart()">開始作答</button>
     </div>
     <div id="ppStuBody" class="hidden">
@@ -737,11 +738,11 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=27"></script>
-<script src="js/paper-student.js?v=27"></script>
-<script src="js/paper-focus.js?v=27"></script>
+<script src="js/paper-teacher.js?v=28"></script>
+<script src="js/paper-student.js?v=28"></script>
+<script src="js/paper-focus.js?v=28"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=27"></script>
+    <script src="js/guide.js?v=28"></script>
 
 </body>
 </html>

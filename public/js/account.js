@@ -8,8 +8,7 @@
             const token = localStorage.getItem('lun_session_token');
             if (!token) {
                 updateAccountUI();
-                // 免登入學生上次填過基本資料就直接回學生首頁，不用每次重選身分
-                if (getStudentProfile() && !location.search) enterMainApp();
+                // 2026-11-05 起學生也要登入：不再用本機的免登入學生資料自動進首頁
                 return;
             }
             try {

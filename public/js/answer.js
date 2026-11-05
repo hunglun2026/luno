@@ -189,7 +189,8 @@
                 "<input id='ansStuClass' placeholder='班級' class='lq-input text-sm py-1.5'>" +
                 "<input id='ansStuSeat' placeholder='座號' class='lq-input text-sm py-1.5'>" +
                 "<input id='ansStuName' placeholder='姓名' class='lq-input text-sm py-1.5'>" +
-                "</div></div>";
+                "</div>" +
+                "<div style='font-size:0.75rem;color:#5f6368;margin-top:0.5rem;line-height:1.5;'>這些資料只給出這份測驗的老師或家長看，用途與保存期限見<a href='privacy.html' target='_blank' rel='noopener' style='color:#1A73E8;text-decoration:underline;'>個人資料蒐集告知</a>。不想填可以留空。</div></div>";
 
             // 「每題即時看結果」是需要登入的功能：即時回饋會一題一題回報到伺服器(老師/家長監看也靠這個)，
             // 未登入者只給「全部寫完再送出」，並直接告訴他登入就能解鎖

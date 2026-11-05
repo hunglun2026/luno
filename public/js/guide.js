@@ -109,11 +109,11 @@
             splashSelectIdentity('teacher');          // 教師帳號登入表單（既有）
         } else if (role === 'student') {
             var u = window.currentUser;
-            if ((u && u.role === 'student') || getStudentProfile()) {
+            if (u && u.role === 'student') {
                 $('hlStepIdentity').classList.add('hidden');
-                enterMainApp();                       // 已有學生資料：直接到學生首頁
+                enterMainApp();                       // 已登入的學生：直接到學生首頁
             } else {
-                splashSelectIdentity('student');      // 先選「練習／登入」（既有）
+                splashSelectIdentity('student');      // 學生要登入或註冊（2026-11-05 起不再有免登入練習）
             }
         } else {
             splashSelectIdentity(role);               // parent／admin 走既有登入

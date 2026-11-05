@@ -12,78 +12,13 @@
                 // 但表單裡本來就有「我有自己的 API Key」那條連結，多問一層只是擋路
                 enterMainApp();
                 useBuiltinQuota();
-            } else if (kind === 'student') {
-                // 學生多半沒有帳號也不想註冊，先讓他選：登入 或 填基本資料直接練習
-                document.getElementById('hlStepAuth').classList.remove('hidden');
-                renderStudentEntryChoice();
             } else {
                 document.getElementById('hlStepAuth').classList.remove('hidden');
                 renderSplashAuthForm('login');
             }
         }
 
-        // 學生入口：登入 / 免登入直接練習
-        function renderStudentEntryChoice() {
-            const box = document.getElementById('hlStepAuth');
-            box.innerHTML =
-                "<h3 style='font-weight:900;font-size:1.1rem;margin-bottom:0.25rem;color:var(--hl-text);'>🎒 學生</h3>" +
-                "<div style='font-size:0.78rem;color:#5f6368;margin-bottom:0.9rem;'>要做老師指定的測驗，或自己練習都可以</div>" +
-                "<div class='space-y-3'>" +
-                "<button onclick='renderStudentGuestForm()' class='lq-btn lq-btn-primary w-full py-3'>📝 我要練習（不用註冊）</button>" +
-                "<button onclick=\"renderSplashAuthForm('login')\" class='lq-btn lq-btn-secondary w-full py-2'>🔑 我有帳號，要登入</button>" +
-                // 誘因要講學生自己拿得到什麼。原本寫「家長能看到你的即時作答」——沒有學生會為了這個去登入
-                "<div style='font-size:0.72rem;color:#80868b;line-height:1.5;'>登入才有：寫一題就馬上知道對不對、換手機或電腦也看得到自己的練習紀錄與分數。</div>" +
-                "<button onclick='splashBackToIdentity()' class='lq-btn lq-btn-ghost w-full py-2 text-sm'>← 重選身分</button>" +
-                "</div>";
-        }
-
-        // 免登入學生：填學校/年級/班級/姓名，資料只留在這台裝置(給練習卷抬頭與紀錄用)
-        function renderStudentGuestForm() {
-            const prof = getStudentProfile() || {};
-            const box = document.getElementById('hlStepAuth');
-            box.innerHTML =
-                "<h3 style='font-weight:900;font-size:1.1rem;margin-bottom:0.25rem;color:var(--hl-text);'>📝 我要練習</h3>" +
-                "<div style='font-size:0.78rem;color:#5f6368;margin-bottom:0.9rem;'>填一下基本資料，練習卷上會幫你寫好</div>" +
-                "<div class='space-y-3'>" +
-                "<input id='guestSchool' class='lq-input' placeholder='學校（例如：鴻綸國中）' value='" + escapeHtml(prof.school || '') + "'>" +
-                "<select id='guestGrade' class='lq-input'>" + practiceGradeOptions() + "</select>" +
-                "<input id='guestClass' class='lq-input' placeholder='班級（例如：七年3班）' value='" + escapeHtml(prof.className || '') + "'>" +
-                "<input id='guestName' class='lq-input' placeholder='姓名' value='" + escapeHtml(prof.name || '') + "'>" +
-                "<div id='guestFormError' class='text-sm text-red-600 hidden'></div>" +
-                "<button onclick='doStudentGuestEnter()' class='lq-btn lq-btn-primary w-full py-3'>開始使用</button>" +
-                "<button onclick='renderStudentEntryChoice()' class='lq-btn lq-btn-ghost w-full py-2 text-sm'>← 上一步</button>" +
-                "</div>";
-            if (prof.grade) {
-                const sel = document.getElementById('guestGrade');
-                if (sel) sel.value = prof.grade;
-            }
-        }
-
-        function doStudentGuestEnter() {
-            const name = (document.getElementById('guestName').value || '').trim();
-            const err = document.getElementById('guestFormError');
-            if (!name) {
-                err.textContent = '請至少填姓名，練習卷才知道要寫誰的名字';
-                err.classList.remove('hidden');
-                return;
-            }
-            saveStudentProfile({
-                school: (document.getElementById('guestSchool').value || '').trim(),
-                grade: document.getElementById('guestGrade').value,
-                className: (document.getElementById('guestClass').value || '').trim(),
-                name: name
-            });
-            enterMainApp();
-        }
-
-        // 學生入口（renderStudentEntryChoice）會把 #hlStepAuth 整個重寫，連登入表單容器 #hlAuthFormBody 一起清掉；
-        // 返回再選家長／教師登入就會因為找不到容器而當掉。返回時把原本的骨架還原
         function splashBackToIdentity() {
-            if (!document.getElementById('hlAuthFormBody')) {
-                document.getElementById('hlStepAuth').innerHTML =
-                    "<button type=\"button\" class=\"hl-back-link\" onclick=\"splashBackToIdentity()\">← 返回身分選擇</button>" +
-                    "<div id=\"hlAuthFormBody\" style=\"width:100%; max-width:22rem;\"></div>";
-            }
             document.getElementById('hlStepAuth').classList.add('hidden');
             document.getElementById('hlStepApiKey').classList.add('hidden');
             document.getElementById('hlStepIdentity').classList.remove('hidden');
@@ -110,6 +45,7 @@
                     html += "<input id='splashClassCode' class='lq-input' placeholder='老師的班級名稱（選填，之後也可以在帳號頁面補填）'>";
                 }
             }
+            if (!isLogin) html += privacyConsentHtml();
             html += "<div id='splashAuthError' class='text-sm text-red-600 hidden'></div>";
             html += "<button onclick=\"" + (isLogin ? 'doSplashLogin()' : 'doSplashRegister()') + "\" class='lq-btn lq-btn-primary w-full py-2'>" + (isLogin ? '登入' : '註冊') + "</button>";
             if (kind !== 'admin') {
@@ -118,6 +54,14 @@
             }
             html += "</div>";
             document.getElementById('hlAuthFormBody').innerHTML = html;
+        }
+
+        // 註冊要先告知並勾選（個資法第 8 條告知、第 7 條同意）；告知全文在 privacy.html
+        function privacyConsentHtml() {
+            return "<label style='display:flex;gap:0.5rem;align-items:flex-start;font-size:0.8rem;line-height:1.6;color:var(--hl-text-secondary,#5f6368);cursor:pointer;'>" +
+                "<input type='checkbox' id='splashPrivacyOk' style='margin-top:0.25rem;flex:none;width:1rem;height:1rem;'>" +
+                "<span>我已閱讀並同意<a href='privacy.html' target='_blank' rel='noopener' style='color:var(--hl-blue,#1A73E8);text-decoration:underline;'>《個人資料蒐集告知》</a>。" +
+                "未滿 18 歲請在家長或老師陪同下註冊。</span></label>";
         }
 
         function showSplashAuthError(msg) {
@@ -161,6 +105,7 @@
             const credErr = credentialInputError(username, password);
             if (credErr) { showSplashAuthError(credErr); return; }
             if (password !== passwordConfirm) { showSplashAuthError('兩次密碼輸入不一致'); return; }
+            if (!(document.getElementById('splashPrivacyOk') || {}).checked) { showSplashAuthError('請先閱讀並勾選同意《個人資料蒐集告知》'); return; }
             const displayName = document.getElementById('splashDisplayName').value.trim();
             const role = SPLASH_ROLE_TO_API[kind];
             const className = (document.getElementById('splashClassName') || {}).value || '';
