@@ -134,9 +134,16 @@
 @keyframes ld-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.7rem); } }
 @keyframes ld-shadow { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.82); opacity: 0.6; } }
 @media (max-width: 900px) {
-    .ld-hero { grid-template-columns: 1fr; }
-    .ld-icon-m { display: block; }
-    .ld-measure { width: 9rem; }
+    /* 手機歡迎頁：一整屏置中，圖示、標題、量尺、說明、按鈕由上而下排在中線上 */
+    .ld-hero { grid-template-columns: 1fr; min-height: calc(100svh - 11rem); align-content: center; padding: 0 0 2.5rem; text-align: center; }
+    .ld-copy { display: flex; flex-direction: column; align-items: center; }
+    .ld-icon-m { display: block; width: 8.4rem; margin: 0 0 1.8rem; }
+    .ld-hero .ld-title { font-size: 4.8rem; }
+    .ld-hero .ld-measure { width: 10rem; margin: 0.9rem auto 0; }
+    .ld-hero .ld-tag { margin-top: 1.2rem; font-size: 1.6rem; }
+    .ld-hero .ld-lead { margin: 1.2rem auto 0; max-width: 22rem; font-size: 1.1rem; line-height: 1.85; }
+    .ld-hero .ld-cta-row { flex-direction: column; width: 100%; max-width: 22rem; margin-top: 2rem; }
+    .ld-cta-row .ld-btn { justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {
     .ld-title span, .ld-measure::before, .ld-measure b, .ld-tag, .ld-lead, .ld-cta-row,
@@ -161,13 +168,6 @@ a.ld-row { color: var(--ld-text); }
 .ld-lead { margin: 1.4rem 0 0; max-width: 36rem; color: var(--ld-muted); font-size: 1.25rem; line-height: 1.9; }
 .ld-cta-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2.4rem; }
 
-.ld-guide { border-top: 1px solid var(--ld-line); padding: 4rem 0 2rem; }
-.ld-guide h2 { margin: 0 0 2.2rem; font-size: 2.4rem; font-weight: 500; }
-.ld-guide-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem; }
-.ld-guide h3 { margin: 0 0 0.8rem; font-size: 1.35rem; font-weight: 700; }
-.ld-guide ol { margin: 0; padding-left: 1.4rem; color: var(--ld-muted); font-size: 1.05rem; line-height: 1.85; list-style: decimal; }
-.ld-guide li + li { margin-top: 0.35rem; }
-.ld-guide-more { display: inline-block; margin-top: 2.4rem; font-size: 1.1rem; font-weight: 700; color: var(--ld-accent-text); text-decoration: underline; text-underline-offset: 4px; }
 
 /* ---------- ② 身分頁（也承載登入、API Key 那幾步） ---------- */
 #hlSplash {
@@ -229,8 +229,6 @@ body.guest-mode #btnAnswerMode .lq-icon { color: inherit; }
     .ld-tag { font-size: 1.5rem; }
     .ld-lead { font-size: 1.1rem; }
     .ld-btn { width: 100%; }
-    .ld-guide-cols { grid-template-columns: 1fr; gap: 2rem; }
-    .ld-guide h2 { font-size: 1.9rem; }
     /* 手機身分頁：三個身分要在第一屏看完（844 高的手機），所以間距都收緊 */
     .ld-top { padding: 1rem 0; }
     .ld-pick { padding-top: 0; }
