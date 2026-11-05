@@ -63,7 +63,7 @@
                     <p class="ld-lead">老師、家長輸入年級和科目，十幾秒就有一份試卷。學生可以在手機上直接寫，寫完自動對答案。</p>
                     <div class="ld-cta-row">
                         <button type="button" id="lqEnter" class="ld-btn ld-btn-primary" onclick="this.dataset.clicked = '1'">進入<span class="ph-duotone ph-arrow-right"></span></button>
-                        <a class="ld-btn ld-btn-ghost" href="#lqGuide">使用說明</a>
+                        <button type="button" class="ld-btn ld-btn-ghost" onclick="Guide.openGuide()">使用說明</button>
                     </div>
                 </div>
                 <div class="ld-vr" aria-hidden="true">
@@ -125,6 +125,12 @@
                 var isLink = ['share', 'live', 'result', 'paper', 'grade'].some(function (k) { return q.has(k); });
                 if (!isLink && !sessionStorage.getItem('lun_welcome_seen')) {
                     document.getElementById('lqWelcome').hidden = false;
+                    // 網址帶 #錨點（舊連結 /#lqGuide）會讓歡迎頁一載入就捲到說明區，進場特效就看不到；
+                    // 這站是單頁，沒有真的子頁面，直接把錨點拿掉並從頂端開始
+                    if (location.hash) {
+                        history.replaceState(null, '', location.pathname + location.search);
+                        window.addEventListener('load', function () { document.getElementById('lqWelcome').scrollTop = 0; });
+                    }
                 }
             } catch (e) {}
         })();
