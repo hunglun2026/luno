@@ -77,6 +77,73 @@
 .ld-vr .flag.is-teacher b { color: var(--ld-text); }
 .ld-vr .flag small { color: var(--ld-muted); font-size: 1rem; }
 
+/* ---------- ① 歡迎頁特效（2026-11-05）：全部是「進場一次＋輕微漂浮」，不做粒子與光暈 ----------
+   順序：刻、度兩字升起 → 標題下的量尺畫出來、琥珀指針彈出 → 說明與按鈕淡入 → 右邊刻度尺描出、3D 圖示落下後開始漂浮 */
+.ld-hero { grid-template-columns: 1fr 26rem; }
+.ld-title { display: inline-block; }
+.ld-title span { display: inline-block; animation: ld-rise 0.95s cubic-bezier(0.2, 0.7, 0.2, 1) 0.1s both; }
+.ld-title span + span { animation-delay: 0.26s; }
+@keyframes ld-rise {
+    from { opacity: 0; transform: translateY(0.38em); filter: blur(10px); }
+    to { opacity: 1; transform: none; filter: blur(0); }
+}
+/* 標題下的量尺：細刻度、粗刻度、底線，由左畫到右，尾端琥珀指針彈出 */
+.ld-measure { position: relative; display: block; width: 12.4rem; height: 1.1rem; margin-top: 0.7rem; }
+.ld-measure::before {
+    content: ""; position: absolute; inset: 0; transform-origin: left center;
+    background:
+        linear-gradient(var(--ld-tick), var(--ld-tick)) left bottom / 100% 2px no-repeat,
+        repeating-linear-gradient(90deg, var(--ld-tick) 0 2px, transparent 2px 62px) left bottom / 100% 100% no-repeat,
+        repeating-linear-gradient(90deg, var(--ld-tick-soft) 0 1px, transparent 1px 12.4px) left bottom / 100% 45% no-repeat;
+    animation: ld-measure 1.15s cubic-bezier(0.3, 0.6, 0.2, 1) 0.65s both;
+}
+.ld-measure b {
+    position: absolute; right: -0.5rem; bottom: -0.15rem; width: 0; height: 0;
+    border-left: 0.5rem solid transparent; border-right: 0.5rem solid transparent; border-bottom: 0.9rem solid #fbbc04;
+    filter: drop-shadow(0 2px 2px rgba(120, 80, 0, 0.35));
+    transform-origin: 50% 100%; animation: ld-pin 0.7s cubic-bezier(0.3, 1.6, 0.4, 1) 1.65s both;
+}
+@keyframes ld-measure { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes ld-pin { from { opacity: 0; transform: translateY(-1.6rem) scale(0.4); } to { opacity: 1; transform: none; } }
+.ld-tag { animation: ld-fade 0.8s ease 0.75s both; }
+.ld-lead { animation: ld-fade 0.8s ease 0.95s both; }
+.ld-cta-row { animation: ld-fade 0.8s ease 1.15s both; }
+@keyframes ld-fade { from { opacity: 0; transform: translateY(0.9rem); } to { opacity: 1; transform: none; } }
+/* 進入鈕：進場後閃過一道光，箭頭輕輕往右點 */
+.ld-btn-primary { position: relative; overflow: hidden; }
+.ld-btn-primary::after {
+    content: ""; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%; pointer-events: none;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent); transform: skewX(-18deg);
+    animation: ld-sheen 1.1s ease 2s 1 both;
+}
+@keyframes ld-sheen { from { left: -60%; } to { left: 130%; } }
+#lqEnter .ph-arrow-right { display: inline-block; animation: ld-nudge 2.2s ease-in-out 3s infinite; }
+@keyframes ld-nudge { 0%, 70%, 100% { transform: none; } 82% { transform: translateX(0.3rem); } }
+/* 3D 圖示：落下後漂浮；底下的接觸陰影跟著呼吸；傾斜由 js/welcome-fx.js 依游標（或手機傾斜）設定 */
+.ld-float { position: relative; animation: ld-drop 1.1s cubic-bezier(0.2, 0.9, 0.25, 1.1) 0.9s both, ld-bob 6s ease-in-out 2s infinite; }
+.ld-float::after {
+    content: ""; position: absolute; left: 14%; right: 14%; bottom: -1.5rem; height: 1.1rem; border-radius: 50%;
+    background: radial-gradient(closest-side, rgba(11, 27, 58, 0.32), transparent); animation: ld-shadow 6s ease-in-out 2s infinite;
+}
+:root[data-theme="dark"] .ld-float::after { background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent); }
+.ld-tilt { transform-style: preserve-3d; will-change: transform; }
+.ld-float img { display: block; width: 100%; height: auto; border-radius: 22%; box-shadow: 0 0 0 1px var(--ld-line), 0 24px 40px -18px rgba(11, 27, 58, 0.45); }
+.ld-icon-d { position: absolute; right: 0; top: 16%; width: 12.2rem; }
+.ld-icon-m { display: none; width: 6.4rem; margin: 0 0 1.4rem; }
+@keyframes ld-drop { from { opacity: 0; transform: translateY(-2.2rem) scale(0.86); } to { opacity: 1; transform: none; } }
+@keyframes ld-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-0.7rem); } }
+@keyframes ld-shadow { 0%, 100% { transform: scaleX(1); opacity: 1; } 50% { transform: scaleX(0.82); opacity: 0.6; } }
+@media (max-width: 900px) {
+    .ld-hero { grid-template-columns: 1fr; }
+    .ld-icon-m { display: block; }
+    .ld-measure { width: 9rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .ld-title span, .ld-measure::before, .ld-measure b, .ld-tag, .ld-lead, .ld-cta-row,
+    .ld-btn-primary::after, #lqEnter .ph-arrow-right, .ld-float, .ld-float::after { animation: none; }
+    .ld-btn-primary::after { display: none; }
+}
+
 /* ---------- ① 歡迎頁：停住，按「進入」 ---------- */
 .ld-welcome {
     position: fixed; inset: 0; z-index: 300; overflow-y: auto; overscroll-behavior: contain;
@@ -111,7 +178,6 @@
 #hlSplash .ld-card { max-width: none; }
 #hlSplash .hl-identity-step.hidden, #hlStepIdentity.hidden { display: none; }
 #hlStepAuth, #hlStepApiKey { max-width: 30rem; margin: 0 auto; padding: 1rem 0 3rem; align-items: stretch; text-align: left; }
-#hlStepAuth .hl-back-link, #hlStepApiKey .hl-back-link { align-self: flex-start; color: var(--ld-muted); font-size: 1.05rem; }
 #hlStepAuth h3 { color: var(--ld-text) !important; }
 #hlStepAuth div[style*="color:#5f6368"], #hlStepAuth div[style*="color:#80868b"] { color: var(--ld-muted) !important; }
 
@@ -120,13 +186,6 @@
 .ld-back:hover { color: var(--ld-text); }
 .ld-pick h2 { margin: 0 0 0.6rem; font-size: 3rem; font-weight: 500; color: var(--ld-text); }
 .ld-sub { margin: 0 0 2rem; color: var(--ld-muted); font-size: 1.2rem; }
-.lg-continue {
-    display: inline-flex; align-items: center; gap: 0.5rem; margin: 0 0 1.2rem; padding: 0.7rem 1.25rem;
-    border: 2px solid var(--ld-accent); border-radius: 999px; background: transparent; color: var(--ld-accent-text);
-    font: inherit; font-weight: 700; cursor: pointer;
-}
-.lg-continue[hidden] { display: none; }
-.lg-continue:hover { background: var(--ld-accent); color: var(--ld-on-accent); }
 
 .ld-guest {
     display: flex; align-items: center; gap: 1.4rem; width: 100%; padding: 1.6rem 1.8rem; border: 0; border-radius: 1.2rem; text-align: left; cursor: pointer;

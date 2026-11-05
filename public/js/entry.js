@@ -18,6 +18,12 @@
             }
         }
 
+        // 進場流程唯一的返回鈕：身分頁回歡迎頁，登入／API Key 回身分頁
+        function splashGoBack() {
+            if (!document.getElementById('hlStepIdentity').classList.contains('hidden')) Guide.toWelcome();
+            else splashBackToIdentity();
+        }
+
         function splashBackToIdentity() {
             document.getElementById('hlStepAuth').classList.add('hidden');
             document.getElementById('hlStepApiKey').classList.add('hidden');

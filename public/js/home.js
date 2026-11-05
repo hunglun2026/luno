@@ -458,7 +458,7 @@
                     "<div class='text-xs text-gray-400 mb-2'>連結過孩子的帳號後，之後不用每次重貼連結，直接選孩子就好。</div>" +
                     "<button onclick=\"closeQuizEntryModal(); openAccountModal();\" class='lq-btn lq-btn-secondary w-full py-2'>🔑 登入／註冊家長帳號</button>" +
                 "</div>" +
-                "<button onclick='renderQuizEntryRoleChoice()' class='lq-btn lq-btn-ghost w-full py-2'>← 重選身分</button>" +
+                "<button onclick='renderQuizEntryRoleChoice()' class='lq-btn lq-btn-ghost w-full py-2'>← 回上一頁</button>" +
                 "</div>";
         }
 
@@ -500,7 +500,7 @@
                         "<div class='text-xs opacity-80'>帳號：" + escapeHtml(c.username) + "</div></button>"
                     ).join('') +
                     "<div class='text-xs text-gray-400 pt-1'>孩子要用自己的帳號登入後作答，這裡才看得到即時內容。</div>" +
-                    "<button onclick='renderQuizEntryRoleChoice()' class='lq-btn lq-btn-ghost w-full py-2'>← 重選身分</button></div>";
+                    "<button onclick='renderQuizEntryRoleChoice()' class='lq-btn lq-btn-ghost w-full py-2'>← 回上一頁</button></div>";
             } catch (e) {
                 body.innerHTML = "<div class='text-center text-red-600 py-6'>載入失敗：" + escapeHtml(e.message) + "</div>";
             }
@@ -519,7 +519,7 @@
                 if (newTab) newTab.location.href = url; else window.open(url, '_blank');
                 body.innerHTML = "<div class='space-y-3'>" +
                     "<div class='lq-card p-3 text-sm'>已在新分頁開啟即時進度儀表板（免登入，不用管理者密碼）。學生要用「發送測驗」裡的學生作答連結或測驗代碼進到同一份測驗作答，儀表板才會出現他們的進度。<br><b>這條網址等於監看權限，不要轉貼給學生。</b></div>" +
-                    "<button onclick='renderQuizEntryRoleChoice()' class='lq-btn lq-btn-ghost w-full py-2'>← 重選身分</button></div>";
+                    "<button onclick='renderQuizEntryRoleChoice()' class='lq-btn lq-btn-ghost w-full py-2'>← 回上一頁</button></div>";
             } catch (e) {
                 if (newTab) newTab.close();
                 body.innerHTML = "<div class='text-center text-red-600 py-6'>開啟失敗：" + escapeHtml(e.message) + "</div>";

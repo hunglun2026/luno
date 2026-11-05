@@ -243,8 +243,8 @@ body.handoff-mode #answerModeContainer { padding-top: 44px; }
 
 .lq-ans-opt.is-selected { border-color: var(--hl-blue, #1a73e8); background: #e8f0fe; }
 
-/* 作答頁有底部固定列時，浮動返回鈕抬高避免疊在上面 */
-body:has(#ansQuizBody:not(.hidden)) #btnGlobalBack { bottom: 5.5rem; }
+/* 浮動返回鈕在每一頁都在左下角同一個位置（不跟著頁面跳）；作答頁的底部列把左邊讓給它 */
+body:has(#ansQuizBody:not(.hidden)) .lq-quiz-bottombar { padding-left: 7.2rem; }
 
 /* 手機試卷頁工具列：下載、更多只留圖示，四顆按鈕排成一行，少一排（2026-11-05） */
 @media (max-width: 640px) {

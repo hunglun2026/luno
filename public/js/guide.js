@@ -11,7 +11,6 @@
 
     var SS_WELCOME = 'lun_welcome_seen'; // 這個分頁看過歡迎頁（關分頁才重播）
     var SS_ROLE = 'lun_role_session';    // 這個分頁目前的身分（重新整理直接回到原畫面）
-    var LS_ROLE = 'lun_last_role';       // 這台裝置上次選的身分（給「繼續當老師」用）
     var GUEST_MAX = 20;                  // 訪客一份最多幾題
 
     var STEP_INFO = {
@@ -68,21 +67,6 @@
     }
 
     // ========== ② 選身分 ==========
-    var ROLE_LABEL = { teacher: '教師', student: '學生', guest: '訪客' };
-
-    function renderContinue() {
-        var btn = $('lgContinue');
-        if (!btn) return;
-        var last = lGet(LS_ROLE);
-        if (ROLE_LABEL[last]) {
-            btn.textContent = '繼續當' + ROLE_LABEL[last] + ' →';
-            btn.dataset.role = last;
-            btn.hidden = false;
-        } else {
-            btn.hidden = true;
-        }
-    }
-
     function showIdentity() {
         // openIdentitySplash() 已包過：會收起主畫面並回到身分那一步
         openIdentitySplash();
@@ -96,7 +80,6 @@
     // step：要停在老師第幾步（設定連結用 4），沒給就從第 1 步開始
     function pick(role, step) {
         sSet(SS_ROLE, role);
-        if (ROLE_LABEL[role]) lSet(LS_ROLE, role);
         setGuest(role === 'guest');
         forceTeacher = role === 'teacher' || role === 'teacherLogin' || role === 'guest';
         cur = step || 1;
@@ -203,7 +186,7 @@
         nav.id = 'lgNav';
         nav.className = 'lg-nav';
         nav.innerHTML =
-            '<button type="button" id="lgPrev" class="lq-btn lq-btn-secondary px-4 py-2">← 上一步</button>' +
+            '<button type="button" id="lgPrev" class="lq-btn lq-btn-secondary px-4 py-2">← 回上一頁</button>' +
             '<span class="lg-grow"></span>' +
             '<button type="button" id="lgDirect" class="lq-btn lq-btn-ghost px-3 py-2">用預設條件直接出題</button>' +
             '<button type="button" id="lgNext" class="lq-btn lq-btn-primary px-5 py-2">下一步 →</button>' +
@@ -293,7 +276,7 @@
         $('lgNext').classList.toggle('lg-wait', cur === 2 && !step2Ok());
         $('lgNext').classList.toggle('lg-off', cur === 1); // 第一步點卡片就會往下，不需要下一步
         $('lgDirect').hidden = !(cur === 2 || cur === 3) || !step2Ok();
-        $('lgPrev').textContent = cur === 1 ? '← 換身分' : '← 上一步';
+        $('lgPrev').textContent = '← 回上一頁';
     }
 
     function go(n) {
@@ -397,7 +380,6 @@
                 if (el) el.classList.add('hidden');
             });
             origOpen.apply(this, arguments);
-            renderContinue();
         };
 
         // 學生首頁的「換身分」「登出」會重新整理頁面：先清掉這個分頁記住的身分，才會回到身分頁
@@ -425,7 +407,6 @@
         opts = opts || {};
         patch();
         addAppbarButton();
-        renderContinue();
         bindWelcome();
 
         // 「複製設定連結」帶來的：條件都填好了，跳過歡迎頁直接到出題最後一步。
@@ -450,7 +431,6 @@
         pick: function (role) { pick(role); },
         toWelcome: function () { toWelcome(false); },
         openGuide: function () { toWelcome(true); },
-        toIdentity: toIdentity,
-        continueLast: function () { var r = ($('lgContinue') || {}).dataset; if (r && r.role) pick(r.role); }
+        toIdentity: toIdentity
     };
 })();

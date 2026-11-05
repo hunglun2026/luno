@@ -14,7 +14,7 @@
     <meta name="application-name" content="刻度 互動式評量">
     <meta name="apple-mobile-web-app-title" content="刻度 互動式評量">
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=28"></script>
+    <script src="js/theme.js?v=29"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -26,15 +26,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=28">
+    <link rel="stylesheet" href="css/guide.css?v=29">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=28">
-    <link rel="stylesheet" href="css/sheet.css?v=28">
+    <link rel="stylesheet" href="css/app.css?v=29">
+    <link rel="stylesheet" href="css/sheet.css?v=29">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=28">
+    <link rel="stylesheet" href="css/tailwind.css?v=29">
     <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=28">
-    <link rel="stylesheet" href="css/theme.css?v=28">
+    <link rel="stylesheet" href="css/landing.css?v=29">
+    <link rel="stylesheet" href="css/theme.css?v=29">
 <link rel="canonical" href="https://luno.hunglun.com/">
 <!--seo-games--><script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "@id": "https://luno.hunglun.com/#app", "name": "刻度 互動式評量", "url": "https://luno.hunglun.com/", "description": "刻度 互動式評量", "applicationCategory": "EducationalApplication", "operatingSystem": "All", "inLanguage": "zh-TW", "isAccessibleForFree": true, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TWD"}, "creator": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}, "publisher": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "鴻綸科技", "item": "https://www.hunglun.com/"}, {"@type": "ListItem", "position": 2, "name": "學習專區", "item": "https://www.hunglun.com/tools/games"}, {"@type": "ListItem", "position": 3, "name": "刻度 互動式評量", "item": "https://luno.hunglun.com/"}]}]}</script>
 </head>
@@ -46,8 +46,8 @@
         <div class="ld-wrap">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=28" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=28" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=29" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=29" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <button type="button" class="ld-tbtn" data-theme-toggle onclick="toggleTheme()"><span class="ph-duotone ph-moon"></span><span class="lab">深色</span></button>
@@ -55,8 +55,10 @@
             </header>
 
             <div class="ld-hero">
-                <div>
-                    <h1 class="ld-title">刻度</h1>
+                <div class="ld-copy">
+                    <div class="ld-float ld-icon-m" aria-hidden="true"><div class="ld-tilt"><img src="assets/hero-icon.webp?v=29" width="480" height="480" alt=""></div></div>
+                    <h1 class="ld-title"><span>刻</span><span>度</span></h1>
+                    <span class="ld-measure" aria-hidden="true"><b></b></span>
                     <p class="ld-tag">互動式評量</p>
                     <p class="ld-lead">老師、家長輸入年級和科目，十幾秒就有一份試卷。學生可以在手機上直接寫，寫完自動對答案。</p>
                     <div class="ld-cta-row">
@@ -65,6 +67,7 @@
                     </div>
                 </div>
                 <div class="ld-vr" aria-hidden="true">
+                    <div class="ld-float ld-icon-d"><div class="ld-tilt"><img src="assets/hero-icon.webp?v=29" width="480" height="480" alt=""></div></div>
                     <div class="ld-draw">
                         <div class="scale"><div class="ticks"></div><div class="spine"></div></div>
                         <span class="num" style="top:0">0</span><span class="num" style="top:10%">10</span><span class="num" style="top:20%">20</span><span class="num" style="top:30%">30</span><span class="num" style="top:40%">40</span><span class="num" style="top:50%">50</span><span class="num" style="top:60%">60</span><span class="num" style="top:70%">70</span><span class="num" style="top:80%">80</span><span class="num" style="top:90%">90</span><span class="num" style="top:100%">100</span>
@@ -87,7 +90,7 @@
                     <div>
                         <h3>學生：寫測驗或自己練習</h3>
                         <ol>
-                            <li>按「我是學生」，填學校、年級、班級與姓名。</li>
+                            <li>按「我是學生」登入；沒有帳號就先註冊，註冊時要勾選同意個人資料蒐集告知。</li>
                             <li>老師給你 6 位數代碼：輸入後按「進入」，也可以貼上老師傳的連結。</li>
                             <li>沒有代碼，就按「我要練習」，選年級與科目。</li>
                             <li>寫完按最下面的藍色鈕交卷，系統自動對答案並顯示解析。</li>
@@ -133,20 +136,21 @@
         <div class="ld-wrap ld-card">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=28" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=28" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=29" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=29" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <button type="button" class="ld-tbtn" data-theme-toggle onclick="toggleTheme()"><span class="ph-duotone ph-moon"></span><span class="lab">深色</span></button>
                 </div>
             </header>
 
+            <!-- 進場流程只有這一顆返回鈕，身分、登入、API Key 三個畫面都在同一個位置（entry.js splashGoBack） -->
+            <button type="button" id="lqSplashBack" class="ld-back" onclick="splashGoBack()"><span class="ph-duotone ph-arrow-left"></span>回上一頁</button>
+
             <div id="hlStepIdentity" class="ld-pick">
                 <div>
-                    <button type="button" class="ld-back" onclick="Guide.toWelcome()"><span class="ph-duotone ph-arrow-left"></span>回歡迎頁</button>
                     <h2>你要怎麼使用？</h2>
                     <p class="ld-sub">訪客模式免登入，其他身分都要先登入。</p>
-                    <button type="button" id="lgContinue" class="lg-continue" hidden onclick="Guide.continueLast()"></button>
                     <button type="button" class="ld-guest" onclick="Guide.pick('guest')">
                         <span class="ic"><span class="ph-duotone ph-device-mobile"></span></span>
                         <span><b>訪客模式</b><span class="d">一支手機出題兼作答，免登入，一份最多 20 題</span></span>
@@ -175,12 +179,10 @@
             </div>
 
             <div id="hlStepAuth" class="hl-identity-step hidden">
-                <button type="button" class="hl-back-link" onclick="splashBackToIdentity()">← 返回身分選擇</button>
                 <div id="hlAuthFormBody" style="width:100%; max-width:22rem;"></div>
             </div>
 
             <div id="hlStepApiKey" class="hl-identity-step hidden">
-                <button type="button" class="hl-back-link" onclick="splashBackToIdentity()">← 返回身分選擇</button>
                 <div style="width:100%; max-width:22rem; display:flex; flex-direction:column; gap:1rem;">
                     <button type="button" id="hlEnterBuiltin" class="hl-enter-btn hl-clickable">
                         <span>直接進入</span>
@@ -561,7 +563,7 @@
     </div>
 
     <!-- 全域返回：作答頁/儀表板/監看頁/結果頁等各種畫面都看得到，回到上一頁或首頁 -->
-    <button id="btnGlobalBack" onclick="goBackOrHome()" class="hidden no-print" aria-label="返回上一頁">← 返回上一頁</button>
+    <button id="btnGlobalBack" onclick="goBackOrHome()" class="hidden no-print" aria-label="回上一頁">← 回上一頁</button>
 
     <!-- 「直接線上測驗」身分選擇：學生直接作答，家長/老師改走監看流程 -->
     <div id="quizEntryModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4 no-print">
@@ -623,31 +625,31 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=28"></script>
-    <script src="js/dialog.js?v=28"></script>
-    <script src="js/entry.js?v=28"></script>
-    <script src="js/home.js?v=28"></script>
-    <script src="js/share.js?v=28"></script>
-    <script src="js/settings.js?v=28"></script>
-    <script src="js/generate.js?v=28"></script>
-    <script src="js/sheet.js?v=28"></script>
-    <script src="js/answer.js?v=28"></script>
-    <script src="js/bank.js?v=28"></script>
-    <script src="js/handoff.js?v=28"></script>
-    <script src="js/router.js?v=28"></script>
-    <script src="js/export.js?v=28"></script>
-    <script src="js/account.js?v=28"></script>
-    <script src="js/admin.js?v=28"></script>
+    <script src="js/core.js?v=29"></script>
+    <script src="js/dialog.js?v=29"></script>
+    <script src="js/entry.js?v=29"></script>
+    <script src="js/home.js?v=29"></script>
+    <script src="js/share.js?v=29"></script>
+    <script src="js/settings.js?v=29"></script>
+    <script src="js/generate.js?v=29"></script>
+    <script src="js/sheet.js?v=29"></script>
+    <script src="js/answer.js?v=29"></script>
+    <script src="js/bank.js?v=29"></script>
+    <script src="js/handoff.js?v=29"></script>
+    <script src="js/router.js?v=29"></script>
+    <script src="js/export.js?v=29"></script>
+    <script src="js/account.js?v=29"></script>
+    <script src="js/admin.js?v=29"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=28">
+<link rel="stylesheet" href="css/paper.css?v=29">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
   <div id="paperTeacher" class="hidden max-w-6xl mx-auto p-4">
     <div class="flex flex-wrap items-center gap-2 mb-4">
-      <button class="pp-btn pp-btn-ghost" onclick="paperExit()">← 回出題首頁</button>
+      <button class="pp-btn pp-btn-ghost" onclick="paperExit()">← 回上一頁</button>
       <input id="ppTitle" class="pp-in flex-1 min-w-[180px]" placeholder="卷子名稱（例如：五年級數學第三單元小考）">
       <span id="ppSaveHint" class="text-xs text-gray-500"></span>
     </div>
@@ -725,7 +727,7 @@
   <!-- ---------- 老師：批改台 ---------- -->
   <div id="paperGradeView" class="hidden max-w-6xl mx-auto p-4">
     <div class="flex flex-wrap items-center gap-2 mb-4">
-      <button class="pp-btn pp-btn-ghost" onclick="paperExit()">← 離開批改台</button>
+      <button class="pp-btn pp-btn-ghost" onclick="paperExit()">← 回上一頁</button>
       <div id="ppGradeTitle" class="font-bold text-lg"></div>
       <button class="pp-btn pp-btn-ghost ml-auto" onclick="ppLoadSubmissions()">🔄 重新整理</button>
     </div>
@@ -736,11 +738,12 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=28"></script>
-<script src="js/paper-student.js?v=28"></script>
-<script src="js/paper-focus.js?v=28"></script>
+<script src="js/paper-teacher.js?v=29"></script>
+<script src="js/paper-student.js?v=29"></script>
+<script src="js/paper-focus.js?v=29"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=28"></script>
+    <script src="js/guide.js?v=29"></script>
+    <script src="js/welcome-fx.js?v=29"></script>
 
 </body>
 </html>

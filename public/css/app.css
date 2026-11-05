@@ -431,11 +431,6 @@
         .lq-hero-q { font-size: 0.6875rem; color: #1f2937; font-weight: 700; margin-bottom: 0.35rem; }
         .lq-hero-opt { font-size: 0.625rem; color: #4b5563; margin-bottom: 0.15rem; }
         .lq-hero-line { height: 0.4rem; border-radius: 999px; background: #e5e7eb; margin-bottom: 0.35rem; }
-        .hl-back-link {
-            align-self: flex-start; background: none; border: none; color: var(--hl-text-secondary);
-            font-weight: 700; font-size: 0.85rem; cursor: pointer; padding: 0.25rem 0;
-        }
-        .hl-back-link:hover { color: var(--hl-blue); }
 
         @media (prefers-reduced-motion: reduce) {
             .lq-cta::before, .hl-spin-slow, .hl-spin-slow-reverse,
