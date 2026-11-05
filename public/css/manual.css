@@ -25,7 +25,7 @@ img { max-width: 100%; height: auto; }
     background: rgba(255, 255, 255, 0.95);
     border-bottom: 1px solid #e5e7eb;
 }
-.m-top img { width: 2rem; height: 2rem; border-radius: 50%; }
+.m-top img { width: 2rem; height: 2rem; border-radius: 22%; }
 .m-top b { font-size: 1.05rem; white-space: nowrap; }
 .m-top span { color: #5F6368; font-size: 0.9rem; }
 .m-top .m-grow { flex: 1; }

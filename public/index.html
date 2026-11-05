@@ -12,7 +12,7 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
     <title>刻度・互動式評量</title>
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=26"></script>
+    <script src="js/theme.js?v=27"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -24,15 +24,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式進站（歡迎特效 → 選身分 → 老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=26">
+    <link rel="stylesheet" href="css/guide.css?v=27">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=26">
-    <link rel="stylesheet" href="css/sheet.css?v=26">
+    <link rel="stylesheet" href="css/app.css?v=27">
+    <link rel="stylesheet" href="css/sheet.css?v=27">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=26">
+    <link rel="stylesheet" href="css/tailwind.css?v=27">
     <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=26">
-    <link rel="stylesheet" href="css/theme.css?v=26">
+    <link rel="stylesheet" href="css/landing.css?v=27">
+    <link rel="stylesheet" href="css/theme.css?v=27">
 <link rel="canonical" href="https://luno.hunglun.com/">
 <!--seo-games--><script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebApplication", "@id": "https://luno.hunglun.com/#app", "name": "刻度・互動式評量", "url": "https://luno.hunglun.com/", "description": "刻度・互動式評量", "applicationCategory": "EducationalApplication", "operatingSystem": "All", "inLanguage": "zh-TW", "isAccessibleForFree": true, "audience": {"@type": "EducationalAudience", "educationalRole": "student"}, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "TWD"}, "creator": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}, "publisher": {"@type": "Organization", "name": "鴻綸科技 Hunglun Technology", "url": "https://www.hunglun.com/", "@id": "https://www.hunglun.com/#organization"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "鴻綸科技", "item": "https://www.hunglun.com/"}, {"@type": "ListItem", "position": 2, "name": "學習專區", "item": "https://www.hunglun.com/tools/games"}, {"@type": "ListItem", "position": 3, "name": "刻度・互動式評量", "item": "https://luno.hunglun.com/"}]}]}</script>
 </head>
@@ -44,8 +44,8 @@
         <div class="ld-wrap">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=26" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=26" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=27" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=27" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <a class="ld-tbtn" href="#lqGuide"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></a>
@@ -132,8 +132,8 @@
         <div class="ld-wrap ld-card">
             <header class="ld-top">
                 <div>
-                    <img src="assets/logo-light.png?v=26" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
-                    <img src="assets/logo-dark.png?v=26" alt="" class="ld-logo is-dark" aria-hidden="true">
+                    <img src="assets/logo-light.png?v=27" alt="鴻綸科技 x Google for Education" class="ld-logo is-light">
+                    <img src="assets/logo-dark.png?v=27" alt="" class="ld-logo is-dark" aria-hidden="true">
                 </div>
                 <div class="ld-actions">
                     <button type="button" class="ld-tbtn" onclick="Guide.openGuide()"><span class="ph-duotone ph-book-open-text"></span><span class="lab">使用說明</span></button>
@@ -220,7 +220,7 @@
     <header id="lqAppbar" class="lq-appbar no-print hidden">
         <div class="lq-appbar-inner">
             <div class="lq-appbar-brand">
-                <img src="assets/badge-medallion.webp" alt="" class="lq-appbar-mark" aria-hidden="true">
+                <img src="assets/app-mark.webp" alt="" class="lq-appbar-mark" aria-hidden="true">
                 <span class="lq-appbar-name">刻度</span>
                 <span class="lq-appbar-tag">互動式評量</span>
             </div>
@@ -623,25 +623,25 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/core.js?v=26"></script>
-    <script src="js/dialog.js?v=26"></script>
-    <script src="js/entry.js?v=26"></script>
-    <script src="js/home.js?v=26"></script>
-    <script src="js/share.js?v=26"></script>
-    <script src="js/settings.js?v=26"></script>
-    <script src="js/generate.js?v=26"></script>
-    <script src="js/sheet.js?v=26"></script>
-    <script src="js/answer.js?v=26"></script>
-    <script src="js/bank.js?v=26"></script>
-    <script src="js/handoff.js?v=26"></script>
-    <script src="js/router.js?v=26"></script>
-    <script src="js/export.js?v=26"></script>
-    <script src="js/account.js?v=26"></script>
-    <script src="js/admin.js?v=26"></script>
+    <script src="js/core.js?v=27"></script>
+    <script src="js/dialog.js?v=27"></script>
+    <script src="js/entry.js?v=27"></script>
+    <script src="js/home.js?v=27"></script>
+    <script src="js/share.js?v=27"></script>
+    <script src="js/settings.js?v=27"></script>
+    <script src="js/generate.js?v=27"></script>
+    <script src="js/sheet.js?v=27"></script>
+    <script src="js/answer.js?v=27"></script>
+    <script src="js/bank.js?v=27"></script>
+    <script src="js/handoff.js?v=27"></script>
+    <script src="js/router.js?v=27"></script>
+    <script src="js/export.js?v=27"></script>
+    <script src="js/account.js?v=27"></script>
+    <script src="js/admin.js?v=27"></script>
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=26">
+<link rel="stylesheet" href="css/paper.css?v=27">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -735,11 +735,11 @@
   </div>
 </div>
 
-<script src="js/paper-teacher.js?v=26"></script>
-<script src="js/paper-student.js?v=26"></script>
-<script src="js/paper-focus.js?v=26"></script>
+<script src="js/paper-teacher.js?v=27"></script>
+<script src="js/paper-student.js?v=27"></script>
+<script src="js/paper-focus.js?v=27"></script>
     <!-- 引導式進站（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=26"></script>
+    <script src="js/guide.js?v=27"></script>
 
 </body>
 </html>
