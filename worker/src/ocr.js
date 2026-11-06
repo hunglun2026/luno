@@ -144,6 +144,7 @@ async function callGemini(parts, deps, env, userKey, maxOutputTokens) {
   const deadline = Date.now() + TOTAL_BUDGET_MS;
   const start = Math.floor(Math.random() * keys.length);
   let lastErr = "沒有回應";
+  const tried = [];   // 每次失敗的原因，備用模型救起來時一起回報，方便知道主模型為什麼掛
   const models = deps.GEMINI_MODELS;
   for (let mi = 0; mi < models.length; mi++) {
     for (let i = 0; i < keys.length; i++) {
@@ -152,20 +153,22 @@ async function callGemini(parts, deps, env, userKey, maxOutputTokens) {
       try {
         let d = await call(url, cfg);
         if (d.error && /thinking/i.test(d.error.message || "")) d = await call(url, noThink);
-        if (d.error) { lastErr = d.error.message || "API 錯誤"; continue; }
+        if (d.error) { lastErr = d.error.message || "API 錯誤"; tried.push(models[mi] + "：" + lastErr.slice(0, 120)); continue; }
         const ps = d && d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts;
         const text = Array.isArray(ps) ? ps.map((p) => (typeof p.text === "string" ? p.text : "")).join("") : "";
         if (!text) {
           const reason = (d && d.candidates && d.candidates[0] && d.candidates[0].finishReason) || "UNKNOWN";
           lastErr = "模型沒有回應文字（" + reason + "）";
+          tried.push(models[mi] + "：" + lastErr);
           continue;
         }
         const cleaned = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
         let parsed;
-        try { parsed = JSON.parse(cleaned); } catch (e) { lastErr = "AI 回傳的內容不是合法 JSON"; continue; }
-        return { data: parsed, model: models[mi], degraded: mi > 0 };
+        try { parsed = JSON.parse(cleaned); } catch (e) { lastErr = "AI 回傳的內容不是合法 JSON"; tried.push(models[mi] + "：" + lastErr); continue; }
+        return { data: parsed, model: models[mi], degraded: mi > 0, tried };
       } catch (err) {
         lastErr = err && err.name === "TimeoutError" ? "Gemini 回應逾時" : (err.message || "呼叫失敗");
+        tried.push(models[mi] + "：" + lastErr);
       }
     }
   }
@@ -228,9 +231,9 @@ async function handleOcr(request, env, ctx, deps) {
   try {
     const r = await callGemini([{ text: prompt }, ...parts], deps, env, userKey, mode === "answers" ? 8192 : 16384);
     if (mode === "answers") {
-      return json({ mode, answers: normalizeAnswers(r.data), model: r.model, degraded: r.degraded });
+      return json({ mode, answers: normalizeAnswers(r.data), model: r.model, degraded: r.degraded, tried: r.degraded ? r.tried : undefined });
     }
-    return json({ mode, items: normalizeQuestions(r.data), model: r.model, degraded: r.degraded });
+    return json({ mode, items: normalizeQuestions(r.data), model: r.model, degraded: r.degraded, tried: r.degraded ? r.tried : undefined });
   } catch (err) {
     return json({ error: { message: "辨識失敗：" + (err.message || "未知錯誤") } }, 502);
   }

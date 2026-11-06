@@ -107,7 +107,7 @@ async function handleGradeAnswer(request, env, ctx, deps) {
 
   try {
     const r = await callGemini([{ text: buildGradePrompt(rows) }], deps, env, "", 8192);
-    return json({ grades: normalizeGrades(r.data, rows), model: r.model, degraded: r.degraded });
+    return json({ grades: normalizeGrades(r.data, rows), model: r.model, degraded: r.degraded, tried: r.degraded ? r.tried : undefined });
   } catch (err) {
     return json({ error: { message: "AI 批改失敗：" + (err.message || "未知錯誤") } }, 502);
   }
