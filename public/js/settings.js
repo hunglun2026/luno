@@ -289,35 +289,13 @@
             const box = document.getElementById(inputId);
             if(select.value === 'Custom') { box.style.display = 'block'; box.focus(); } else { box.style.display = 'none'; box.value = ''; }
         }
-        // 版本膠囊（2026-11-05）：真正的值仍存在隱藏的 #publisher／#c_publisher，膠囊只是換個選法。
-        // 康軒／翰林／南一＝「自訂」加上固定文字；「其他」＝自訂並讓使用者打字；不指定＝自由發揮
-        const PUB_PRESETS = ['康軒版', '翰林版', '南一版'];
+        // 版本欄（2026-11-06）：不再列出版社膠囊，使用者自己在 #c_publisher 填；
+        // 隱藏的 #publisher 仍是值的來源，這裡讓它跟著輸入框走：有填＝Custom，空白＝不限版本
         function syncPublisherChips() {
             const sel = document.getElementById('publisher'), box = document.getElementById('c_publisher');
-            if (!sel) return;
-            const v = (box && box.value || '').trim();
-            let cur = '';
-            if (sel.value === 'Custom') cur = PUB_PRESETS.indexOf(v) >= 0 ? v : '*';
-            document.querySelectorAll('#publisherChips .lq-chip').forEach(function (b) {
-                b.classList.toggle('is-active', b.dataset.pub === cur);
-            });
-            if (box && sel.value === 'Custom') box.style.display = PUB_PRESETS.indexOf(v) >= 0 ? 'none' : 'block';
+            if (!sel || !box) return;
+            sel.value = box.value.trim() ? 'Custom' : '由小綸自由發揮';
         }
-        function pickPublisher(val) {
-            const sel = document.getElementById('publisher'), box = document.getElementById('c_publisher');
-            if (val === '') { sel.value = '由小綸自由發揮'; checkCustom(sel, 'c_publisher'); }
-            else {
-                sel.value = 'Custom'; checkCustom(sel, 'c_publisher');
-                if (val === '*') { if (PUB_PRESETS.indexOf(box.value.trim()) >= 0) box.value = ''; box.focus(); }
-                else box.value = val;
-            }
-            syncPublisherChips();
-            if (window.Guide && Guide.refresh) Guide.refresh();
-        }
-        document.addEventListener('click', function (e) {
-            const b = e.target.closest && e.target.closest('#publisherChips .lq-chip');
-            if (b) pickPublisher(b.dataset.pub);
-        });
         function handleFiles(el) {
             if(!el.files.length) return;
             Array.from(el.files).forEach(async (f) => {

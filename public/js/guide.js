@@ -134,7 +134,6 @@
         nav.innerHTML =
             '<button type="button" id="lgPrev" class="lq-btn lq-btn-secondary px-4 py-2">← 回上一頁</button>' +
             '<span class="lg-grow"></span>' +
-            '<button type="button" id="lgDirect" class="lq-btn lq-btn-ghost px-3 py-2">用預設條件直接出題</button>' +
             '<button type="button" id="lgNext" class="lq-btn lq-btn-primary px-5 py-2">下一步 →</button>' +
             '<p class="lg-msg" id="lgMsg" hidden></p>';
         // 放在「記住這些條件／複製設定連結」那排之後：每一步都在最底下，第 4 步也不會夾在條件和出題鈕中間
@@ -143,10 +142,6 @@
         anchor.insertAdjacentElement('afterend', nav);
         $('lgPrev').onclick = prev;
         $('lgNext').onclick = next;
-        $('lgDirect').onclick = function () {
-            if (!step2Ok()) { showMsg(sourceType() === '2' ? '請先上傳檔案或貼上文字' : '請先選年級和科目'); return; }
-            startGen();
-        };
     }
 
     function bindStepEvents() {
@@ -221,7 +216,6 @@
         $('lgNext').classList.toggle('is-ready', cur === 2 && step2Ok());
         $('lgNext').classList.toggle('lg-wait', cur === 2 && !step2Ok());
         $('lgNext').classList.toggle('lg-off', cur === 1); // 第一步點卡片就會往下，不需要下一步
-        $('lgDirect').hidden = !(cur === 2 || cur === 3) || !step2Ok();
         $('lgPrev').textContent = '← 回上一頁';
     }
 

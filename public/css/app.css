@@ -454,6 +454,9 @@
             flex-shrink: 0;
         }
         #inputForm { counter-reset: lq-section; }
+        /* 版本欄的輸入框常駐顯示（checkCustom 會在重設時塞 inline display:none，所以要 !important），外觀跟一般輸入框一樣 */
+        #c_publisher.lq-publisher-input { display: block !important; background-color: #fff; border-color: #cbd5e1; }
+        [data-theme="dark"] #c_publisher.lq-publisher-input { background-color: #0d1730; }
         .input-custom { display: none; margin-top: 8px; width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid #a5b4fc; border-radius: var(--lq-radius-sm); background-color: #eef2ff; }
         .source-btn { flex: 1; padding: 15px; border: 2px solid #e5e7eb; border-radius: var(--lq-radius); text-align: center; cursor: pointer; font-weight: bold; transition: all 0.2s ease; font-size: 1.05em; }
         .source-btn:hover { transform: translateY(-1px); box-shadow: var(--lq-shadow-sm); }
