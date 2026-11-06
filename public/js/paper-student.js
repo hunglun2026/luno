@@ -158,13 +158,17 @@ function ppInitHandCanvases() {
 }
 
 function ppRedraw(id) {
-    const canvas = ppHandCanvases[id];
+    ppDrawStrokes(ppHandCanvases[id], ppStrokes[id] || []);
+}
+
+// 把一組筆跡畫到指定畫布。卷面上的小畫布與手機放大書寫面板（paper-focus.js）共用
+function ppDrawStrokes(canvas, strokes) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    (ppStrokes[id] || []).forEach(function (s) {
+    strokes.forEach(function (s) {
         if (s.tool === 'eraser') {
             ctx.globalCompositeOperation = 'destination-out';
             ctx.strokeStyle = 'rgba(0,0,0,1)';

@@ -73,6 +73,7 @@
                 let answerSpace = (!q.o || q.o.length === 0) ? "<div class='writing-space'></div>" : "";
                 box.innerHTML = regenBtnHTML(idx) +
                     "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
+                    qImgHtml(q) +
                     optsHTML + answerSpace;
 
                 let numBox = qItem.querySelector('.q-num-box');
@@ -198,6 +199,7 @@
                "<div class='q-content-box'>" +
                    regenBtnHTML(qIdx) +
                    "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
+                    qImgHtml(q) +
                    optsHTML +
                    answerSpace +
                "</div></div>";
@@ -308,6 +310,11 @@
             if (b1) b1.classList.toggle('is-active', t === 'quiz');
             if (b2) b2.classList.toggle('is-active', t === 'key');
             if (b0) b0.classList.toggle('is-active', t === 'answer');
+            // 題目卷、答案卷的分頁平常藏起來（線上作答是主畫面）；老師從「更多」進到 A4 畫面時才出現，方便切換與回到線上作答
+            if (window.sharedMode !== 'student') {
+                if (b1) b1.classList.toggle('hidden', t === 'answer');
+                if (b2) b2.classList.toggle('hidden', t === 'answer');
+            }
 
             updateEditHintVisibility(t);
 

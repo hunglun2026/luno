@@ -526,7 +526,7 @@
             const title = window.docTitle || '測驗';
             const res = await fetch(API_BASE + "/api/share", {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'X-Session-Token': lqGetToken() || '' },
                 body: JSON.stringify({ items: window.currentItems, title })
             });
             const data = await res.json();

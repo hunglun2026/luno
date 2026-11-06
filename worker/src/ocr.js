@@ -65,9 +65,24 @@ function normalizeQuestions(raw) {
     if (Array.isArray(r.flag)) for (const f of r.flag) if (ALLOWED_FLAGS.has(f) && flag.indexOf(f) === -1) flag.push(f);
     const n = Number.isFinite(Number(r.n)) ? Math.max(0, Math.floor(Number(r.n))) : 0;
     const s = Number(r.s);
-    out.push({ n, q, o, a: normalizeAnswer(r.a, o.length), s: Number.isFinite(s) && s > 0 ? s : 0, flag });
+    const item = { n, q, o, a: normalizeAnswer(r.a, o.length), s: Number.isFinite(s) && s > 0 ? s : 0, flag };
+    const fig = normalizeFig(r.fig);
+    if (fig) item.fig = fig;
+    out.push(item);
   }
   return out;
+}
+
+// 題目附圖的位置：{p:這一批圖片的第幾張（1 起）, x,y,w,h:佔該頁的比例 0~1}；格式不對就丟掉，前端只會當沒有裁圖
+function normalizeFig(f) {
+  if (!f || typeof f !== "object") return null;
+  const p = Math.floor(Number(f.p));
+  const x = Number(f.x), y = Number(f.y), w = Number(f.w), h = Number(f.h);
+  if (![p, x, y, w, h].every(Number.isFinite) || p < 1 || p > 40) return null;
+  const x0 = Math.min(Math.max(x, 0), 1), y0 = Math.min(Math.max(y, 0), 1);
+  const w0 = Math.min(w, 1 - x0), h0 = Math.min(h, 1 - y0);
+  if (w0 < 0.03 || h0 < 0.02) return null;
+  return { p, x: x0, y: y0, w: w0, h: h0 };
 }
 
 function normalizeAnswers(raw) {
@@ -101,6 +116,7 @@ function buildQuestionsPrompt(solve, startNo) {
     "8. flag 只能用下列值，沒有就給 []：",
     "   - \"lowConf\"：字跡、注音、數字或選項看不清楚、你不確定抄對了。",
     "   - \"figure\"：這題需要看圖形、表格、座標圖或照片才答得出來，單靠文字無法完整表達。",
+    "   有 \"figure\" 的題目另外加 \"fig\":{\"p\":圖在附圖的第幾張（從1起）,\"x\":左邊界,\"y\":上邊界,\"w\":寬,\"h\":高}，四個數字都是佔「那一張圖片」的比例（0到1），框住該題的圖形或表格本身（不含題幹文字）；題組共用的圖，每一題都填同一個框。",
     solve
       ? "9. 原卷沒有附答案：請你自己解題，把答案填在 a（選擇題用大寫字母，複選如 \"AC\"；其他題型寫簡短答案），並在 flag 加上 \"aiGuess\"。不確定答案就把 a 留空字串，並加 \"noAnswer\"。"
       : "9. 答案由另外的答案卷提供，這裡 a 一律填空字串 \"\"，不要自己解題。",

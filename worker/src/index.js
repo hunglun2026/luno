@@ -46,6 +46,8 @@ const SHARE_TTL_SECONDS = 60 * 60 * 24 * 30; // 分享連結30天後過期
 // 50 題的題目 JSON 實測約 30KB，120KB 已經很寬鬆；原本設 500KB 是沒必要的攻擊面
 // （KV 免費方案每日只有 1000 次寫入，被灌大包資料很快就把全站額度吃光）
 const SHARE_MAX_BYTES = 120 * 1024;
+// 登入的老師可以分享帶附圖的題目（紙本卷拍照裁下的圖形，每張約 60KB 內），上限放寬；未登入維持 120KB
+const SHARE_MAX_BYTES_TEACHER = 700 * 1024;
 const RESULT_TTL_SECONDS = 60 * 60 * 24 * 30; // 作答結果連結30天後過期
 const RESULT_MAX_BYTES = 300 * 1024; // 單份結果內容上限300KB
 const LIVE_PROGRESS_TTL_SECONDS = 60 * 60 * 8; // 即時進度8小時後自動過期(教室情境用不到這麼久)
@@ -277,7 +279,9 @@ async function handleShareCreate(request, env) {
     }
 
     const payload = JSON.stringify({ items, title, createdAt: Date.now() });
-    if (payload.length > SHARE_MAX_BYTES) {
+    const shareSession = payload.length > SHARE_MAX_BYTES ? await verifySession(request, env) : null;
+    const shareLimit = shareSession && (shareSession.role === "teacher" || shareSession.role === "superadmin") ? SHARE_MAX_BYTES_TEACHER : SHARE_MAX_BYTES;
+    if (payload.length > shareLimit) {
       return new Response(JSON.stringify({ error: { message: "題目內容太大，無法分享（請減少題數）" } }), {
         status: 400,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },

@@ -5,6 +5,10 @@
         // 例：https://linquiz-api.<你的subdomain>.workers.dev
 const API_BASE = "https://luno-api.hunglun.com";
 // 《個人資料蒐集告知》版本日期，要跟 privacy.html 頂部的版本一致；註冊時送給後端存起來
+// 題目附圖（紙本卷拍照裁下的圖形）：q.img 只收 JPEG 的 data URL，別的字串一律不顯示（分享內容任何人都能寫入，防 XSS）
+const Q_IMG_RE = /^data:image\/jpeg;base64,[A-Za-z0-9+\/=]+$/;
+function qImgOk(q) { return !!(q && typeof q.img === 'string' && q.img.length < 200000 && Q_IMG_RE.test(q.img)); }
+function qImgHtml(q) { return qImgOk(q) ? "<img class='q-img' src='" + q.img + "' alt='題目附圖'>" : ''; }
 const PRIVACY_VERSION = '2026-11-05';
 
         // 題目內容(q.q/q.o/q.a/q.e)來自AI回傳,分享題目(/api/share)又是任何人都能未經驗證寫入的公開端點,

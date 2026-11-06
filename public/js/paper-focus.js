@@ -120,6 +120,134 @@
         ta.setSelectionRange(ta.value.length, ta.value.length);
     }
 
+    // ===== 手寫題放大書寫面板（2026-11-06）=====
+    // 手機上點手寫格，改開放大面板；筆跡存同一份 ppStrokes（相對座標），關閉後卷面小畫布同步重畫
+    function openHandSheet(canvas) {
+        var rid = canvas.dataset.region;
+        var regions = (typeof ppPaper !== 'undefined' && ppPaper.regions) || [];
+        var region = regions.filter(function (r) { return r.id === rid; })[0];
+        var stage = canvas.closest('.pp-stage');
+        var img = stage && stage.querySelector('img');
+        if (!region || !img || !img.naturalWidth) return;
+        var local = 'pen';                                      // 面板自己的工具，不動卷面上的工具列
+        var overlay = document.createElement('div');
+        overlay.className = 'pp-focus-overlay';
+        var box = document.createElement('div');
+        box.className = 'pp-focus-box';
+        box.setAttribute('role', 'dialog');
+        box.setAttribute('aria-label', '第 ' + region.no + ' 題手寫');
+
+        var head = document.createElement('div');
+        head.className = 'pp-focus-head';
+        var title = document.createElement('b');
+        title.textContent = '第 ' + region.no + ' 題 手寫作答';
+        var done = document.createElement('button');
+        done.type = 'button';
+        done.className = 'pp-focus-done-top';
+        done.textContent = '完成';
+        head.appendChild(title);
+        head.appendChild(done);
+
+        var crop = buildCrop(canvas);                           // 手寫格同樣放在有位置 style 的 .pp-ans 裡，可直接共用
+
+        // 書寫區：背景是原卷該格的畫面，上面疊透明畫布；長寬比跟原格一樣，筆跡的相對座標才不會變形
+        var wrap = document.createElement('div');
+        wrap.className = 'pp-focus-hand';
+        var aspect = (region.w * img.naturalWidth) / (region.h * img.naturalHeight);
+        var availW = Math.min(window.innerWidth - 32, 560);
+        var maxH = Math.round(window.innerHeight * 0.5);
+        var w = availW, h = w / aspect;
+        if (h < 200) { h = 200; w = Math.min(availW, h * aspect); }
+        if (h > maxH) { h = maxH; w = h * aspect; }
+        wrap.style.width = Math.round(w) + 'px';
+        wrap.style.height = Math.round(h) + 'px';
+        var pageW = w / region.w, pageH = pageW * img.naturalHeight / img.naturalWidth;
+        wrap.style.backgroundImage = 'url("' + img.src + '")';
+        wrap.style.backgroundSize = pageW + 'px ' + pageH + 'px';
+        wrap.style.backgroundPosition = (-region.x * pageW) + 'px ' + (-region.y * pageH) + 'px';
+        var big = document.createElement('canvas');
+        big.className = 'pp-bigcanvas';
+        big.width = Math.round(w * 2);
+        big.height = Math.round(h * 2);
+        wrap.appendChild(big);
+
+        var tools = document.createElement('div');
+        tools.className = 'pp-focus-tools';
+        function toolBtn(label, fn) {
+            var b = document.createElement('button');
+            b.type = 'button';
+            b.className = 'pp-tool';
+            b.textContent = label;
+            b.onclick = fn;
+            tools.appendChild(b);
+            return b;
+        }
+        function paint() { ppDrawStrokes(big, ppStrokes[rid] || []); }
+        var bPen = toolBtn('✏️ 筆', function () { local = 'pen'; mark(); });
+        var bEra = toolBtn('🧽 橡皮擦', function () { local = 'eraser'; mark(); });
+        toolBtn('↩️ 復原', function () { (ppStrokes[rid] || []).pop(); paint(); });
+        function mark() { bPen.classList.toggle('on', local === 'pen'); bEra.classList.toggle('on', local === 'eraser'); }
+        mark();
+
+        var ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'pp-focus-done';
+        ok.textContent = '完成書寫';
+
+        box.appendChild(head);
+        box.appendChild(crop);
+        box.appendChild(wrap);
+        box.appendChild(tools);
+        box.appendChild(ok);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        document.body.classList.add('pp-focus-open');
+        sheet = overlay;
+        if (crop._paint) crop._paint();
+        paint();
+
+        var drawing = false, cur = null;
+        function pos(e) {
+            var r = big.getBoundingClientRect();
+            return { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+        }
+        big.addEventListener('pointerdown', function (e) {
+            drawing = true;
+            cur = { tool: local, pts: [pos(e)] };
+            (ppStrokes[rid] = ppStrokes[rid] || []).push(cur);
+            try { big.setPointerCapture(e.pointerId); } catch (err) {}
+            e.preventDefault();
+        });
+        big.addEventListener('pointermove', function (e) {
+            if (!drawing) return;
+            cur.pts.push(pos(e));
+            paint();
+            e.preventDefault();
+        });
+        function stop() { drawing = false; cur = null; }
+        big.addEventListener('pointerup', stop);
+        big.addEventListener('pointercancel', stop);
+
+        function finish() {
+            closeSheet();
+            ppRedraw(rid);                                      // 卷面上的小畫布同步
+            if (typeof ppStuProgress === 'function') ppStuProgress();
+        }
+        done.onclick = finish;
+        ok.onclick = finish;
+        overlay.addEventListener('click', function (e) { if (e.target === overlay) finish(); });
+    }
+
+    // 捕獲階段先攔：手機上點到手寫格就開面板，不讓小畫布自己開始畫
+    document.addEventListener('pointerdown', function (e) {
+        var t = e.target;
+        if (sheet || !mq.matches) return;
+        if (!t || !t.classList || !t.classList.contains('pp-handcanvas') || t.closest('.pp-focus-hand')) return;
+        e.stopPropagation();
+        e.preventDefault();
+        openHandSheet(t);
+    }, true);
+
     document.addEventListener('focusin', function (e) {
         var t = e.target;
         if (sheet || !mq.matches) return;

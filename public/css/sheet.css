@@ -255,3 +255,6 @@ body:has(#ansQuizBody:not(.hidden)) .lq-quiz-bottombar { padding-left: 7.2rem; }
 /* 試卷頁頁尾連結：灰藍底上字色提亮，對比拉到 4.5 以上（2026-11-05） */
 .lq-foot { color: #f3f4f6; }
 .lq-foot a { color: #a7f3d0; }
+
+/* 題目附圖（紙本卷拍照裁下的圖形）：線上作答與 A4 試卷共用 */
+.q-img { display: block; max-width: 100%; max-height: 260px; width: auto; height: auto; margin: 6px 0 8px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; }

@@ -171,7 +171,10 @@ async function ocrRun() {
             const from = st.qBatch * OCR_Q_PAGES_PER_CALL;
             const pages = ocrQ.slice(from, from + OCR_Q_PAGES_PER_CALL);
             const r = await ocrPost(await ocrBatchBody('questions', pages, { solve: ocrA.length === 0, startNo: st.items.length + 1 }));
-            (r.items || []).forEach(function (it) { it.page = (from + 1) + (pages.length > 1 ? '～' + (from + pages.length) : ''); });
+            (r.items || []).forEach(function (it) {
+                it.page = (from + 1) + (pages.length > 1 ? '～' + (from + pages.length) : '');
+                if (it.fig) it.fig.pi = from + it.fig.p - 1;     // 批次內第幾張 → 整份題目卷的第幾頁（0 起），發布時裁圖要用
+            });
             st.items = st.items.concat(r.items || []);
             if (r.degraded) st.degraded = true;
         }
@@ -236,7 +239,9 @@ function ocrMergeItems(items, answers, hasAnswerSheet) {
             const bad = a.split('').some(function (ch) { return ch.charCodeAt(0) - 65 >= o.length; });
             if (!a || bad) { if (flag.indexOf('badAnswer') < 0) flag.push('badAnswer'); }
         }
-        return { n: n, q: it.q, o: o, a: a, e: e, s: it.s || 0, page: it.page || '', flag: flag };
+        const merged = { n: n, q: it.q, o: o, a: a, e: e, s: it.s || 0, page: it.page || '', flag: flag };
+        if (it.fig) merged.fig = it.fig;
+        return merged;
     });
 }
 
@@ -251,11 +256,41 @@ function ocrLetters(a) {
     return out.split('').sort().join('');
 }
 
+// 依 AI 框出的位置，從題目卷那一頁裁下圖形，縮到寬 560px 以內的 JPEG（data URL）；失敗回 ''，題目照常發布只是沒有圖
+async function ocrCropFigure(fig) {
+    try {
+        const page = ocrQ[fig.pi];
+        if (!page) return '';
+        const bmp = await createImageBitmap(page.blob);
+        const sx = Math.round(fig.x * bmp.width), sy = Math.round(fig.y * bmp.height);
+        const sw = Math.max(8, Math.round(fig.w * bmp.width)), sh = Math.max(8, Math.round(fig.h * bmp.height));
+        const scale = Math.min(1, 560 / sw);
+        const cv = document.createElement('canvas');
+        cv.width = Math.round(sw * scale); cv.height = Math.round(sh * scale);
+        const ctx = cv.getContext('2d');
+        ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(bmp, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
+        let url = '';
+        for (const q of [0.78, 0.65, 0.5]) {            // 單張壓到約 60KB 內，分享與歷史才放得下
+            url = cv.toDataURL('image/jpeg', q);
+            if (url.length < 80000) break;
+        }
+        return url;
+    } catch (e) { return ''; }
+}
+
 // ---------- 確認發布：變成跟 AI 出題一樣的試卷 ----------
-function ocrPublish(items, title) {
+async function ocrPublish(items, title) {
+    const crops = {};                                  // 同一題組共用的圖只裁一次
+    for (const it of items) {
+        if (!it.fig || it.img) continue;
+        const k = [it.fig.pi, it.fig.x, it.fig.y, it.fig.w, it.fig.h].join('|');
+        if (!(k in crops)) crops[k] = await ocrCropFigure(it.fig);
+        if (crops[k]) it.img = crops[k];
+    }
     const clean = items.map(function (it) {
         const c = Object.assign({}, it);
-        delete c.n; delete c.page; delete c.flag;     // 只在審閱時用，不進分享、不存歷史
+        delete c.n; delete c.page; delete c.flag; delete c.fig;     // 只在審閱時用，不進分享、不存歷史
         // g：非選擇題、有參考答案的，學生交卷時請 AI 依參考答案批改（ai-grade.js、worker/src/grade.js）
         if ((!c.o || c.o.length === 0) && String(c.a || '').trim()) c.g = 1;
         return c;

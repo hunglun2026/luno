@@ -196,6 +196,14 @@
                     run('  (' + (q.s || 0) + '分)', { size: 18, color: '666666' })
                 ]
             }));
+            if (q._imgData) {
+                paras.push(new Paragraph({
+                    spacing: { after: 60 },
+                    indent: { left: 720 },
+                    keepNext: true,
+                    children: [new D.ImageRun({ type: 'jpg', data: q._imgData.bytes, transformation: { width: q._imgData.w, height: q._imgData.h } })]
+                }));
+            }
             if (isChoice) {
                 q.o.forEach((o, oi) => {
                     const label = String.fromCharCode(65 + oi);
@@ -250,6 +258,22 @@
             a.href = URL.createObjectURL(blob); a.download = fileName; a.click();
         }
 
+        // 題目附圖轉成 Word 用的位元組與尺寸（寬最多 360 點，約半頁寬），暫存在題目物件的 _imgData；匯出後清掉
+        async function docxPrepareImages(items) {
+            for (const q of items) {
+                delete q._imgData;
+                if (!qImgOk(q)) continue;
+                try {
+                    const img = await new Promise(function (res, rej) { const im = new Image(); im.onload = function () { res(im); }; im.onerror = rej; im.src = q.img; });
+                    const w = Math.min(360, img.naturalWidth), h = Math.round(w * img.naturalHeight / img.naturalWidth);
+                    const bin = atob(q.img.split(',')[1]);
+                    const bytes = new Uint8Array(bin.length);
+                    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+                    q._imgData = { bytes: bytes, w: w, h: h };
+                } catch (e) {}
+            }
+        }
+
         async function dlDocInner() {
             try { await loadScript(LIB_URLS.docx); } catch (e) {}
             if (typeof window.docx === 'undefined') {
@@ -261,6 +285,7 @@
 
             const D = window.docx;
             const { Document, Packer, Paragraph, TextRun, AlignmentType, BorderStyle } = D;
+            await docxPrepareImages(items);
             const FONT = '微軟正黑體';
             const run = (text, opts) => new TextRun(Object.assign({ text: String(text), font: FONT }, opts || {}));
 
@@ -297,6 +322,7 @@
             });
 
             const blob = await Packer.toBlob(doc);
+            items.forEach(function (q) { delete q._imgData; });
             await saveDocxBlob(blob, (window.docName || '試卷') + '.docx');
         }
 
