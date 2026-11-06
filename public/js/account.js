@@ -108,6 +108,7 @@
                     "</select>";
                 html += "<input id='authClassName' class='lq-input hidden' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
                 html += "<input id='authClassCode' class='lq-input hidden' placeholder='老師的班級名稱（選填，之後也可以在帳號頁面補填）'>";
+                html += "<label class='flex gap-2 items-start text-xs text-gray-600 cursor-pointer'><input type='checkbox' id='authPrivacyOk' class='mt-1'><span>我已閱讀並同意<a href='privacy.html' target='_blank' rel='noopener' class='text-blue-600 underline'>《個人資料蒐集告知》</a>。未滿 18 歲請在家長或老師陪同下註冊。</span></label>";
             }
             html += "<div id='authErrorMsg' class='text-sm text-red-600 hidden'></div>";
             html += "<button onclick=\"" + (isLogin ? 'doLogin()' : 'doRegister()') + "\" class='lq-btn lq-btn-primary w-full py-2'>" + (isLogin ? '登入' : '註冊') + "</button>";
@@ -136,6 +137,7 @@
             const credErr = credentialInputError(username, password);
             if (credErr) { showAuthError(credErr); return; }
             if (password !== passwordConfirm) { showAuthError('兩次密碼輸入不一致'); return; }
+            if (!(document.getElementById('authPrivacyOk') || {}).checked) { showAuthError('請先閱讀並勾選同意《個人資料蒐集告知》'); return; }
             const displayName = document.getElementById('authDisplayName').value.trim();
             const role = document.getElementById('authRole').value;
             const className = (document.getElementById('authClassName') || {}).value || '';
@@ -143,7 +145,7 @@
             try {
                 const res = await fetch(API_BASE + "/api/auth/register", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, displayName, role, className, classCode })
+                    body: JSON.stringify({ username, password, displayName, role, className, classCode, privacyVersion: PRIVACY_VERSION })
                 });
                 const data = await res.json();
                 if (data.error) { showAuthError(data.error.message); return; }

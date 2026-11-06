@@ -255,10 +255,12 @@
             container.innerHTML = "<div class='max-w-2xl mx-auto p-4'><div class='lq-card p-5 mb-4 text-center'>" +
                 "<h2 class='font-bold text-lg mb-1'>📊 即時進度儀表板</h2>" +
                 "<p class='text-sm text-gray-500'>每 8-10 秒自動更新" + (dashKey ? "（這條連結本身就是權限，不用登入）" : "（老師帳號登入即可，未登入才需要管理者密碼）") + "</p>" +
+                "<div id='liveCodeBox' class='hidden mt-3 text-sm'></div>" +
                 "<button id='btnRevokeDash' onclick='toggleRevokeDashboard()' class='lq-btn lq-btn-secondary text-xs px-3 py-1 mt-3'>⏹ 停止監看（讓這條連結失效）</button>" +
                 "</div>" +
                 "<div id='liveDashboardBody'><div class='text-center text-white py-10'>⏳ 載入中...</div></div></div>";
 
+            liveShowQuizCode(shareId);
             window.livePollIntervalMs = 9000;
             window.liveViewRefresh = async function() {
                 const body = document.getElementById('liveDashboardBody');
@@ -296,6 +298,26 @@
             };
             window.liveViewRefresh();
             window.livePollTimer = setInterval(window.liveViewRefresh, window.livePollIntervalMs);
+        }
+
+        // 監看頁顯示測驗代碼＋複製鈕：代碼要登入才產得出來，沒登入（用金鑰連結進來）就不顯示
+        async function liveShowQuizCode(shareId) {
+            const token = lqGetToken() || '';
+            const box = document.getElementById('liveCodeBox');
+            if (!token || !box) return;
+            try {
+                const res = await fetch(API_BASE + "/api/code", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Session-Token': token },
+                    body: JSON.stringify({ shareId: shareId })
+                });
+                const data = await res.json();
+                if (data.error || !data.code) return;
+                const code = String(data.code);
+                box.innerHTML = "測驗代碼：<b class='text-lg tracking-widest'>" + escapeHtml(code.replace(/(\d{3})(\d{3})/, '$1 $2')) + "</b> " +
+                    "<button onclick=\"navigator.clipboard.writeText(" + jsArg(code) + ").then(function(){lqAlert('已複製代碼');})\" class='lq-btn lq-btn-secondary text-xs px-2 py-1 ml-1'>複製代碼</button>";
+                box.classList.remove('hidden');
+            } catch (e) {}
         }
 
         function renderLiveDashboardTable(body, students, shareId) {

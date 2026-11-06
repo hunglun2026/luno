@@ -3,7 +3,9 @@
 
         // 部署後端 Worker 後，請把這裡換成實際的 Worker 網址
         // 例：https://linquiz-api.<你的subdomain>.workers.dev
-        const API_BASE = "https://luno-api.hunglun.com";
+const API_BASE = "https://luno-api.hunglun.com";
+// 《個人資料蒐集告知》版本日期，要跟 privacy.html 頂部的版本一致；註冊時送給後端存起來
+const PRIVACY_VERSION = '2026-11-05';
 
         // 題目內容(q.q/q.o/q.a/q.e)來自AI回傳,分享題目(/api/share)又是任何人都能未經驗證寫入的公開端點,
         // 所以在用innerHTML插入畫面前一律要escape,避免惡意分享連結在別人瀏覽器裡跑出XSS

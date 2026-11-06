@@ -329,6 +329,11 @@
 
                     if (geminiRes.status === 429) {
                         const cd = await geminiRes.json().catch(() => ({}));
+                        if (cd.error && cd.error.code === 'GUEST_LIMIT') {
+                            hidePracticeLoading();
+                            await lqAlert(cd.error.message);
+                            return;
+                        }
                         const remaining = (cd.error && cd.error.remaining) || 30;
                         hidePracticeLoading();
                         startCooldownUI(remaining);

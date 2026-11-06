@@ -24,6 +24,9 @@ const GENERATE_RUN_ALLOWANCE = 15;
 const GENERATE_RUN_TTL_SECONDS = 10 * 60;
 // 同一個 IP 每小時最多開幾次新的出題（防換裝置 ID 洗額度；60 夠一間學校共用網路）
 const GENERATE_IP_HOURLY_LIMIT = 60;
+// 訪客（沒登入、沒自帶 Key）每個裝置／IP 每天最多開幾次新的出題；題數上限 20 仍在前端，
+// 伺服器端限的是次數（出題內容是提示詞文字，後端無法可靠數題數）。登入的老師不受此限
+const GUEST_DAILY_GENERATE_LIMIT = 6;
 const GENERATE_MAX_BYTES = 20 * 1024 * 1024;
 const GENERATE_MAX_PARTS = 40;
 // 學生識別碼：裝置 ID（UUID 或 數字-隨機字串）或 u<帳號編號>，只准這些字元，不能夾 ' " / 之類
@@ -872,6 +875,16 @@ async function handleGenerate(request, env) {
         });
 
       if (batchIndex === 0) {
+        // 訪客限次數：這裡只檢查，真的通過冷卻才扣（被冷卻擋下的重按不算一次）
+        const isGuest = !(await verifySession(request, env));
+        const guestKey = `guestgen:${clientId || ip}:${Math.floor(now / 86400000)}`;
+        const guestUsed = isGuest ? parseInt((await env.COOLDOWN_KV.get(guestKey)) || "0", 10) : 0;
+        if (isGuest && guestUsed >= GUEST_DAILY_GENERATE_LIMIT) {
+          return new Response(JSON.stringify({ error: { code: "GUEST_LIMIT", message: "訪客模式今天的出題次數用完了，登入教師帳號就能繼續使用" } }), {
+            status: 429,
+            headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+          });
+        }
         const lastTs = await env.COOLDOWN_KV.get(cooldownKey);
         if (lastTs) {
           const elapsed = now - parseInt(lastTs, 10);
@@ -881,6 +894,7 @@ async function handleGenerate(request, env) {
         const used = parseInt((await env.COOLDOWN_KV.get(hourKey)) || "0", 10);
         if (used >= GENERATE_IP_HOURLY_LIMIT) return tooMany(300);
         await env.COOLDOWN_KV.put(hourKey, String(used + 1), { expirationTtl: 3700 });
+        if (isGuest) await env.COOLDOWN_KV.put(guestKey, String(guestUsed + 1), { expirationTtl: 90000 });
         await env.COOLDOWN_KV.put(cooldownKey, String(now), { expirationTtl: 60 });
         await env.COOLDOWN_KV.put(runKey, String(GENERATE_RUN_ALLOWANCE), { expirationTtl: GENERATE_RUN_TTL_SECONDS });
       } else {
@@ -1151,12 +1165,18 @@ async function handleAuthRegister(request, env) {
       classId = cls.id;
     }
 
+    // 同意《個人資料蒐集告知》：前端勾選後送版本日期（如 2026-11-05），伺服器補上時間一起存
+    const privacyVersion = String(body.privacyVersion || "").trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(privacyVersion)) {
+      return json({ error: { message: "請先閱讀並勾選《個人資料蒐集告知》" } }, 400);
+    }
+
     const { hash, salt } = await hashPassword(password);
     const now = Date.now();
 
     const insertUser = await env.DB.prepare(
-      "INSERT INTO users (username, password_hash, salt, role, display_name, class_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-    ).bind(username, hash, salt, role, displayName, classId, now).run();
+      "INSERT INTO users (username, password_hash, salt, role, display_name, class_id, created_at, privacy_consent_at, privacy_version) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    ).bind(username, hash, salt, role, displayName, classId, now, now, privacyVersion).run();
     const userId = insertUser.meta.last_row_id;
 
     if (role === "teacher") {

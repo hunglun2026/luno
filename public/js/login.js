@@ -86,7 +86,7 @@
             try {
                 const res = await fetch(API_BASE + "/api/auth/register", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, displayName, role, className, classCode })
+                    body: JSON.stringify({ username, password, displayName, role, className, classCode, privacyVersion: PRIVACY_VERSION })
                 });
                 const data = await res.json();
                 if (data.error) { showSplashAuthError(data.error.message); return; }
