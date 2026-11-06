@@ -5,11 +5,22 @@
         // 按需載入外部函式庫：mammoth/SheetJS(上傳檔案才用)、html2canvas+jsPDF(下載PDF才用)、
         // docx(下載Word才用)。同一個網址只會真的載入一次，之後直接回傳同一個 Promise。
         window._loadedScripts = window._loadedScripts || {};
+        // 2026-11-06 商用檢查：CDN 函式庫加 SRI 雜湊，CDN 被竄改時瀏覽器會拒絕執行。
+        // 換版本或換網址時要重算（openssl dgst -sha384 -binary 檔 | openssl base64 -A）。
+        // pdf.worker 是 pdf.js 自己用 Worker 載入的，沒有 script 標籤可以加，不在表內
+        const LIB_SRI = {
+            "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js": "sha384-nFoSjZIoH3CCp8W639jJyQkuPHinJ2NHe7on1xvlUA7SuGfJAfvMldrsoAVm6ECz",
+            "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js": "sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H",
+            "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js": "sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk",
+            "https://unpkg.com/docx@9.7.1/dist/index.umd.cjs": "sha384-/NJTaOABVz2ALzgs0bTeadgMc5g3wrv9R9mr32g4W57hdKzHYt7MWDySJ1zhhPoi",
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js": "sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e"
+        };
         function loadScript(src) {
             if (window._loadedScripts[src]) return window._loadedScripts[src];
             window._loadedScripts[src] = new Promise(function (resolve, reject) {
                 const s = document.createElement('script');
                 s.src = src;
+                if (LIB_SRI[src]) { s.integrity = LIB_SRI[src]; s.crossOrigin = 'anonymous'; }
                 s.onload = function () { resolve(); };
                 s.onerror = function () {
                     delete window._loadedScripts[src]; // 失敗就別記住，下次按還能重試
@@ -46,7 +57,7 @@
                 '熟練': '「熟練」＝整合與靈活運用：該年級課綱內認知要求最高的題目，可綜合單元內多個概念，強調概念之間的靈活運用與辨析，但知識點依然完全不可超出該年級課綱。',
             };
             if (!rubric[diffVal]) return '';
-            return '【難度定義】：' + rubric[diffVal] + ' 無論難度高低，考的知識點都必須落在該年級課綱範圍內——難度只反映認知複雜度(記憶→理解→應用→分析→整合)的層次，絕對不可以用超出年級的知識點來製造難度。\n\n';
+            return '【難度定義】：' + rubric[diffVal] + ' 無論難度高低，考的知識點都必須落在該年級課綱範圍內；難度只反映認知複雜度(記憶→理解→應用→分析→整合)的層次，絕對不可以用超出年級的知識點來製造難度。\n\n';
         }
 
         // 每台裝置的瀏覽器各自產生一個固定ID(存localStorage),讓冷卻機制以裝置為單位,

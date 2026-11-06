@@ -16,8 +16,8 @@
         .a4-page, .a4-page * { box-sizing: border-box; }
 
         /* ============================================================
-           質感UI Design Tokens — 沿用 brand.css 的 Google 四色系統(--hl-blue/red/yellow/green)，
-           統一全站按鈕的「語意配色」：主要動作一律hl-blue、分享一律hl-green、
+           質感UI Design Tokens：沿用 brand.css 的 Google 四色系統(--hl-blue/red/yellow/green)，
+           統一全站按鈕的「意思配色」：主要動作一律hl-blue、分享一律hl-green、
            刪除/清除一律hl-red、中性次要動作用灰階外框，取代原本紅橙紫粉靛各按鈕各用一色的混亂配色
            ============================================================ */
         :root {
@@ -129,7 +129,7 @@
         .lq-mode-desc { font-size: 0.75rem; color: #6b7280; line-height: 1.5; }
         @media (max-width: 640px) {
             /* 手機：橫向排一列會擠到看不懂，改成一行一個、圖縮到左邊。
-               文字一定要包在 .lq-mode-text 裡——圖、標題、說明如果各自是 grid item，
+               文字一定要包在 .lq-mode-text 裡，圖、標題、說明如果各自是 grid item，
                說明會被排到第二列第一欄，變成一行兩三個字的窄柱 */
             .lq-modes { grid-template-columns: 1fr; }
             .lq-mode {
@@ -407,7 +407,7 @@
         .hl-admin-link:hover { color: var(--hl-red); }
 
         /* 表單頁banner：原本放AI生成的吉祥物插畫，占滿首屏卻沒說明這工具能做什麼。
-           改成「產品畫面」路線(同Wayground/MagicSchool)——直接讓使用者看到產出的考卷長什麼樣。
+           改成「產品畫面」路線(同Wayground/MagicSchool)，直接讓使用者看到產出的考卷長什麼樣。
            純CSS拼的示意稿，不是圖片，換文案/配色不用重生圖 */
         .lq-hero-visual {
             display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: center;

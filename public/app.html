@@ -15,27 +15,27 @@
     <meta name="apple-mobile-web-app-title" content="刻度 互動式評量">
     <meta name="robots" content="noindex">
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=42"></script>
+    <script src="js/theme.js?v=43"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
          免得上游改版時線上無預警壞掉 -->
-    <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.24/dist/dotlottie-wc.js"></script>
+    <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.9.24/dist/dotlottie-wc.js" integrity="sha384-8NZI8IXJtphV4Ekaf5f60Sw4u248eN1N3aclL5WppacPU4l/dVuMLKuf/tQU4b64" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" integrity="sha384-UVFvhZP7fWAENUPOoq61rJg5ef6QZW0k5vpAn71041/QS4STvUcJQCGNhStZLGx9" crossorigin="anonymous" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式出題（老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=42">
+    <link rel="stylesheet" href="css/guide.css?v=43">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=42">
-    <link rel="stylesheet" href="css/sheet.css?v=42">
+    <link rel="stylesheet" href="css/app.css?v=43">
+    <link rel="stylesheet" href="css/sheet.css?v=43">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=42">
+    <link rel="stylesheet" href="css/tailwind.css?v=43">
     <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=42">
-    <link rel="stylesheet" href="css/theme.css?v=42">
+    <link rel="stylesheet" href="css/landing.css?v=43">
+    <link rel="stylesheet" href="css/theme.css?v=43">
 </head>
 <body class="text-slate-800">
 
@@ -158,7 +158,7 @@
 
             <h3 class="section-title">出題條件</h3>
             <!-- 年級與科目：這兩個是「猜錯就整份考卷報廢」的欄位，所以不給預設值，一定要老師自己選。
-                 但也因此要讓他選得夠快——改成一排點就好的膠囊按鈕，免打字、免展開下拉。
+                 但也因此要讓他選得夠快，改成一排點就好的膠囊按鈕，免打字、免展開下拉。
                  下拉/輸入框本體保留（只是隱藏），繼續當值的來源，
                  startGen / getFormSettingsSnapshot / applySettings / clearAllSettings 全部不用改 -->
             <div id="aiInputs" class="mb-4">
@@ -236,7 +236,7 @@
                 <div>
                     <label class="font-bold text-sm">難度</label>
                     <!-- 舊版是 基礎/普通/進階/挑戰/熟練 五階，但「熟練」描述的是學生的學習狀態、
-                         不是題目難度，跟「進階/挑戰」語意重疊，老師看不出高低順序。收斂成四階並各附情境說明。
+                         不是題目難度，跟「進階/挑戰」意思重疊，老師看不出高低順序。收斂成四階並各附情境說明。
                          （getDifficultyRubric() 仍保留「熟練」的定義，舊的儲存設定與分享連結不受影響） -->
                     <select id="difficulty" onchange="checkCustom(this, 'c_diff')" class="lq-input">
                         <option value="基礎">🐣 基礎：課本原文、觀念複習</option>
@@ -486,27 +486,27 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/common.js?v=42"></script>
-    <script src="js/core.js?v=42"></script>
-    <script src="js/dialog.js?v=42"></script>
-    <script src="js/entry.js?v=42"></script>
-    <script src="js/home.js?v=42"></script>
-    <script src="js/share.js?v=42"></script>
-    <script src="js/settings.js?v=42"></script>
-    <script src="js/generate.js?v=42"></script>
-    <script src="js/sheet.js?v=42"></script>
-    <script src="js/page-images.js?v=42"></script>
-    <script src="js/edit-items.js?v=42"></script>
-    <script src="js/ai-grade.js?v=42"></script>
-    <script src="js/answer.js?v=42"></script>
-    <script src="js/bank.js?v=42"></script>
-    <script src="js/handoff.js?v=42"></script>
-    <script src="js/router.js?v=42"></script>
-    <script src="js/export.js?v=42"></script>
-    <script src="js/account.js?v=42"></script>
-    <script src="js/admin.js?v=42"></script>
+    <script src="js/common.js?v=43"></script>
+    <script src="js/core.js?v=43"></script>
+    <script src="js/dialog.js?v=43"></script>
+    <script src="js/entry.js?v=43"></script>
+    <script src="js/home.js?v=43"></script>
+    <script src="js/share.js?v=43"></script>
+    <script src="js/settings.js?v=43"></script>
+    <script src="js/generate.js?v=43"></script>
+    <script src="js/sheet.js?v=43"></script>
+    <script src="js/page-images.js?v=43"></script>
+    <script src="js/edit-items.js?v=43"></script>
+    <script src="js/ai-grade.js?v=43"></script>
+    <script src="js/answer.js?v=43"></script>
+    <script src="js/bank.js?v=43"></script>
+    <script src="js/handoff.js?v=43"></script>
+    <script src="js/router.js?v=43"></script>
+    <script src="js/export.js?v=43"></script>
+    <script src="js/account.js?v=43"></script>
+    <script src="js/admin.js?v=43"></script>
 <!-- ==================== 紙本卷拍照轉題目（js/ocr-teacher.js） ==================== -->
-<link rel="stylesheet" href="css/ocr.css?v=42">
+<link rel="stylesheet" href="css/ocr.css?v=43">
 <div id="ocrApp" class="hidden min-h-screen bg-gray-50 no-print">
   <div class="max-w-3xl mx-auto p-4">
     <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -554,7 +554,7 @@
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=42">
+<link rel="stylesheet" href="css/paper.css?v=43">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -649,12 +649,12 @@
   </div>
 </div>
 
-<script src="js/ocr-teacher.js?v=42"></script>
-<script src="js/paper-teacher.js?v=42"></script>
-<script src="js/paper-student.js?v=42"></script>
-<script src="js/paper-focus.js?v=42"></script>
+<script src="js/ocr-teacher.js?v=43"></script>
+<script src="js/paper-teacher.js?v=43"></script>
+<script src="js/paper-student.js?v=43"></script>
+<script src="js/paper-focus.js?v=43"></script>
     <!-- 引導式出題（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=42"></script>
+    <script src="js/guide.js?v=43"></script>
 
 </body>
 </html>

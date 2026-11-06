@@ -285,7 +285,7 @@ async function ppLoadSubmissions() {
             html += "<button class='w-full text-left border rounded-lg p-2 mb-1 hover:bg-emerald-50 " +
                 (s.status === 'graded' ? 'border-emerald-300' : 'border-gray-200') + "' onclick=\"ppOpenSub(" + jsArg(s.student_id) + ")\">" +
                 "<div class='font-bold'>" + escapeHtml(s.seat ? s.seat + '號 ' : '') + escapeHtml(s.name || '(未填姓名)') + "</div>" +
-                "<div class='text-xs text-gray-500'>" + (s.score == null ? '—' : s.score) + " / " + s.max_score +
+                "<div class='text-xs text-gray-500'>" + (s.score == null ? '-' : s.score) + " / " + s.max_score +
                 (s.status === 'graded' ? ' ・已批改' : ' ・待批改') + "</div></button>";
         });
         list.innerHTML = html;
@@ -310,7 +310,7 @@ function ppRenderGrade() {
     const key = ppPaper.answerKey || {};
     let html = "<div class='flex flex-wrap items-center gap-2 mb-3'>" +
         "<div class='font-bold text-lg'>" + escapeHtml(s.seat ? s.seat + '號 ' : '') + escapeHtml(s.name || '(未填姓名)') + "</div>" +
-        "<div class='text-sm text-gray-500'>目前 " + (s.score == null ? '—' : s.score) + " / " + s.maxScore + " 分</div>" +
+        "<div class='text-sm text-gray-500'>目前 " + (s.score == null ? '-' : s.score) + " / " + s.maxScore + " 分</div>" +
         "<button class='pp-btn pp-btn-ghost ml-auto' onclick='ppAiGrade()'>🤖 AI 協助批改手寫題</button>" +
         "<button class='pp-btn pp-btn-main' onclick='ppSaveGrade()'>💾 儲存批改</button></div>" +
         "<div id='ppAiStatus' class='text-sm mb-2'></div>";
