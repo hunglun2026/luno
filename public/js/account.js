@@ -192,7 +192,9 @@
                 html += "<div class='text-sm text-gray-500'>班級代碼（給學生註冊/加入用）：<b>" + escapeHtml(u.className || '') + "</b></div>";
                 html += "<button onclick=\"closeAccountModal(); openClassHistory();\" class='lq-btn lq-btn-secondary w-full py-2'>📚 查看班級歷史</button>";
             } else if (u.role === 'student') {
-                html += "<div class='text-sm text-gray-500'>你的帳號名稱（給家長連結用）：<b>" + escapeHtml(u.username) + "</b></div>";
+                html += "<div class='lq-card p-3'><div class='text-sm font-bold mb-1'>👨‍👩‍👧 讓家長看我的作答</div>" +
+                    "<div class='text-xs text-gray-500 mb-2'>按下產生綁定碼，把 6 位數字告訴家長；家長登入後輸入就能連結。10 分鐘內有效，只能用一次。</div>" +
+                    "<div id='bindCodeBox'><button onclick='doMakeBindCode()' class='lq-btn lq-btn-secondary w-full py-2 text-sm'>產生綁定碼</button></div></div>";
                 if (u.classId) {
                     html += "<div class='text-sm text-gray-500'>班級：" + escapeHtml(u.className || '') + "</div>";
                 } else {
@@ -202,7 +204,7 @@
                 }
             } else if (u.role === 'parent') {
                 html += "<div id='parentChildrenBox'></div>";
-                html += "<div class='flex gap-2'><input id='linkChildUsername' class='lq-input' placeholder='孩子的帳號名稱'>" +
+                html += "<div class='flex gap-2'><input id='linkChildUsername' class='lq-input' inputmode='numeric' maxlength='6' placeholder='孩子產生的 6 位數綁定碼'>" +
                     "<button onclick='doLinkChild()' class='lq-btn lq-btn-primary px-4'>連結</button></div>";
             }
             html += "<button onclick='doLogout(); closeAccountModal();' class='lq-btn lq-btn-danger w-full py-2'>登出</button>";
@@ -229,15 +231,29 @@
             } catch (e) { lqAlert('加入班級失敗：' + e.message); }
         }
 
+        // 學生端:產生給家長用的 6 位綁定碼(10 分鐘、用一次)
+        async function doMakeBindCode() {
+            const box = document.getElementById('bindCodeBox');
+            if (!box) return;
+            try {
+                const res = await fetch(API_BASE + "/api/student/bind-code", { method: 'POST', headers: { 'X-Session-Token': lqGetToken() || '' } });
+                const data = await res.json();
+                if (data.error) { lqAlert(data.error.message); return; }
+                box.innerHTML = "<div class='text-center'><div style='font-size:2rem;letter-spacing:.3em;font-weight:800;'>" + escapeHtml(data.code) + "</div>" +
+                    "<div class='text-xs text-gray-500 mt-1'>10 分鐘內有效，家長輸入後就會作廢</div>" +
+                    "<button onclick='doMakeBindCode()' class='lq-btn lq-btn-ghost text-xs mt-2'>重新產生</button></div>";
+            } catch (e) { lqAlert('產生失敗：' + e.message); }
+        }
+
         async function doLinkChild() {
-            const studentUsername = document.getElementById('linkChildUsername').value.trim();
-            if (!studentUsername) return;
+            const bindCode = document.getElementById('linkChildUsername').value.trim();
+            if (!bindCode) return;
             const token = lqGetToken() || '';
             try {
                 const res = await fetch(API_BASE + "/api/parent/link-child", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Session-Token': token },
-                    body: JSON.stringify({ studentUsername })
+                    body: JSON.stringify({ bindCode })
                 });
                 const data = await res.json();
                 if (data.error) { lqAlert(data.error.message); return; }

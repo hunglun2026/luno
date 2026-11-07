@@ -6,6 +6,12 @@ const call = (env, path, opts) => worker.fetch(req(path, opts), env, {});
 const auth = (u) => ({ "X-Session-Token": u.token });
 const items = [{ q: "第一題", o: ["甲", "乙"], a: "A", e: "解析", s: 5 }];
 
+// 家長綁定孩子:孩子先產生 6 位綁定碼,家長輸入後才連結
+async function linkChild(env, student, parent, code) {
+  if (code === undefined) code = (await (await call(env, "/api/student/bind-code", { method: "POST", headers: auth(student) })).json()).code;
+  return call(env, "/api/parent/link-child", { method: "POST", body: { bindCode: code }, headers: auth(parent) });
+}
+
 // 一個老師（含班級）、一個學生、一個家長
 async function world() {
   const env = makeEnv();
@@ -63,18 +69,26 @@ describe("班級出題歷史", () => {
   });
 });
 
-describe("家長連結孩子", () => {
-  it("只有家長能連結；只能連結學生帳號，連老師帳號被擋", async () => {
+describe("家長連結孩子(要孩子產生綁定碼)", () => {
+  it("只有學生能產生綁定碼；只有家長能用它連結；連結後孩子清單看得到", async () => {
     const { env, teacher, student, parent } = await world();
-    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(student) })).status).toBe(401);
-    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "" }, headers: auth(parent) })).status).toBe(400);
-    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "teacher1" }, headers: auth(parent) })).status).toBe(404);
-    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "nobody" }, headers: auth(parent) })).status).toBe(404);
-    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "STU1" }, headers: auth(parent) })).status).toBe(200);
-    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(parent) })).status).toBe(200);   // 重複連結不報錯
+    expect((await call(env, "/api/student/bind-code", { method: "POST", headers: auth(parent) })).status).toBe(401);
+    expect((await call(env, "/api/student/bind-code", { method: "POST" })).status).toBe(401);
+    const { code } = await (await call(env, "/api/student/bind-code", { method: "POST", headers: auth(student) })).json();
+    expect(code).toMatch(/^[1-9]\d{5}$/);
+    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { bindCode: code }, headers: auth(student) })).status).toBe(401);
+    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { bindCode: "" }, headers: auth(parent) })).status).toBe(400);
+    expect((await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(parent) })).status).toBe(400);   // 只猜帳號名稱不能連結
+    expect((await linkChild(env, student, parent, code)).status).toBe(200);
+    expect((await linkChild(env, student, parent, code)).status).toBe(404);   // 綁定碼只能用一次
     const kids = await (await call(env, "/api/parent/children", { headers: auth(parent) })).json();
     expect(kids.children.map((c) => c.username)).toEqual(["stu1"]);
     expect((await call(env, "/api/parent/children", { headers: auth(teacher) })).status).toBe(401);
+  });
+  it("猜錯綁定碼每小時 10 次後被擋，連正確的也要等", async () => {
+    const { env, student, parent } = await world();
+    for (let i = 0; i < 10; i++) expect((await linkChild(env, student, parent, String(100000 + i))).status).toBe(404);
+    expect((await linkChild(env, student, parent)).status).toBe(429);
   });
 });
 
@@ -129,7 +143,7 @@ describe("即時進度與監看", () => {
     expect((await revoke({})).status).toBe(403);
     expect((await revoke(auth(student))).status).toBe(403);
     expect((await revoke(auth(parent))).status).toBe(403);     // 還沒連結
-    await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(parent) });
+    await linkChild(env, student, parent);
     expect((await revoke(auth(parent))).status).toBe(200);
     expect((await call(env, "/api/live-revoke", { method: "GET" })).status).toBe(405);
     expect((await call(env, "/api/live-revoke", { method: "POST", body: "{壞" })).status).toBe(400);
@@ -147,18 +161,18 @@ describe("即時進度與監看", () => {
     expect((await call(env, `/api/live-progress/${id}/dev-1`, { headers: { "X-Dash-Key": dashKey } })).status).toBe(200);
   });
   it("家長用孩子帳號看他正在寫的那一份；沒連結的看不到", async () => {
-    const { env, parent, teacher } = await world();
+    const { env, parent, teacher, student } = await world();
     await post(env, { ...progress, studentUsername: "stu1" });
     expect((await call(env, "/api/parent/child-live/stu1", { headers: auth(parent) })).status).toBe(403);
-    await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(parent) });
+    await linkChild(env, student, parent);
     const r = await call(env, "/api/parent/child-live/stu1", { headers: auth(parent) });
     expect((await r.json()).answered).toBe(2);
     expect((await call(env, "/api/parent/child-live/stu1", { headers: auth(teacher) })).status).toBe(401);
     expect((await call(env, "/api/parent/child-live/stu1")).status).toBe(401);
   });
   it("孩子沒有正在作答的測驗回 404", async () => {
-    const { env, parent } = await world();
-    await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(parent) });
+    const { env, parent, student } = await world();
+    await linkChild(env, student, parent);
     expect((await call(env, "/api/parent/child-live/stu1", { headers: auth(parent) })).status).toBe(404);
   });
 });
@@ -275,11 +289,11 @@ describe("超級管理員：改帳號與刪帳號", () => {
   it("刪家長或學生：連結一起清掉，不留孤兒資料", async () => {
     const { env, student, parent } = await world();
     const a = await adminOf(env);
-    await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(parent) });
+    await linkChild(env, student, parent);
     expect((await del(env, a, parent.user.id)).status).toBe(200);
     expect((await env.DB.prepare("SELECT COUNT(*) c FROM parent_child_links").first()).c).toBe(0);
     const p2 = await registerUser(worker, env, { username: "par2", role: "parent", className: undefined });
-    await call(env, "/api/parent/link-child", { method: "POST", body: { studentUsername: "stu1" }, headers: auth(p2) });
+    await linkChild(env, student, p2);
     expect((await del(env, a, student.user.id)).status).toBe(200);
     expect((await env.DB.prepare("SELECT COUNT(*) c FROM parent_child_links").first()).c).toBe(0);
   });

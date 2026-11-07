@@ -164,6 +164,9 @@ export default {
     if (url.pathname.startsWith("/api/history/")) {
       return handleHistoryDelete(request, env, url.pathname.slice("/api/history/".length));
     }
+    if (url.pathname === "/api/student/bind-code") {
+      return handleStudentBindCode(request, env);
+    }
     if (url.pathname === "/api/parent/link-child") {
       return handleParentLinkChild(request, env);
     }
@@ -1509,8 +1512,30 @@ async function handleHistoryDelete(request, env, idStr) {
 }
 
 // ==================== 家長連結孩子帳號 ====================
-// 家長輸入孩子的username即可建立連結(不需孩子核准，家庭情境從簡)，
+// 2026-11-08 起要孩子同意:孩子登入後產生 6 位綁定碼(10 分鐘有效、用一次就作廢),
+// 家長輸入綁定碼才建立連結,不能只靠猜孩子的帳號名稱。
 // 之後可以在即時監看頁面選擇要看哪個孩子的作答狀況。
+const BIND_CODE_TTL_SECONDS = 600;
+const BIND_FAIL_LIMIT_PER_HOUR = 10;
+
+async function handleStudentBindCode(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== "POST") return json({ error: { message: "Method Not Allowed" } }, 405);
+
+  const session = await verifySession(request, env);
+  if (!session || session.role !== "student") {
+    return json({ error: { message: "只有登入的學生可以產生家長綁定碼" } }, 401);
+  }
+  // 6 位數字,用密碼學亂數產生;撞到還沒過期的就重抽
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const n = crypto.getRandomValues(new Uint32Array(1))[0] % 900000 + 100000;
+    const code = String(n);
+    if (await env.COOLDOWN_KV.get("bindcode:" + code)) continue;
+    await env.COOLDOWN_KV.put("bindcode:" + code, String(session.uid), { expirationTtl: BIND_CODE_TTL_SECONDS });
+    return json({ code, expiresInSeconds: BIND_CODE_TTL_SECONDS });
+  }
+  return json({ error: { message: "請稍後再試一次" } }, 503);
+}
 
 async function handleParentLinkChild(request, env) {
   if (request.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
@@ -1523,19 +1548,29 @@ async function handleParentLinkChild(request, env) {
 
   try {
     const body = await request.json();
-    const studentUsername = normalizeUsername(body.studentUsername).slice(0, 50);
-    if (!studentUsername) return json({ error: { message: "請輸入孩子的帳號名稱" } }, 400);
+    const code = String(body.bindCode || "").replace(/\D/g, "");
+    if (code.length !== 6) return json({ error: { message: "請輸入孩子帳號上的 6 位數綁定碼" } }, 400);
 
-    const student = await env.DB.prepare("SELECT id, role FROM users WHERE lower(username) = ?").bind(studentUsername).first();
+    // 防猜碼:每位家長每小時最多猜錯 10 次
+    const failKey = "bindfail:" + session.uid + ":" + Math.floor(Date.now() / 3600000);
+    const fails = parseInt((await env.COOLDOWN_KV.get(failKey)) || "0", 10);
+    if (fails >= BIND_FAIL_LIMIT_PER_HOUR) return json({ error: { message: "輸入錯誤次數太多，請一小時後再試" } }, 429);
+
+    const studentId = await env.COOLDOWN_KV.get("bindcode:" + code);
+    const student = studentId
+      ? await env.DB.prepare("SELECT id, role, display_name FROM users WHERE id = ?").bind(Number(studentId)).first()
+      : null;
     if (!student || student.role !== "student") {
-      return json({ error: { message: "找不到這個學生帳號" } }, 404);
+      await env.COOLDOWN_KV.put(failKey, String(fails + 1), { expirationTtl: 3600 });
+      return json({ error: { message: "綁定碼不對或已過期，請孩子重新產生一組" } }, 404);
     }
+    await env.COOLDOWN_KV.delete("bindcode:" + code);   // 一次性
 
     await env.DB.prepare(
       "INSERT OR IGNORE INTO parent_child_links (parent_id, student_id) VALUES (?, ?)"
     ).bind(session.uid, student.id).run();
 
-    return json({ ok: true });
+    return json({ ok: true, displayName: student.display_name });
   } catch (err) {
     return json({ error: { message: err.message } }, 500);
   }

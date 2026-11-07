@@ -272,9 +272,9 @@
             const box = document.getElementById('parentPanel');
             box.innerHTML = "<div class='lq-card p-5'>" +
                 "<div class='font-bold text-lg mb-1'>👨‍👩‍👧 我的孩子</div>" +
-                "<div class='text-xs text-gray-500 mb-3'>連結孩子的帳號後，可以即時看到他正在寫哪一題。下方出題工具跟老師版本完全相同，可以自己幫孩子出練習卷。</div>" +
+                "<div class='text-xs text-gray-500 mb-3'>請孩子登入自己的帳號，在「我的帳號」按「產生綁定碼」，再把 6 位數字輸入下面就能連結，之後可以即時看到他正在寫哪一題。下方出題工具跟老師版本完全相同，可以自己幫孩子出練習卷。</div>" +
                 "<div id='parentPanelChildren' class='mb-3'><div class='text-sm text-gray-400'>⏳ 載入中...</div></div>" +
-                "<div class='flex gap-2'><input id='parentPanelChildInput' class='lq-input text-sm' placeholder='孩子的帳號名稱'>" +
+                "<div class='flex gap-2'><input id='parentPanelChildInput' class='lq-input text-sm' inputmode='numeric' maxlength='6' placeholder='孩子產生的 6 位數綁定碼'>" +
                 "<button onclick='parentPanelLinkChild(this)' class='lq-btn lq-btn-primary px-4 whitespace-nowrap'>連結</button></div></div>";
             loadParentPanelChildren();
         }
@@ -288,7 +288,7 @@
                 const data = await res.json();
                 const children = data.children || [];
                 if (children.length === 0) {
-                    box.innerHTML = "<div class='text-sm text-gray-400'>還沒有連結任何孩子帳號，在下面輸入孩子的帳號名稱即可連結。</div>";
+                    box.innerHTML = "<div class='text-sm text-gray-400'>還沒有連結任何孩子帳號，在下面輸入孩子產生的綁定碼即可連結。</div>";
                     return;
                 }
                 box.innerHTML = children.map(function (c) {
@@ -302,15 +302,15 @@
         }
 
         async function parentPanelLinkChild(btnEl) {
-            const studentUsername = (document.getElementById('parentPanelChildInput').value || '').trim();
-            if (!studentUsername) return;
+            const bindCode = (document.getElementById('parentPanelChildInput').value || '').trim();
+            if (!bindCode) return;
             const token = lqGetToken() || '';
             if (btnEl) btnEl.disabled = true;
             try {
                 const res = await fetch(API_BASE + "/api/parent/link-child", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Session-Token': token },
-                    body: JSON.stringify({ studentUsername: studentUsername })
+                    body: JSON.stringify({ bindCode: bindCode })
                 });
                 const data = await res.json();
                 if (data.error) { lqAlert(data.error.message); return; }
@@ -480,7 +480,7 @@
                 const data = await res.json();
                 const children = data.children || [];
                 if (children.length === 0) {
-                    renderQuizEntryParentNoLogin('這個家長帳號還沒連結任何孩子。可以先貼孩子傳來的連結，或到「我的帳號」輸入孩子的帳號名稱完成連結。');
+                    renderQuizEntryParentNoLogin('這個家長帳號還沒連結任何孩子。可以先貼孩子傳來的連結，或請孩子在「我的帳號」產生綁定碼，輸入後完成連結。');
                     return;
                 }
                 body.innerHTML = "<div class='space-y-2'>" +
