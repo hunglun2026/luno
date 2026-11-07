@@ -12,9 +12,19 @@
                 return;
             }
             try {
-                const res = await fetch(API_BASE + "/api/auth/me", { headers: { 'X-Session-Token': token } });
-                const data = await res.json();
-                if (data.error) { lqClearToken(); window.currentUser = null; }
+                // 網路抖一下或 Worker 暫時回 5xx 時重試,不要馬上當成沒登入(F5 被踢回選身分頁的可能原因)
+                let data = null;
+                for (let attempt = 0; attempt < 3 && !data; attempt++) {
+                    try {
+                        const res = await fetch(API_BASE + "/api/auth/me", { headers: { 'X-Session-Token': token } });
+                        if (res.status >= 500) throw new Error('server ' + res.status);
+                        data = await res.json();
+                    } catch (e) {
+                        if (attempt < 2) await new Promise(function (r) { setTimeout(r, 600 * (attempt + 1)); });
+                    }
+                }
+                if (!data) { window.currentUser = null; window.authCheckFailed = true; }   // 連不上:不清 token
+                else if (data.error) { lqClearToken(); window.currentUser = null; }
                 else {
                     window.currentUser = data.user;   // 要進哪個畫面由 core.js 啟動流程與 guide.js 決定
                 }

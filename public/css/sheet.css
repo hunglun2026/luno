@@ -62,6 +62,8 @@
             opacity: 0; transition: opacity 0.15s ease;
         }
         .q-item:hover .q-regen-toolbar { opacity: 1; }
+        /* 觸控裝置沒有 hover:隱形按鈕會被誤觸,改成一直看得到 */
+        @media (hover: none) { .q-item .q-regen-toolbar { opacity: 1; } }
         /* 題號欄在小螢幕只有48-56px寬，塞不下文字，收起來只留圖示(title仍看得到說明) */
         @media screen and (max-width: 820px) { .q-regen-label { display: none; } }
 

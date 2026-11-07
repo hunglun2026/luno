@@ -278,6 +278,18 @@ async function handleShareCreate(request, env) {
       });
     }
 
+    // 分數欄位會被前端串進畫面,任何人都能打這個端點,所以存進去前一律轉成數字
+    // (2026-11-08 對抗式審查:q.s 放 HTML 字串可在老師開連結時執行腳本)
+    for (const it of items) {
+      if (!it || typeof it !== "object" || Array.isArray(it)) {
+        return new Response(JSON.stringify({ error: { message: "題目格式不正確" } }), {
+          status: 400,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        });
+      }
+      if ("s" in it) it.s = Number(it.s) || 0;
+    }
+
     const payload = JSON.stringify({ items, title, createdAt: Date.now() });
     const shareSession = payload.length > SHARE_MAX_BYTES ? await verifySession(request, env) : null;
     const shareLimit = shareSession && (shareSession.role === "teacher" || shareSession.role === "superadmin") ? SHARE_MAX_BYTES_TEACHER : SHARE_MAX_BYTES;
@@ -562,8 +574,17 @@ async function handleCodeLookup(request, env, code) {
   const clean = String(code || "").replace(/\D/g, "");
   if (clean.length !== 6) return json({ error: { message: "測驗代碼是6位數字" } }, 400);
 
+  // 6 位數只有 90 萬種,擋住程式化列舉:每個 IP 每小時最多猜錯 30 次(只有猜錯才寫 KV)
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const failKey = "codefail:" + ip + ":" + Math.floor(Date.now() / 3600000);
+  const fails = parseInt((await env.COOLDOWN_KV.get(failKey)) || "0", 10);
+  if (fails >= 30) return json({ error: { message: "輸入錯誤次數太多，請一小時後再試" } }, 429);
+
   const shareId = await env.COOLDOWN_KV.get("code:" + clean);
-  if (!shareId) return json({ error: { message: "查無此測驗代碼，可能打錯或已過期(30天)" } }, 404);
+  if (!shareId) {
+    await env.COOLDOWN_KV.put(failKey, String(fails + 1), { expirationTtl: 3600 });
+    return json({ error: { message: "查無此測驗代碼，可能打錯或已過期(30天)" } }, 404);
+  }
   return json({ shareId });
 }
 

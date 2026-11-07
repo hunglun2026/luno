@@ -331,11 +331,13 @@
                         const cd = await geminiRes.json().catch(() => ({}));
                         if (cd.error && cd.error.code === 'GUEST_LIMIT') {
                             hidePracticeLoading();
+                            setGenBusy(false);   // 不先還原的話按鈕會永遠卡在「運算中」
                             await lqAlert(cd.error.message);
                             return;
                         }
                         const remaining = (cd.error && cd.error.remaining) || 30;
                         hidePracticeLoading();
+                        setGenBusy(false);   // 先收掉跑馬燈與載入動畫,再由冷卻倒數接手按鈕
                         startCooldownUI(remaining);
                         return;
                     }

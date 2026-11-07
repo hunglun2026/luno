@@ -72,7 +72,7 @@
                 }
                 let answerSpace = (!q.o || q.o.length === 0) ? "<div class='writing-space'></div>" : "";
                 box.innerHTML = regenBtnHTML(idx) +
-                    "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
+                    "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + (Number(q.s) || 0) + "分)</span></div>" +
                     qImgHtml(q) +
                     optsHTML + answerSpace;
 
@@ -103,6 +103,7 @@
 
         async function regenerateQuestion(idx, btnEl) {
             if (!window.currentItems || !window.currentItems[idx]) return;
+            if (!(await askConfirm('只換這一題?原本這題會被取代,也會用掉一次出題額度。'))) return;
             const originalLabel = btnEl.innerHTML;
             btnEl.disabled = true;
             btnEl.innerText = "⏳ 出題中...";

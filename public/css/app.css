@@ -326,6 +326,8 @@
             width: 100%; padding: 0.75rem 0.9rem; border: 1.5px solid #e2e8f0; border-radius: var(--lq-radius-sm);
             background: #fff; transition: border-color 0.15s ease, box-shadow 0.15s ease; font-size: 0.95rem;
         }
+        /* iOS Safari 聚焦字級小於 16px 的輸入框會自動放大整頁 */
+        @media (max-width: 640px) { .lq-input, select.lq-input, textarea.lq-input, .lq-input.text-sm { font-size: 16px !important; } }
         .lq-input:hover { border-color: #cbd5e1; }
         .lq-input:focus { outline: none; border-color: var(--hl-blue); box-shadow: 0 0 0 3px rgba(26,115,232,0.14); }
 

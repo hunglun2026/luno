@@ -23,6 +23,18 @@ describe("分享測驗 /api/share", () => {
     expect(JSON.parse(text).title).toBe("小考");
     expect(text).not.toContain(dashKey);
   });
+  it("題目分數 s 一律存成數字，HTML 字串不會原樣存進去（防 XSS）", async () => {
+    const env = makeEnv();
+    const evil = [{ q: "x", o: [], a: "", e: "", s: "<img src=x onerror=alert(1)>" }, { q: "y", o: [], a: "", e: "", s: "7" }];
+    const { id } = await (await call(env, "/api/share", { method: "POST", body: { items: evil } })).json();
+    const got = await (await call(env, "/api/share/" + id)).json();
+    expect(got.items[0].s).toBe(0);
+    expect(got.items[1].s).toBe(7);
+  });
+  it("題目不是物件回 400", async () => {
+    const r = await call(makeEnv(), "/api/share", { method: "POST", body: { items: ["字串", null] } });
+    expect(r.status).toBe(400);
+  });
   it("找不到的 id 回 404", async () => {
     expect((await call(makeEnv(), "/api/share/doesnotexist")).status).toBe(404);
   });
@@ -118,5 +130,18 @@ describe("其他端點", () => {
     expect((await call(env, "/api/admin/users")).status).toBe(401);
     const teacher = await registerUser(worker, env);
     expect((await call(env, "/api/admin/users", { headers: { "X-Session-Token": teacher.token } })).status).toBe(401);
+  });
+});
+
+describe("測驗代碼查詢防列舉", () => {
+  it("同一個 IP 一小時猜錯 30 次後回 429，猜對的不受影響", async () => {
+    const env = makeEnv();
+    const h = { "CF-Connecting-IP": "1.2.3.4" };
+    for (let i = 0; i < 30; i++) {
+      expect((await call(env, "/api/code/" + String(100000 + i), { headers: h })).status).toBe(404);
+    }
+    expect((await call(env, "/api/code/999999", { headers: h })).status).toBe(429);
+    // 換一個 IP 不受影響
+    expect((await call(env, "/api/code/999999", { headers: { "CF-Connecting-IP": "5.6.7.8" } })).status).toBe(404);
   });
 });

@@ -217,7 +217,7 @@
         function answerCardHtml(q, i) {
             const letters = getCorrectLetters(q);
             let html = "<div class='lq-card p-4 mb-3 ans-card' id='ans-card-" + i + "'>";
-            html += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) + " <span class='text-xs text-gray-400'>(" + q.s + "分)</span></div>" + qImgHtml(q);
+            html += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) + " <span class='text-xs text-gray-400'>(" + (Number(q.s) || 0) + "分)</span></div>" + qImgHtml(q);
             if (q.o && q.o.length > 0) {
                 const inputType = letters && letters.length > 1 ? 'checkbox' : 'radio';
                 q.o.forEach((o, oi) => {

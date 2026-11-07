@@ -33,6 +33,9 @@
                 html += "<button onclick=\"renderSplashAuthForm('" + (isLogin ? 'register' : 'login') + "')\" class='lq-btn lq-btn-ghost w-full text-sm'>" +
                     (isLogin ? '還沒有帳號？點此註冊' : '已經有帳號？點此登入') + "</button>";
             }
+            if (isLogin && kind !== 'admin') {
+                html += "<div class='text-xs text-gray-500 text-center'>忘記密碼？請聯絡你的老師或管理員協助重設。</div>";
+            }
             html += "</div>";
             document.getElementById('hlAuthFormBody').innerHTML = html;
         }

@@ -121,7 +121,7 @@
             if (key === 'notice') {
                 const c = L.code ? L.code.replace(/(\d{3})(\d{3})/, '$1 $2') : '';
                 const notice = "【" + L.title + "】線上測驗開始囉\n" +
-                    (c ? "測驗代碼：" + c + "（打開刻度首頁輸入即可）\n或是" : "") + "直接點連結作答：" + L.student + "\n作答完會自動評分，加油！";
+                    (c ? "測驗代碼：" + c + "（登入學生帳號後，在學生首頁輸入即可）\n或是" : "") + "直接點連結作答：" + L.student + "\n作答完會自動評分，加油！";
                 try {
                     await navigator.clipboard.writeText(notice);
                     if (btnEl) { const o = btnEl.textContent; btnEl.textContent = '✅ 已複製，可以貼到班級群組'; setTimeout(function () { btnEl.textContent = o; }, 2000); }

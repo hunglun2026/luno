@@ -349,6 +349,13 @@
             else enterAs('teacher');
             return;
         }
+        if (window.authCheckFailed && lqGetToken() && typeof askConfirm === 'function') {
+            // 登入憑證還在,只是這次連不上伺服器:讓使用者重試,不要直接踢去選身分頁
+            askConfirm('目前連不上伺服器,你的登入還在。要重新連線嗎?', { okText: '重新連線', cancelText: '回選身分頁' }).then(function (ok) {
+                if (ok) location.reload(); else location.replace('/start?switch=1');
+            });
+            return;
+        }
         location.replace('/start?switch=1');
     }
 
