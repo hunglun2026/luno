@@ -128,3 +128,14 @@ describe("登入與 session", () => {
     expect((await call(env, "/api/auth/me", { headers: { "X-Session-Token": forged } })).status).toBe(401);
   });
 });
+
+describe("沒設 SESSION_SECRET 時拒絕（fail closed）", () => {
+  it("註冊與登入都不發 token，帶任何 token 都視為沒登入", async () => {
+    const env = makeEnv({ SESSION_SECRET: undefined });
+    const r = await reg(env);
+    expect(r.status).toBe(500);
+    const body = await r.json();
+    expect(body.token).toBeUndefined();
+    expect((await call(env, "/api/auth/me", { headers: { "X-Session-Token": "e30=.abc" } })).status).toBe(401);
+  });
+});

@@ -365,11 +365,20 @@
                     }
                 }
 
-                finishGen(cfg, plan, allItems, parseFailBatches);
+                try { finishGen(cfg, plan, allItems, parseFailBatches); }
+                catch (fe) { fe.fromFinish = true; throw fe; }   // 整理題目時出的錯，不是缺批次，不問「先用已出好的」
             } catch (e) {
                 if (simTimer) clearInterval(simTimer);
                 hidePracticeLoading();
                 setGenBusy(false);
+                // 前面幾批已經出好、只有後面一批失敗：問老師要不要先用已出好的題目，不要整份丟掉重來（重來還要重新等冷卻）
+                if (allItems.length > 0 && !(e && e.fromFinish)) {
+                    const keep = await askConfirm('有 ' + allItems.length + ' 題已經出好了，但後面的題目沒出成功。要先用這 ' + allItems.length + ' 題嗎？', { okText: '先用這 ' + allItems.length + ' 題', cancelText: '不用，看其他選項' });
+                    if (keep) {
+                        setGenBusy(true);
+                        try { finishGen(cfg, plan, allItems, parseFailBatches); return; } catch (e2) { setGenBusy(false); }
+                    }
+                }
                 // 白話說明原因，並讓老師直接「再出一次」，不再只丟技術訊息
                 if (await askConfirm(friendlyGenError(e), { okText: '再出一次', cancelText: '回去改條件', image: 'assets/illust/gen-retry.webp' })) startGen();
             }

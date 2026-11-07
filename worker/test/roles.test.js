@@ -93,7 +93,8 @@ describe("家長連結孩子(要孩子產生綁定碼)", () => {
 });
 
 describe("即時進度與監看", () => {
-  const post = (env, body) => call(env, "/api/live-progress", { method: "POST", body });
+  // 即時進度只收真的存在的分享,測試先把假的分享代號寫進 KV
+  const post = async (env, body) => { if (body.shareId && /^[A-Za-z0-9_-]+$/.test(body.shareId)) await env.COOLDOWN_KV.put("share:" + body.shareId, "{}"); return call(env, "/api/live-progress", { method: "POST", body }); };
   const progress = { shareId: "share12345", studentId: "dev-1", studentInfo: { name: "小明", seat: "3" }, answered: 2, total: 10, answers: [{ i: 0, selected: "A" }] };
 
   it("上報要有識別碼，且只准安全字元", async () => {

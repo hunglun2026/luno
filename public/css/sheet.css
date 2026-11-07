@@ -260,3 +260,8 @@ body:has(#ansQuizBody:not(.hidden)) .lq-quiz-bottombar { padding-left: 7.2rem; }
 
 /* 題目附圖（紙本卷拍照裁下的圖形）：線上作答與 A4 試卷共用 */
 .q-img { display: block; max-width: 100%; max-height: 260px; width: auto; height: auto; margin: 6px 0 8px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; }
+
+/* 觸控裝置：年級、科目膠囊可點範圍至少 44px */
+@media (pointer: coarse) {
+  .lq-chip { min-height: 44px; }
+}

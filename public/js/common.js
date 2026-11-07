@@ -1,6 +1,25 @@
 // 鴻綸 刻度｜共用小工具：API 網址、跳脫、帳密規則。登入頁（login.html）與 App（app.html）都要用，
 // 所以從 core.js 拆出來，載入順序要在 core.js 之前（2026-11-05 改成多頁式時拆出）
 
+// 瀏覽器封鎖網站資料（無痕加嚴格設定、學校管控）時，讀 localStorage／sessionStorage 本身就會丟錯，
+// 整個 App 會停在空白。偵測到被封鎖就換成只存在這個分頁記憶體的替身：功能照常，只是重新整理後不記得。
+// 儲存正常時這段什麼都不做。（2026-11-08 對抗式審查）
+(function () {
+    ['localStorage', 'sessionStorage'].forEach(function (name) {
+        try { window[name].getItem('__lq_probe'); return; } catch (e) {}
+        var mem = {};
+        var fake = {
+            getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+            setItem: function (k, v) { mem[k] = String(v); },
+            removeItem: function (k) { delete mem[k]; },
+            clear: function () { mem = {}; },
+            key: function (i) { return Object.keys(mem)[i] || null; },
+            get length() { return Object.keys(mem).length; }
+        };
+        try { Object.defineProperty(window, name, { value: fake, configurable: true }); } catch (e) {}
+    });
+})();
+
         // 部署後端 Worker 後，請把這裡換成實際的 Worker 網址
         // 例：https://linquiz-api.<你的subdomain>.workers.dev
 const API_BASE = "https://luno-api.hunglun.com";

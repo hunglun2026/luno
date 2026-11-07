@@ -145,3 +145,20 @@ describe("測驗代碼查詢防列舉", () => {
     expect((await call(env, "/api/code/999999", { headers: { "CF-Connecting-IP": "5.6.7.8" } })).status).toBe(404);
   });
 });
+
+describe("寫入限速與即時進度驗證分享存在", () => {
+  it("同一個 IP 一小時建立分享超過 120 次回 429，換 IP 不受影響", async () => {
+    const env = makeEnv();
+    const h = { "CF-Connecting-IP": "9.9.9.9" };
+    const one = { items: items(1) };
+    for (let i = 0; i < 120; i++) await call(env, "/api/share", { method: "POST", body: one, headers: h });
+    expect((await call(env, "/api/share", { method: "POST", body: one, headers: h })).status).toBe(429);
+    expect((await call(env, "/api/share", { method: "POST", body: one, headers: { "CF-Connecting-IP": "8.8.8.8" } })).status).toBe(200);
+  });
+  it("對不存在的分享上報即時進度回 404，不寫進資料庫", async () => {
+    const env = makeEnv();
+    const r = await call(env, "/api/live-progress", { method: "POST", body: { shareId: "fakeshare99", studentId: "dev-1", answered: 1, total: 5 } });
+    expect(r.status).toBe(404);
+    expect((await env.DB.prepare("SELECT COUNT(*) c FROM live_progress").first()).c).toBe(0);
+  });
+});

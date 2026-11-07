@@ -273,3 +273,8 @@ body.guest-mode #btnAnswerMode .lq-icon { color: inherit; }
 .ld-guest, .ld-row { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .ld-guest:active, .ld-row:active { transform: scale(0.985); }
 @media (prefers-reduced-motion: reduce) { .ld-guest:active, .ld-row:active { transform: none; } }
+
+/* 觸控裝置：回上一頁、頁尾連結的可點範圍至少 44px（2026-11-08 對抗式審查） */
+@media (pointer: coarse) {
+  .ld-back, .ld-more a, .ld-more button { min-height: 44px; display: inline-flex; align-items: center; }
+}

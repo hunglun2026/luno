@@ -31,6 +31,17 @@ const GENERATE_MAX_BYTES = 20 * 1024 * 1024;
 const GENERATE_MAX_PARTS = 40;
 // 學生識別碼：裝置 ID（UUID 或 數字-隨機字串）或 u<帳號編號>，只准這些字元，不能夾 ' " / 之類
 const ID_RE = /^[A-Za-z0-9_-]{1,64}$/;
+
+// 不用登入的寫入端點(分享、結果)的每 IP 每小時上限,擋灌爆 KV 儲存。IP 來自 Cloudflare 標頭,偽造不了。
+// 學校常共用同一個對外 IP,所以上限抓寬鬆:正常用法離上限很遠。回傳 false 就是已超過。
+async function ipWriteAllowed(request, env, name, limit) {
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const key = "wl:" + name + ":" + ip + ":" + Math.floor(Date.now() / 3600000);
+  const used = parseInt((await env.COOLDOWN_KV.get(key)) || "0", 10);
+  if (used >= limit) return false;
+  await env.COOLDOWN_KV.put(key, String(used + 1), { expirationTtl: 3700 });
+  return true;
+}
 // 管理者密碼只從 secret 讀，原始碼裡不留預設值——這個 repo 是 public，
 // 寫死的預設密碼等於公開，任何人都能拿去略過冷卻、查 Key 池狀態。
 // 沒設 ADMIN_PASSWORD secret 時，管理者密碼一律視為不成立（功能停用，不是放行）。
@@ -270,6 +281,12 @@ async function handleShareCreate(request, env) {
   }
 
   try {
+    if (!(await ipWriteAllowed(request, env, "share", 120))) {
+      return new Response(JSON.stringify({ error: { message: "分享次數太多，請稍後再試" } }), {
+        status: 429,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
     const body = await request.json();
     const items = body.items;
     const title = String(body.title || "測驗").slice(0, 200);
@@ -364,6 +381,12 @@ async function handleResultCreate(request, env) {
   }
 
   try {
+    if (!(await ipWriteAllowed(request, env, "result", 300))) {
+      return new Response(JSON.stringify({ error: { message: "分享次數太多，請稍後再試" } }), {
+        status: 429,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
     const body = await request.json();
     const details = body.details;
     if (!Array.isArray(details) || details.length === 0) {
@@ -468,6 +491,14 @@ async function handleLiveProgressPost(request, env) {
     if (!ID_RE.test(shareId) || !ID_RE.test(studentId)) {
       return new Response(JSON.stringify({ error: { message: "識別碼格式不正確" } }), {
         status: 400,
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+      });
+    }
+
+    // 只收真的存在的分享(30 天內)的進度,不能對亂編的 shareId 灌資料
+    if (!(await env.COOLDOWN_KV.get("share:" + shareId))) {
+      return new Response(JSON.stringify({ error: { message: "找不到這份分享，可能已過期" } }), {
+        status: 404,
         headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
@@ -1126,6 +1157,8 @@ async function hmacSign(data, secret) {
 }
 
 async function signToken(payloadObj, secret) {
+  // 沒設 SESSION_SECRET 就拒絕簽發:空字串當金鑰等於任何人都能自簽 token(2026-11-08 對抗式審查)
+  if (!secret) throw new Error("伺服器設定不完整,暫時無法登入");
   const payload = bytesToBase64(new TextEncoder().encode(JSON.stringify(payloadObj)));
   const sig = await hmacSign(payload, secret);
   return payload + "." + sig;
@@ -1139,7 +1172,8 @@ async function verifySession(request, env) {
   if (dotIdx === -1) return null;
   const payloadB64 = token.slice(0, dotIdx);
   const sig = token.slice(dotIdx + 1);
-  const expectedSig = await hmacSign(payloadB64, env.SESSION_SECRET || "");
+  if (!env.SESSION_SECRET) return null;   // 沒設金鑰一律視為沒登入,不拿空字串驗章
+  const expectedSig = await hmacSign(payloadB64, env.SESSION_SECRET);
   if (sig !== expectedSig) return null;
   let data;
   try {
