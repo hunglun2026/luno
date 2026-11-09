@@ -184,7 +184,9 @@
                 const sel = map[i];
                 let selDisplay = '';
                 if (sel) {
-                    if (q.o && q.o.length > 0) {
+                    if (qtIsTyped(q)) {
+                        selDisplay = qtDescribe(q, sel);   // 配合題 1→C；2→A、排序題 ② → ① → ③
+                    } else if (q.o && q.o.length > 0) {
                         selDisplay = sel.split('').map(l => {
                             const idx = l.charCodeAt(0) - 65;
                             return q.o[idx] ? ('(' + l + ') ' + q.o[idx]) : l;

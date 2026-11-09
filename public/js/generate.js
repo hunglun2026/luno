@@ -27,10 +27,18 @@
         // 只擋能用程式確定的：選項不足／重複、答案對不到任何選項、解析出現邊想邊改的口氣。
         // 題目本身對不對（例如兩個選項都對）程式看不出來，靠出題提示詞規則。
         const SELF_CORRECT_RE = /選項\s*\d*\s*(寫錯|有誤)|讓我(再)?(想|檢查|重新)|重新(檢查|計算|確認)|等等[，,]|抱歉|更正[：:，,]/;
-        function vetItems(items) {
+        // wantKind：整份都要同一種新題型時（'match'／'order'），AI 回了別種題型的整題剔除
+        function vetItems(items, wantKind) {
             const kept = [];
             items.forEach(q => {
                 if (!q || typeof q.q !== 'string' || !q.q.trim()) return;
+                if (qtIsTyped(q) || q.t === 'match' || q.t === 'order') {
+                    // 配合題、排序題：用 qtypes.js 的規則檢查（項目數、重複），不走下面的選項檢查
+                    const nq = qtNormalize(q);
+                    if (nq && (!wantKind || qKind(nq) === wantKind) && !(typeof nq.e === 'string' && SELF_CORRECT_RE.test(nq.e))) kept.push(nq);
+                    return;
+                }
+                if (wantKind) return;
                 if (Array.isArray(q.o) && q.o.length > 0) {
                     const opts = q.o.map(o => String(o).trim());
                     if (opts.length < 2 || new Set(opts).size !== opts.length) return;
@@ -158,6 +166,19 @@
             }
             taskDescription += "【語言】：請務必使用「" + langVal + "」撰寫所有內容！\n\n";
             taskDescription += "【批次定位】：這是第 " + (i+1) + " 批，請僅生成【第 " + startNum + " 題 到 第 " + endNum + " 題】（共 " + currentCount + " 題）。\n";
+            const wantKind = qtWantKind(typeVal);   // 'match'／'order'／null：整份都是配合題或排序題
+            if (wantKind) {
+                // 配合題、排序題：資料格式不同，不套用下面單選／填充的說明與品質規則（格式與規則在 qtFormatRule）
+                taskDescription += "配分固定為 " + scorePerQ + " 分。\n" + qtFormatRule(wantKind, scorePerQ, currentCount);
+                const typedParts = [{ text: taskDescription }];
+                if (sType === "2" && uploadItems.length > 0) {
+                    uploadItems.filter(item => item.type === 'file').forEach(file => {
+                        typedParts.push({ inline_data: { mime_type: file.mime, data: file.data } });
+                    });
+                }
+                if (contentText) typedParts.push({ text: "\n參考內容:\n" + contentText });
+                return typedParts;
+            }
             taskDescription += "若為單/複選題，'o' 給選項，'a' 給答案；若為填充/簡答/計算題，'o' 必須且只能回傳空陣列 []，並將解答寫在 'a'！題目中預留極長的底線(________________________)供填寫。配分固定為 " + scorePerQ + " 分。\n";
             // 品質規則：2026-11-03 注音題三個選項都對、解析自相矛盾（學生選對卻被判錯）
             taskDescription += "【題目品質規則】（違反就是壞題）：\n" +
@@ -258,13 +279,13 @@
             setProgressBar(100);
 
             const rawCount = allItems.length;
-            allItems = vetItems(allItems);
+            allItems = vetItems(allItems, qtWantKind(plan.typeVal));
             if (allItems.length === 0) {
                 throw new Error("AI回傳的內容無法解析成題目格式，請重新嘗試出題一次（通常是暫時性問題）");
             }
             normalizeScores(allItems);
             if (allItems.length < rawCount) {
-                lqAlert("已自動剔除 " + (rawCount - allItems.length) + " 題有問題的題目（選項重複、答案對不到選項或解析前後矛盾）。若題數不足可以「重新出題」再試一次");
+                lqAlert("已自動剔除 " + (rawCount - allItems.length) + " 題有問題的題目（選項重複、答案對不到選項、配對或排序的項目不合格，或解析前後矛盾）。若題數不足可以「重新出題」再試一次");
             }
             if (parseFailBatches.length > 0) {
                 lqAlert("⚠️ 第 " + parseFailBatches.join("、") + " 批題目AI回傳格式異常已略過，其餘題目正常產生。若題數不足可以「重新出題」再試一次");

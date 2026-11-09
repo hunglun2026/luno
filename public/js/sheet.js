@@ -22,6 +22,7 @@
             const orig = window.currentItems[idx];
             const s = window.currentSettings || {};
             const isChoice = orig.o && orig.o.length > 0;
+            const kind = qKind(orig);
             let p = "請只出【1題】新題目，取代原本的第" + (idx+1) + "題，條件如下：\n";
             if (s.sType === '1') {
                 let pubStr = s.publisher === '由小綸自由發揮' ? '不限版本，請依一般課綱知識出題' : s.publisher;
@@ -30,11 +31,15 @@
             } else {
                 p += "請依照參考附件/資料內容出題。\n";
             }
-            p += "- 題型：" + (isChoice ? ("選擇題，共" + orig.o.length + "個選項") : "填充題或簡答題(無選項)") + "\n";
+            p += "- 題型：" + (kind === 'match' ? "配合題" : kind === 'order' ? "排序題" : isChoice ? ("選擇題，共" + orig.o.length + "個選項") : "填充題或簡答題(無選項)") + "\n";
             p += "- 配分：" + orig.s + "分\n";
             p += "【避免重複】：請勿與以下已存在的題目重複或雷同：\n";
             (window.currentItems || []).forEach((it, i) => { if (i !== idx && it && it.q) p += (i+1) + ". " + it.q + "\n"; });
             p += "\n【語言】：請務必使用「" + (s.lang || '繁體中文') + "」撰寫所有內容！\n";
+            if (kind === 'match' || kind === 'order') {
+                p += qtFormatRule(kind, orig.s, 1);   // 格式說明與批次出題共用（qtypes.js）
+                return p;
+            }
             p += '【嚴格格式要求】：必須且只能回傳合法的 JSON Array，且只包含1個物件。格式：[{"q":"題目內容","o":["選項1","選項2"],"a":"答案","e":"解析","s":' + orig.s + '}]。若為填充/簡答/計算題，"o" 必須且只能回傳空陣列 []，並將解答寫在 "a"，題目中預留底線(________________________)供填寫。';
             return p;
         }
@@ -49,6 +54,7 @@
         // 答案卷上的答案文字：選擇題用 getCorrectLetters 統一轉字母（AI 可能回字母、數字、選項全文或陣列），
         // 以前只認數字陣列，AI 回 ["A","C"] 就變成亂碼（String.fromCharCode(65+"A")）
         function answerKeyText(q) {
+            if (qtIsTyped(q)) return qtAnswerText(q);   // 配合題、排序題：每次依洗牌重算，不信任存下來的 a
             if (q.o && q.o.length > 0) {
                 const letters = getCorrectLetters(q) || [];
                 if (letters.length > 0) return letters.join('');
@@ -57,28 +63,38 @@
             return (q.a === 0 || q.a) ? String(q.a) : '(略)';
         }
 
+        // 一題在試卷上的題號前綴、選項區、作答空間（題目卷與單題重出共用，2026-11-09 從兩處重複的寫法合併）
+        function qBodyParts(q, globalNum) {
+            if (qtIsTyped(q)) return qtPaperParts(q, globalNum, escapeHtml);   // 配合題、排序題
+            const isChoice = q.o && q.o.length > 0;
+            let optsHTML = "";
+            if (isChoice) {
+                optsHTML += "<div class='q-opts'>";
+                q.o.forEach((o, oi) => {
+                    let label = String.fromCharCode(65+oi);
+                    optsHTML += "<div class='q-opt'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
+                });
+                optsHTML += "</div>";
+            }
+            return {
+                prefix: isChoice ? (globalNum + ". (　　)") : (globalNum + "."),
+                optsHTML: optsHTML,
+                answerSpace: isChoice ? "" : "<div class='writing-space'></div>"
+            };
+        }
+
         function updateQuestionDOM(idx, q) {
             let qItem = document.querySelector('.q-item[data-idx="' + idx + '"]');
             if (qItem) {
                 let box = qItem.querySelector('.q-content-box');
-                let optsHTML = "";
-                if (q.o && q.o.length > 0) {
-                    optsHTML += "<div class='q-opts'>";
-                    q.o.forEach((o, oi) => {
-                        let label = String.fromCharCode(65+oi);
-                        optsHTML += "<div class='q-opt'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
-                    });
-                    optsHTML += "</div>";
-                }
-                let answerSpace = (!q.o || q.o.length === 0) ? "<div class='writing-space'></div>" : "";
+                const parts = qBodyParts(q, idx + 1);
                 box.innerHTML = regenBtnHTML(idx) +
                     "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + (Number(q.s) || 0) + "分)</span></div>" +
                     qImgHtml(q) +
-                    optsHTML + answerSpace;
+                    parts.optsHTML + parts.answerSpace;
 
                 let numBox = qItem.querySelector('.q-num-box');
-                let globalNum = idx + 1;
-                numBox.innerHTML = (q.o && q.o.length > 0) ? (globalNum + ". (　　)") : (globalNum + ".");
+                numBox.innerHTML = parts.prefix;
             }
 
             let keyItem = document.querySelector('.key-item[data-idx="' + idx + '"]');
@@ -123,8 +139,12 @@
 
                 const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
                 const parsed = JSON.parse(cleanAiJsonText(rawText, false));
-                const newQ = Array.isArray(parsed) ? parsed[0] : parsed;
+                let newQ = Array.isArray(parsed) ? parsed[0] : parsed;
                 if (!newQ || !newQ.q) throw new Error("AI 回傳格式異常，請再試一次");
+                if (qtIsTyped(window.currentItems[idx])) {   // 配合題、排序題：換出來的也要是合格的同一種題型
+                    newQ = qtNormalize(newQ);
+                    if (!newQ) throw new Error("AI 回傳的題目格式不合格（項目數或重複），請再試一次");
+                }
 
                 window.currentItems[idx] = newQ;
                 touchItems();   // 題目變了：分享連結、線上作答畫面都要重做
@@ -182,27 +202,16 @@
 
         // 一題的試卷 HTML（qIdx 是從 0 起算的全卷題序）
         function quizItemHTML(q, qIdx) {
-            const globalNum = qIdx + 1;
-            let optsHTML = "";
-            if(q.o && q.o.length > 0) {
-                optsHTML += "<div class='q-opts'>";
-                q.o.forEach((o, oi) => {
-                    let label = String.fromCharCode(65+oi);
-                    optsHTML += "<div class='q-opt'>("+label+") "+escapeHtml(stripOptLabel(o, label))+"</div>";
-                });
-                optsHTML += "</div>";
-            }
-            const prefix = (q.o && q.o.length > 0) ? (globalNum + ". (　　)") : (globalNum + ".");
-            const answerSpace = (!q.o || q.o.length === 0) ? "<div class='writing-space'></div>" : "";
+            const parts = qBodyParts(q, qIdx + 1);
 
             return "<div class='q-item' data-idx='" + qIdx + "'>" +
-               "<div class='q-num-box'>" + prefix + "</div>" +
+               "<div class='q-num-box'>" + parts.prefix + "</div>" +
                "<div class='q-content-box'>" +
                    regenBtnHTML(qIdx) +
                    "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
                     qImgHtml(q) +
-                   optsHTML +
-                   answerSpace +
+                   parts.optsHTML +
+                   parts.answerSpace +
                "</div></div>";
         }
 

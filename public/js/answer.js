@@ -47,11 +47,13 @@
         // 即時模式下按「確認這題」才算送出(不是選了就馬上判定，避免誤按選項就被當成作答完畢)。
         // 判定後鎖住該題選項+隱藏確認按鈕，避免同一題重複送出
         function confirmAnswer(i) {
+            const typed = qtIsTyped((window.currentItems || [])[i]);   // 配合題、排序題：作答值在隱藏欄位，按鈕在 answer-qtypes.js
             const inputs = document.querySelectorAll('input[name="ans-' + i + '"]');
-            const hasSelection = Array.from(inputs).some(el => el.checked);
+            const hasSelection = typed ? !!(qtHidden(i) && qtHidden(i).value) : Array.from(inputs).some(el => el.checked);
             if (!hasSelection) { lqAlert('請先選擇答案再確認'); return; }
             gradeOneQuestion(i);
             inputs.forEach(el => el.disabled = true);
+            if (typed) lockTypedCard(i);
             const btn = document.getElementById('ans-confirm-' + i);
             if (btn) btn.style.display = 'none';
             // 確認後稍等讓學生看到對錯回饋，再把下一題帶進視線（沒有下一題就不動；偏好減少動態的人用瞬間跳）
@@ -218,7 +220,9 @@
             const letters = getCorrectLetters(q);
             let html = "<div class='lq-card p-4 mb-3 ans-card' id='ans-card-" + i + "'>";
             html += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) + " <span class='text-xs text-gray-400'>(" + (Number(q.s) || 0) + "分)</span></div>" + qImgHtml(q);
-            if (q.o && q.o.length > 0) {
+            if (qtIsTyped(q)) {
+                html += typedAnswerHtml(q, i);
+            } else if (q.o && q.o.length > 0) {
                 const inputType = letters && letters.length > 1 ? 'checkbox' : 'radio';
                 q.o.forEach((o, oi) => {
                     const label = String.fromCharCode(65 + oi);
@@ -336,7 +340,9 @@
             if (!q || !fb) return null;
             const letters = getCorrectLetters(q);
             let result;
-            if (q.o && q.o.length > 0) {
+            if (qtIsTyped(q)) {
+                result = gradeTypedQuestion(i, q, fb);   // 配合題、排序題（answer-qtypes.js）
+            } else if (q.o && q.o.length > 0) {
                 const checked = Array.from(document.querySelectorAll('input[name="ans-' + i + '"]:checked')).map(el => el.value).sort();
                 const correct = (letters || []).slice().sort();
                 const isCorrect = checked.length > 0 && checked.length === correct.length && checked.every((v, idx) => v === correct[idx]);

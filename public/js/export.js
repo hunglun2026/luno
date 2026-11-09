@@ -204,7 +204,16 @@
                     children: [new D.ImageRun({ type: 'jpg', data: q._imgData.bytes, transformation: { width: q._imgData.w, height: q._imgData.h } })]
                 }));
             }
-            if (isChoice) {
+            if (qtIsTyped(q)) {
+                // 配合題、排序題：一行一行列出（版面同題目卷），學生在括號裡填代號或順序
+                qtWordRows(q).forEach(row => {
+                    paras.push(new Paragraph({
+                        spacing: { after: 40 },
+                        indent: { left: 1080 },
+                        children: [run(row)]
+                    }));
+                });
+            } else if (isChoice) {
                 q.o.forEach((o, oi) => {
                     const label = String.fromCharCode(65 + oi);
                     paras.push(new Paragraph({
@@ -230,7 +239,8 @@
         // 解析卷裡一題的答案段落
         function docxAnswerPara(D, run, q, i) {
             let ans = q.a;
-            if (Array.isArray(q.a)) ans = q.a.map(x => String.fromCharCode(65 + x)).join('');
+            if (qtIsTyped(q)) ans = qtAnswerText(q);
+            else if (Array.isArray(q.a)) ans = q.a.map(x => String.fromCharCode(65 + x)).join('');
             else if (typeof q.a === 'number') ans = String.fromCharCode(65 + q.a);
             else ans = q.a || '(略)';
             return new D.Paragraph({

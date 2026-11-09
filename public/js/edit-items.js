@@ -19,8 +19,12 @@
         function eiFromItems(items) {
             return items.map(function (it) {
                 const hasOpts = it.o && it.o.length > 0;
+                const kind = qKind(it);   // 'match'／'order' 時，optsText 放「一行一對」或「一行一項」，答案由程式算，不讓老師填
+                const typed = kind === 'match' || kind === 'order';
                 let ans = '';
-                if (hasOpts) {
+                if (typed) {
+                    ans = '';
+                } else if (hasOpts) {
                     // 答案可能是字母、字母陣列、數字索引或整段選項文字，統一顯示成字母（A、AC）
                     try { ans = (typeof getCorrectLetters === 'function' ? getCorrectLetters(it) : []).join(''); } catch (e) { ans = ''; }
                     if (!ans) ans = answerKeyText(it) === '(略)' ? '' : String(answerKeyText(it));
@@ -29,11 +33,30 @@
                 }
                 return {
                     flag: (it.flag || []).slice(), page: it.page || '',
-                    q: it.q || '',
-                    optsText: hasOpts ? it.o.map(function (o, i) { return stripOptLabel(o, String.fromCharCode(65 + i)); }).join('\n') : '',
+                    q: it.q || '', kind: kind,
+                    optsText: typed ? qtToLines(it) : (hasOpts ? it.o.map(function (o, i) { return stripOptLabel(o, String.fromCharCode(65 + i)); }).join('\n') : ''),
                     ans: ans, e: it.e || '', s: it.s == null ? '' : it.s, orig: it
                 };
             });
+        }
+
+        // 選項那一格：選擇題與文字題用原本的說明；配合題、排序題換成各自的填法
+        function eiOptsHtml(d) {
+            let label = '選項（每行一個，不用加 A. B.；填空、簡答題請留空）', rows = 4;
+            if (d.kind === 'match') { label = '配對（每行一對，用「｜」隔開左右，例如：蘋果｜Apple；3 到 6 行；畫面上右邊會自動打亂）'; rows = 5; }
+            if (d.kind === 'order') { label = '項目（每行一個，由上到下就是正確順序；3 到 6 行；畫面上會自動打亂）'; rows = 5; }
+            return "<label class='text-xs text-gray-500'>" + escapeHtml(label) + "</label>" +
+                "<textarea class='lq-input w-full mb-2 ei-o' rows='" + rows + "' style='resize:vertical;'>" + escapeHtml(d.optsText) + "</textarea>";
+        }
+
+        // 答案那一格：配合題、排序題由程式依上面的內容自動算，不給填（留一個隱藏欄位讓 eiCollect 照常運作）
+        function eiAnsHtml(d) {
+            if (d.kind === 'match' || d.kind === 'order') {
+                return "<div style='grid-column: span 2;'><label class='text-xs text-gray-500'>答案</label>" +
+                    "<div class='text-sm text-gray-600 py-2'>由上面的內容自動算出，不用填</div><input type='hidden' class='ei-a' value=''></div>";
+            }
+            return "<div style='grid-column: span 2;'><label class='text-xs text-gray-500'>答案（選擇題填字母，例如 B 或 AC；其他題型寫答案文字）</label>" +
+                "<input class='lq-input w-full ei-a' value='" + escapeHtml(d.ans) + "'></div>";
         }
 
         function eiRender() {
@@ -53,11 +76,9 @@
                     (flagHtml ? "<div class='mb-2'>" + flagHtml + "</div>" : "") +
                     "<label class='text-xs text-gray-500'>題目</label>" +
                     "<textarea class='lq-input w-full mb-2 ei-q' rows='3' style='resize:vertical;'>" + escapeHtml(d.q) + "</textarea>" +
-                    "<label class='text-xs text-gray-500'>選項（每行一個，不用加 A. B.；填空、簡答題請留空）</label>" +
-                    "<textarea class='lq-input w-full mb-2 ei-o' rows='4' style='resize:vertical;'>" + escapeHtml(d.optsText) + "</textarea>" +
+                    eiOptsHtml(d) +
                     "<div class='grid grid-cols-3 gap-2 mb-2'>" +
-                    "<div style='grid-column: span 2;'><label class='text-xs text-gray-500'>答案（選擇題填字母，例如 B 或 AC；其他題型寫答案文字）</label>" +
-                    "<input class='lq-input w-full ei-a' value='" + escapeHtml(d.ans) + "'></div>" +
+                    eiAnsHtml(d) +
                     "<div><label class='text-xs text-gray-500'>配分</label>" +
                     "<input class='lq-input w-full ei-s' type='number' min='0' step='1' inputmode='numeric' value='" + escapeHtml(String(d.s)) + "'></div></div>" +
                     "<label class='text-xs text-gray-500'>解析</label>" +
@@ -157,6 +178,18 @@
                 const n = i + 1;
                 const q = d.q.trim();
                 if (!q) return { error: '第 ' + n + ' 題沒有題目內容' };
+                if (d.kind === 'match' || d.kind === 'order') {
+                    // 配合題、排序題：從文字框解析，再用 qtNormalize 檢查（項目數、重複），答案自動重算
+                    const parsed = qtFromLines(d.kind, d.optsText);
+                    if (parsed.error) return { error: '第 ' + n + ' 題：' + parsed.error };
+                    const score2 = Number(d.s);
+                    if (!(score2 >= 0)) return { error: '第 ' + n + ' 題的配分要是數字' };
+                    const nq = qtNormalize(Object.assign({}, d.orig || {}, { q: q, t: d.kind, l: parsed.l, r: parsed.r, e: d.e.trim(), s: score2 }));
+                    if (!nq) return { error: '第 ' + n + ' 題的項目不能重複，也不能有空白項' };
+                    if (eiOpts) { nq.flag = d.flag || []; nq.page = d.page || ''; }
+                    out.push(nq);
+                    continue;
+                }
                 const opts = d.optsText.split('\n').map(function (x) { return x.trim(); }).filter(Boolean);
                 if (opts.length === 1) return { error: '第 ' + n + ' 題只有 1 個選項：選擇題至少要 2 個選項，填空、簡答題請把選項留空' };
                 const score = Number(d.s);

@@ -80,7 +80,7 @@
 
         // 交卷後鎖住所有作答欄位並收起送出鈕：否則學生可以改答案重送
         function handoffLockAfterGrade() {
-            document.querySelectorAll('#ansQuizBody input, #ansQuizBody textarea').forEach(function (el) { el.disabled = true; });
+            document.querySelectorAll('#ansQuizBody input, #ansQuizBody textarea, #ansQuizBody .lq-typed-btn').forEach(function (el) { el.disabled = true; });
             document.querySelectorAll('#ansQuizBody button[onclick^="requestGrade"], #ansQuizBody button[onclick^="gradeAnswers"]').forEach(function (el) { el.style.display = 'none'; });
         }
 

@@ -292,7 +292,7 @@ async function ocrPublish(items, title) {
         const c = Object.assign({}, it);
         delete c.n; delete c.page; delete c.flag; delete c.fig;     // 只在審閱時用，不進分享、不存歷史
         // g：非選擇題、有參考答案的，學生交卷時請 AI 依參考答案批改（ai-grade.js、worker/src/grade.js）
-        if ((!c.o || c.o.length === 0) && String(c.a || '').trim()) c.g = 1;
+        if ((!c.o || c.o.length === 0) && !qtIsTyped(c) && String(c.a || '').trim()) c.g = 1;   // 配合題、排序題判分是確定的，不交給 AI
         return c;
     });
     const sum = clean.reduce(function (t, x) { return t + (Number(x.s) || 0); }, 0);

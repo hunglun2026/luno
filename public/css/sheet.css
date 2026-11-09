@@ -265,3 +265,36 @@ body:has(#ansQuizBody:not(.hidden)) .lq-quiz-bottombar { padding-left: 7.2rem; }
 @media (pointer: coarse) {
   .lq-chip { min-height: 44px; }
 }
+
+/* 配合題、排序題（2026-11-09，js/qtypes.js、js/answer-qtypes.js）。題目卷與作答卷永遠白底，顏色直接寫淺色 */
+.q-match { display: flex; gap: 24pt; margin: 4pt 0 2pt; }
+.q-match-col { flex: 1; min-width: 0; }
+.q-match-row { margin-bottom: 4pt; line-height: 1.5; }
+.q-match-note { font-size: 9pt; color: #666; margin-top: 2pt; }
+.q-order-ans { margin-top: 6pt; letter-spacing: 1px; }
+
+.lq-typed { margin-top: 0.4rem; }
+.lq-typed-hint { font-size: 0.8rem; color: #6b7280; margin-bottom: 0.5rem; }
+.lq-typed-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.lq-typed-col { display: flex; flex-direction: column; gap: 0.4rem; min-width: 0; }
+.lq-typed-btn { display: flex; align-items: center; gap: 0.5rem; width: 100%; min-height: 48px; padding: 0.5rem 0.7rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; background: #fff; color: #1f2937; text-align: left; font: inherit; font-size: 0.95rem; cursor: pointer; touch-action: manipulation; transition: border-color .15s, background-color .15s; }
+.lq-typed-btn:hover:not(:disabled) { border-color: #93c5fd; }
+.lq-typed-btn:disabled { cursor: default; opacity: .75; }
+.lq-typed-btn b { flex: none; display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 999px; background: #f3f4f6; font-size: 0.85rem; }
+.lq-typed-btn .qt-text { flex: 1; min-width: 0; overflow-wrap: break-word; }
+.lq-typed-btn .qt-tag { flex: none; padding: 0 0.45rem; border-radius: 999px; background: rgba(255,255,255,.85); border: 1px solid currentColor; font-size: 0.8rem; font-weight: 700; }
+.lq-typed-btn.is-sel { border-color: var(--hl-blue, #1a73e8); background: #e8f0fe; box-shadow: 0 0 0 2px #bfdbfe; }
+.lq-typed-btn.is-paired.qt-c0 { background: #e8f0fe; border-color: #1a73e8; color: #174ea6; }
+.lq-typed-btn.is-paired.qt-c1 { background: #fef3c7; border-color: #d97706; color: #92400e; }
+.lq-typed-btn.is-paired.qt-c2 { background: #dcfce7; border-color: #16a34a; color: #166534; }
+.lq-typed-btn.is-paired.qt-c3 { background: #fce7f3; border-color: #db2777; color: #9d174d; }
+.lq-typed-btn.is-paired.qt-c4 { background: #ede9fe; border-color: #7c3aed; color: #5b21b6; }
+.lq-typed-btn.is-paired.qt-c5 { background: #ccfbf1; border-color: #0d9488; color: #115e59; }
+.lq-typed-clear { width: auto; min-height: 40px; margin-top: 0.6rem; font-size: 0.85rem; color: #6b7280; justify-content: center; }
+.lq-typed-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.4rem; padding: 0.35rem 0.5rem; border: 1.5px solid #e5e7eb; border-radius: 0.75rem; background: #fff; }
+.lq-typed-row .qt-pos { flex: none; width: 1.4rem; text-align: center; font-weight: 700; color: #6b7280; }
+.lq-typed-row .qt-lab { flex: none; font-size: 1.1rem; color: #1a73e8; }
+.lq-typed-row .qt-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.lq-typed-row .qt-mv { flex: none; width: 44px; min-height: 44px; justify-content: center; padding: 0; }
+@media (max-width: 400px) { .lq-typed-cols { gap: 0.4rem; } .lq-typed-btn { gap: 0.35rem; padding: 0.4rem 0.4rem; font-size: 0.875rem; } .lq-typed-btn b { width: 1.4rem; height: 1.4rem; font-size: 0.8rem; } .lq-typed-btn .qt-tag { padding: 0 0.3rem; font-size: 0.75rem; } }
+@media print { .lq-typed { display: none; } }
