@@ -17,7 +17,8 @@
         function enterMainApp() {
             document.getElementById('lqAppbar').classList.remove('hidden');
             const u = window.currentUser;
-            const isStudent = !!(u && u.role === 'student');
+            // 沒登入但在身分頁選了「學生」（guide.js 記在 guestRole）也進學生首頁
+            const isStudent = !!(u && u.role === 'student') || (!u && window.guestRole === 'student');
             const isParent = u && u.role === 'parent';
 
             document.getElementById('studentHome').classList.toggle('hidden', !isStudent);
@@ -58,7 +59,7 @@
                 (u
                     ? "<button onclick='openAccountModal()' class='lq-btn lq-btn-secondary text-xs px-2.5 py-1.5'>👤 我的帳號</button>" +
                       "<button onclick='studentLogout()' class='lq-btn lq-btn-danger text-xs px-2.5 py-1.5'>登出</button>"
-                    : "<button onclick='openAccountModal()' class='lq-btn lq-btn-primary text-xs px-2.5 py-1.5'>登入</button>" +
+                    : "<button onclick='openIdentitySplash()' class='lq-btn lq-btn-primary text-xs px-2.5 py-1.5'>登入</button>" +
                       "<button onclick='studentLeaveHome()' class='lq-btn lq-btn-secondary text-xs px-2.5 py-1.5'>換身分</button>") +
                 "</div></div>";
         }
@@ -111,8 +112,8 @@
 
             if (!u) {
                 html += "<div class='lq-card p-3 mb-4 text-xs text-gray-500' style='border-color:#fde68a;background:#fffbeb;'>" +
-                    "登入才有：寫一題就馬上知道對不對、換手機或電腦也看得到自己的練習紀錄與分數。" +
-                    "<button onclick='openAccountModal()' class='underline font-bold' style='color:var(--hl-blue);'>現在登入</button></div>";
+                    "現在的練習紀錄只留在這台裝置。註冊學生帳號，換手機或電腦也看得到自己的紀錄與分數。" +
+                    "<button onclick='openIdentitySplash(true)' class='underline font-bold' style='color:var(--hl-blue);'>註冊或登入</button></div>";
             }
 
             html += "<img src='assets/illust/student-hero.webp' alt='' class='lq-illust lq-illust-hero' loading='lazy'>";

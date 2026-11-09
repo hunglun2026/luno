@@ -18,8 +18,16 @@
             if (link) link.classList.remove('hidden');
         }
 
-        // 頂列的「登入」「換身分」：回到選身分頁（真的換頁，瀏覽器上一頁可以回來）
-        function openIdentitySplash() {
+        // 頂列的「登入」與各處的「註冊保存」提示。
+        // 免登入使用中（window.guestRole 有值）直接帶去該身分的登入頁，from=guest 讓登入頁知道要搬這台裝置的資料；
+        // toRegister 為真時登入頁先停在註冊分頁。其餘情況回選身分頁（真的換頁，瀏覽器上一頁可以回來）
+        function openIdentitySplash(toRegister) {
+            const r = window.guestRole;
+            const loginRole = r === 'guest' ? 'teacher' : r;   // 訪客模式出的是老師的題，註冊成老師帳號最合理
+            if (loginRole === 'teacher' || loginRole === 'parent' || loginRole === 'student') {
+                location.href = '/login?role=' + loginRole + '&from=guest' + (toRegister === true ? '&mode=register' : '');
+                return;
+            }
             location.href = '/start?switch=1';
         }
 

@@ -53,9 +53,45 @@
             if (el) { el.textContent = msg; el.classList.remove('hidden'); }
         }
 
-        function splashLoginSuccess(data) {
+        // 免登入時出的卷子存在這台裝置的 lun_history。登入或註冊成為老師後，逐份存進班級歷史（既有 POST /api/history）。
+        // 成功一份就從本機移除一份，失敗的留著，所以重複登入不會重複上傳。只有老師帳號有班級歷史，家長與學生不搬。
+        // 回傳 { ok, failed }，沒有東西可搬回傳 null
+        async function migrateGuestHistory(token) {
+            let hist = [];
+            try { hist = JSON.parse(localStorage.getItem('lun_history') || '[]'); } catch (e) { return null; }
+            if (!Array.isArray(hist) || hist.length === 0) return null;
+            const left = [];
+            let ok = 0;
+            for (const h of hist.slice().reverse()) {   // 從最舊的開始存，伺服器依時間排序後新的仍在上面
+                if (!h || !Array.isArray(h.items) || h.items.length === 0) continue;
+                try {
+                    const res = await fetch(API_BASE + "/api/history", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Session-Token': token },
+                        body: JSON.stringify({ title: h.title || '未命名試卷', items: h.items })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error.message);
+                    ok++;
+                } catch (e) { left.push(h); }
+            }
+            try { localStorage.setItem('lun_history', JSON.stringify(left.reverse())); } catch (e) {}
+            return { ok, failed: left.length };
+        }
+
+        async function splashLoginSuccess(data) {
             lqSetToken(data.token);
             try { sessionStorage.removeItem(SS_ROLE); } catch (e) {}
+            if (data.user && data.user.role === 'teacher') {
+                const btn = document.querySelector('#hlAuthFormBody button.lq-btn-primary');
+                if (btn) { btn.disabled = true; btn.textContent = '正在把這台裝置的試卷存進帳號…'; }
+                const r = await migrateGuestHistory(data.token);
+                if (r && r.failed > 0) {
+                    // 沒存成的還留在這台裝置的「出題紀錄」，之後可以再開來存；停一下讓人看到再轉頁（不用瀏覽器內建 alert）
+                    showSplashAuthError('已存 ' + r.ok + ' 份，有 ' + r.failed + ' 份沒存成，還留在這台裝置的出題紀錄裡，之後可以再存一次。');
+                    await new Promise(function (done) { setTimeout(done, 2500); });
+                }
+            }
             location.href = '/app';
         }
 
@@ -103,5 +139,6 @@
             const role = new URLSearchParams(location.search).get('role');
             if (!SPLASH_ROLE_LABEL[role]) { location.replace('/start?switch=1'); return; }
             splashKind = role;
-            renderSplashAuthForm('login');
+            // 從免登入畫面按「註冊保存」來的（mode=register）先停在註冊分頁；管理員沒有註冊
+            renderSplashAuthForm(new URLSearchParams(location.search).get('mode') === 'register' ? 'register' : 'login');
         })();

@@ -224,7 +224,12 @@
                     "<p class='lq-empty-title'>還沒有出題紀錄</p>" +
                     "<p class='lq-empty-sub'>出過的卷子會留在這台裝置，換一台就看不到了</p></div>";
             } else {
-                list.innerHTML = hist.map((h, i) =>
+                // 沒登入時提醒：註冊老師帳號就會把這些卷子一起存進帳號（login.js migrateGuestHistory）
+                const saveHint = window.currentUser ? '' :
+                    "<div class='lq-card p-3 mb-3 text-xs text-gray-600' style='border-color:#fde68a;background:#fffbeb;'>" +
+                    "這些卷子只留在這台裝置。註冊老師帳號，會自動把它們存進帳號，換裝置也看得到。" +
+                    "<button onclick='openIdentitySplash(true)' class='underline font-bold' style='color:var(--hl-blue);'>註冊並保存</button></div>";
+                list.innerHTML = saveHint + hist.map((h, i) =>
                     "<div class='flex justify-between items-center bg-gray-50 p-3 rounded-xl mb-2 border border-gray-100'>" +
                     "<div class='truncate mr-2'><div class='font-bold truncate'>" + escapeHtml(h.title) + "</div><div class='text-xs text-gray-500'>" + escapeHtml(h.createdAt) + "・" + (h.items ? h.items.length : 0) + "題</div></div>" +
                     "<div class='flex gap-2 flex-shrink-0'>" +

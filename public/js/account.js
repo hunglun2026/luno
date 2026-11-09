@@ -47,7 +47,11 @@
                 statusEl.textContent = '';
             }
             const saveBtn = document.getElementById('btnSaveHistory');
-            if (saveBtn) saveBtn.classList.toggle('hidden', !(window.currentUser && window.currentUser.role === 'teacher'));
+            // 老師看得到「存入班級歷史」；沒登入的也顯示，但按下去是帶去註冊（註冊成功會把這台裝置的試卷一起存進去）
+            const canSave = !window.currentUser || window.currentUser.role === 'teacher';
+            if (saveBtn) saveBtn.classList.toggle('hidden', !canSave);
+            const saveLabel = document.getElementById('btnSaveHistoryLabel');
+            if (saveLabel) saveLabel.textContent = window.currentUser ? '存入班級歷史' : '註冊帳號，把試卷存起來';
             const adminPanelBtn = document.getElementById('superadminBtn');
             if (adminPanelBtn) adminPanelBtn.classList.toggle('hidden', !(window.currentUser && window.currentUser.role === 'superadmin'));
             refreshAnswerLoginBox();
@@ -282,7 +286,8 @@
 
         // ---- 班級歷史(老師登入後專用，每班上限50份) ----
         async function saveToClassHistory() {
-            if (!window.currentUser || window.currentUser.role !== 'teacher') return;
+            if (!window.currentUser) { openIdentitySplash(true); return; }   // 沒登入：去註冊，註冊後 login.js 會把這台裝置的試卷搬進帳號
+            if (window.currentUser.role !== 'teacher') return;
             if (!window.currentItems || window.currentItems.length === 0) { lqAlert('目前沒有題目可以存'); return; }
             const token = lqGetToken() || '';
             const title = window.docTitle || '測驗';

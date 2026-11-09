@@ -43,6 +43,8 @@
     // role：guest 訪客、teacher 教師（含管理員）、student 學生、parent 家長。
     // step：要停在老師第幾步（設定連結用 4），沒給就從第 1 步開始
     function enterAs(role, step) {
+        // 沒登入時記下這次是以什麼身分在用（home.js 判斷學生首頁、openIdentitySplash 決定登入頁用）
+        window.guestRole = window.currentUser ? null : role;
         setGuest(role === 'guest');
         forceTeacher = role === 'teacher' || role === 'guest';
         cur = step || 1;
@@ -342,7 +344,12 @@
             return;
         }
         var u = window.currentUser;
-        if (sGet(SS_ROLE) === 'guest') { enterAs('guest'); return; }
+        var picked = sGet(SS_ROLE);
+        if (picked === 'guest') { enterAs('guest'); return; }
+        // 2026-11-09：教師、家長、學生也能免登入先用。教師與家長沒登入時走訪客出題流程（家長功能與教師相同），
+        // 學生沒登入進學生首頁（輸入代碼、自己練習）。已登入的人以帳號身分為準，不看分頁記的身分
+        if (!u && (picked === 'teacher' || picked === 'parent')) { enterAs('guest'); window.guestRole = picked; return; }
+        if (!u && picked === 'student') { enterAs('student'); return; }
         if (u) {
             if (u.role === 'student') enterAs('student');
             else if (u.role === 'parent') enterAs('parent');
