@@ -82,9 +82,9 @@
         }
 
         // 上報節流：原本每答一題就送一次，30人班級考10題 = 300 次寫入，
-        // 老師只需要看出「誰卡住、誰落後」，不需要逐秒精確，所以改成 15 秒最多送一次。
-        // 第一次作答立刻送(老師才看得到「已開始作答」)，之後同一個 15 秒窗內只會在窗尾送最新狀態一次。
-        const LIVE_PUSH_INTERVAL_MS = 15000;
+        // 老師只需要看出「誰卡住、誰落後」，不需要逐秒精確，2026-11-10 起改成 1 秒最多送一次(見下方常數)。
+        // 第一次作答立刻送(老師才看得到「已開始作答」)，之後同一個時間窗內只會在窗尾送最新狀態一次。
+        const LIVE_PUSH_INTERVAL_MS = 1000; // 2026-11-10 由 15 秒縮到 1 秒：老師與家長要幾乎即時看到；沒動作就不送，不會白寫 D1
         window._livePushTimer = null;
         window._livePushLastAt = 0;
         function pushLiveProgress(immediate) {
@@ -109,7 +109,7 @@
         }
 
         // 學生把分頁關掉/切到背景時，如果還有排程中的上報就先補送，
-        // 否則老師看到的會停在 15 秒前的舊狀態
+        // 否則老師看到的會停在上一次送出的舊狀態
         window.addEventListener('pagehide', function () {
             if (window._livePushTimer) { clearTimeout(window._livePushTimer); window._livePushTimer = null; pushLiveProgressNow(); }
         });

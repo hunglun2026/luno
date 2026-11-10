@@ -240,7 +240,7 @@
                     if (window.livePollTimer) { clearInterval(window.livePollTimer); window.livePollTimer = null; }
                 } else if (!window.livePollTimer) {
                     window.liveViewRefresh();
-                    window.livePollTimer = setInterval(window.liveViewRefresh, window.livePollIntervalMs || 9000);
+                    window.livePollTimer = setInterval(window.liveViewRefresh, window.livePollIntervalMs || 3000);
                 }
             });
 
@@ -261,7 +261,7 @@
                 "<div id='liveDashboardBody'><div class='text-center text-white py-10'>⏳ 載入中...</div></div></div>";
 
             liveShowQuizCode(shareId);
-            window.livePollIntervalMs = 9000;
+            window.livePollIntervalMs = 3000;
             window.liveViewRefresh = async function() {
                 const body = document.getElementById('liveDashboardBody');
                 // 授權優先序：連結金鑰(免登入) → 老師帳號的session token → 管理者密碼(沒有前兩者時才問)
@@ -375,7 +375,7 @@
                         "<div class='lq-card p-4 text-center text-gray-500'>已停止監看，這條連結目前失效中（你自己這一頁按「恢復監看」即可重新開啟）</div>";
                 } else {
                     window.liveViewRefresh();
-                    if (!window.livePollTimer) window.livePollTimer = setInterval(window.liveViewRefresh, window.livePollIntervalMs || 9000);
+                    if (!window.livePollTimer) window.livePollTimer = setInterval(window.liveViewRefresh, window.livePollIntervalMs || 3000);
                 }
             } catch (e) {
                 lqAlert('操作失敗：' + e.message);
@@ -389,7 +389,7 @@
             const container = document.getElementById('paperContainer');
             container.innerHTML = "<div class='max-w-lg mx-auto p-4'><div id='liveParentBody'><div class='text-center text-white py-10'>⏳ 載入中...</div></div></div>";
 
-            window.livePollIntervalMs = 7000;
+            window.livePollIntervalMs = 3000;
             window.liveViewRefresh = async function() {
                 const body = document.getElementById('liveParentBody');
                 try {

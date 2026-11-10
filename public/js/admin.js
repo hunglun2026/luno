@@ -263,7 +263,7 @@
             };
             await refresh();
             if (window.proctorPollTimer) clearInterval(window.proctorPollTimer);
-            window.proctorPollTimer = setInterval(refresh, 5000);
+            window.proctorPollTimer = setInterval(refresh, 3000);
         }
 
         async function openProctorDetailParent(studentUsername) {
@@ -285,6 +285,6 @@
             };
             await refresh();
             if (window.proctorPollTimer) clearInterval(window.proctorPollTimer);
-            window.proctorPollTimer = setInterval(refresh, 5000);
+            window.proctorPollTimer = setInterval(refresh, 3000);
         }
     
