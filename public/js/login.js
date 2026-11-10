@@ -16,15 +16,17 @@
             html += "<div class='space-y-3'>";
             const credAttrs = isLogin ? "" : CRED_INPUT_ATTRS;
             html += "<input id='splashUsername' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs + ">";
-            html += "<input id='splashPassword' type='password' class='lq-input' placeholder='" + (isLogin ? '密碼' : CRED_PASS_HINT) + "'" + credAttrs + ">";
+            html += lqPwField('splashPassword', isLogin ? '密碼' : CRED_PASS_HINT, credAttrs, isLogin ? '' : 'main');
             if (!isLogin) {
-                html += "<input id='splashPasswordConfirm' type='password' class='lq-input' placeholder='再輸入一次密碼'" + credAttrs + ">";
-                html += "<input id='splashDisplayName' class='lq-input' placeholder='顯示名稱（例如：王小明）'>";
+                html += lqPwField('splashPasswordConfirm', '再輸入一次密碼', credAttrs, 'confirm');
+                const nameEg = kind === 'teacher' ? '劉德華 老師' : kind === 'parent' ? '王小明的媽媽' : '王小明';
+                html += "<input id='splashDisplayName' class='lq-input' placeholder='顯示名稱（例如：" + nameEg + "）'>";
                 if (kind === 'teacher') {
-                    html += "<input id='splashClassName' class='lq-input' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
-                    html += "<input id='splashJoinCode' class='lq-input' maxlength='10' autocapitalize='characters' placeholder='想自己設班級代碼？（選填，4 到 10 個英文字母或數字，例如 LIN602；不填系統幫你取一組好唸的）'>";
+                    html += "<div><input id='splashJoinCode' class='lq-input'" + CLASS_CODE_ATTRS + " placeholder='自訂班級代碼（選填）'>" +
+                        "<div class='lq-field-note'>" + CLASS_CODE_RULE + "。不填的話，系統幫你取一組好唸的。</div></div>";
                 } else if (kind === 'student') {
-                    html += "<input id='splashClassCode' class='lq-input' placeholder='老師給的班級代碼（選填，之後也可以在帳號頁面補填）'>";
+                    html += "<div><input id='splashClassCode' class='lq-input'" + CLASS_CODE_ATTRS + " placeholder='老師給的班級代碼（選填）'>" +
+                        "<div class='lq-field-note'>" + CLASS_CODE_RULE + "。現在不填，之後也可以在帳號頁面補填。</div></div>";
                 }
             }
             if (!isLogin) html += privacyConsentHtml();
@@ -121,13 +123,12 @@
             if (!(document.getElementById('splashPrivacyOk') || {}).checked) { showSplashAuthError('請先閱讀並勾選同意《個人資料蒐集告知》'); return; }
             const displayName = document.getElementById('splashDisplayName').value.trim();
             const role = SPLASH_ROLE_TO_API[kind];
-            const className = (document.getElementById('splashClassName') || {}).value || '';
             const classCode = (document.getElementById('splashClassCode') || {}).value || '';
             const joinCode = (document.getElementById('splashJoinCode') || {}).value || '';
             try {
                 const res = await fetch(API_BASE + "/api/auth/register", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, displayName, role, className, classCode, joinCode, privacyVersion: PRIVACY_VERSION })
+                    body: JSON.stringify({ username, password, displayName, role, classCode, joinCode, privacyVersion: PRIVACY_VERSION })
                 });
                 const data = await res.json();
                 if (data.error) { showSplashAuthError(data.error.message); return; }

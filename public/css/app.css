@@ -497,5 +497,16 @@
 .lq-input:-webkit-autofill, .lq-input:-webkit-autofill:hover, .lq-input:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0 1000px #fff inset; -webkit-text-fill-color: #1f2937; caret-color: #1f2937;
 }
+/* 密碼欄右側的眼睛（顯示／隱藏密碼）與「兩次一致」提示 */
+.lq-pw { position: relative; }
+.lq-pw .lq-input { padding-right: 2.9rem; }
+.lq-eye { position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%); width: 2.25rem; height: 2.25rem; border: 0; background: transparent; color: #64748b; border-radius: 0.5rem; cursor: pointer; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; }
+.lq-eye:hover { background: rgba(100,116,139,0.14); color: var(--hl-blue); }
+.lq-eye:focus-visible { outline: 2px solid var(--hl-blue); }
+.lq-pw-hint { font-size: 0.8rem; font-weight: 700; margin-top: 0.3rem; padding-left: 0.25rem; }
+.lq-field-note { font-size: 0.78rem; line-height: 1.5; margin-top: 0.3rem; padding-left: 0.25rem; color: #64748b; }
+.lq-pw-hint:empty { display: none; }
+.lq-pw-hint.ok { color: #059669; }
+.lq-pw-hint.bad { color: #dc2626; }
 .lq-input:disabled, .lq-input[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
 .lq-btn.lq-cta.is-working:disabled { opacity: 1; cursor: progress; }

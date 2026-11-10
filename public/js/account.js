@@ -112,19 +112,20 @@
             let html = "<div class='space-y-3'>";
             const credAttrs = isLogin ? "" : CRED_INPUT_ATTRS;
             html += "<input id='authUsername' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs + ">";
-            html += "<input id='authPassword' type='password' class='lq-input' placeholder='" + (isLogin ? '密碼' : CRED_PASS_HINT) + "'" + credAttrs + ">";
+            html += lqPwField('authPassword', isLogin ? '密碼' : CRED_PASS_HINT, credAttrs, isLogin ? '' : 'main');
             if (!isLogin) {
-                html += "<input id='authPasswordConfirm' type='password' class='lq-input' placeholder='再輸入一次密碼'" + credAttrs + ">";
-                html += "<input id='authDisplayName' class='lq-input' placeholder='顯示名稱（例如：王小明）'>";
+                html += lqPwField('authPasswordConfirm', '再輸入一次密碼', credAttrs, 'confirm');
+                html += "<input id='authDisplayName' class='lq-input' placeholder='顯示名稱（例如：王小明；老師可寫「劉德華 老師」）'>";
                 html += "<select id='authRole' class='lq-input' onchange='onAuthRoleChange()'>" +
                     "<option value=''>請選擇角色...</option>" +
                     "<option value='teacher'>老師</option>" +
                     "<option value='student'>學生</option>" +
                     "<option value='parent'>家長</option>" +
                     "</select>";
-                html += "<input id='authClassName' class='lq-input hidden' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
-                html += "<input id='authJoinCode' class='lq-input hidden' maxlength='10' autocapitalize='characters' placeholder='想自己設班級代碼？（選填，4 到 10 個英文字母或數字，例如 LIN602；不填系統幫你取一組好唸的）'>";
-                html += "<input id='authClassCode' class='lq-input hidden' placeholder='老師給的班級代碼（選填，之後也可以在帳號頁面補填）'>";
+                html += "<div id='authJoinWrap' class='hidden'><input id='authJoinCode' class='lq-input'" + CLASS_CODE_ATTRS + " placeholder='自訂班級代碼（選填）'>" +
+                    "<div class='lq-field-note'>" + CLASS_CODE_RULE + "。不填的話，系統幫你取一組好唸的。</div></div>";
+                html += "<div id='authClassWrap' class='hidden'><input id='authClassCode' class='lq-input'" + CLASS_CODE_ATTRS + " placeholder='老師給的班級代碼（選填）'>" +
+                    "<div class='lq-field-note'>" + CLASS_CODE_RULE + "。現在不填，之後也可以在帳號頁面補填。</div></div>";
                 html += "<label class='flex gap-2 items-start text-xs text-gray-600 cursor-pointer'><input type='checkbox' id='authPrivacyOk' class='mt-1'><span>我已閱讀並同意<a href='privacy.html' target='_blank' rel='noopener' class='text-blue-600 underline'>《個人資料蒐集告知》</a>。未滿 18 歲請在家長或老師陪同下註冊。</span></label>";
             }
             html += "<div id='authErrorMsg' class='text-sm text-red-600 hidden'></div>";
@@ -137,9 +138,8 @@
 
         function onAuthRoleChange() {
             const role = document.getElementById('authRole').value;
-            document.getElementById('authClassName').classList.toggle('hidden', role !== 'teacher');
-            document.getElementById('authJoinCode').classList.toggle('hidden', role !== 'teacher');
-            document.getElementById('authClassCode').classList.toggle('hidden', role !== 'student');
+            document.getElementById('authJoinWrap').classList.toggle('hidden', role !== 'teacher');
+            document.getElementById('authClassWrap').classList.toggle('hidden', role !== 'student');
         }
 
         function showAuthError(msg) {
@@ -158,13 +158,12 @@
             if (!(document.getElementById('authPrivacyOk') || {}).checked) { showAuthError('請先閱讀並勾選同意《個人資料蒐集告知》'); return; }
             const displayName = document.getElementById('authDisplayName').value.trim();
             const role = document.getElementById('authRole').value;
-            const className = (document.getElementById('authClassName') || {}).value || '';
             const classCode = (document.getElementById('authClassCode') || {}).value || '';
             const joinCode = (document.getElementById('authJoinCode') || {}).value || '';
             try {
                 const res = await fetch(API_BASE + "/api/auth/register", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, displayName, role, className, classCode, joinCode, privacyVersion: PRIVACY_VERSION })
+                    body: JSON.stringify({ username, password, displayName, role, classCode, joinCode, privacyVersion: PRIVACY_VERSION })
                 });
                 const data = await res.json();
                 if (data.error) { showAuthError(data.error.message); return; }
@@ -207,7 +206,7 @@
             } catch (e) { lqAlert('修改失敗：' + e.message); }
         }
         async function editClassCode() {
-            const v = await askText('設定你的班級代碼（4 到 10 個英文字母或數字，例如 LIN602）。\n改了之後，舊代碼就不能再用；已經加入的學生不受影響。', { value: (window.currentUser && window.currentUser.classCode) || '' });
+            const v = await askText('設定你的班級代碼（4～10 碼，英文、數字都可以，混搭也行，不分大小寫，例如 LIN602）。\n改了之後，舊代碼就不能再用；已經加入的學生不受影響。', { value: (window.currentUser && window.currentUser.classCode) || '' });
             if (v === null || v === undefined || !String(v).trim()) return;
             saveClassCode({ code: String(v).trim() });
         }
@@ -259,7 +258,7 @@
                     html += "<div class='text-sm text-gray-500'>班級：" + escapeHtml(u.className || '') + "</div>";
                 } else {
                     html += "<div class='text-sm text-gray-500'>尚未加入班級（選填，不影響作答/家長監看）</div>";
-                    html += "<div class='flex gap-2'><input id='joinClassCode' class='lq-input' placeholder='老師給的班級代碼（6 碼，例如：K7M3QX）'>" +
+                    html += "<div class='flex gap-2'><input id='joinClassCode' class='lq-input' " + CLASS_CODE_ATTRS + " placeholder='老師給的班級代碼（" + CLASS_CODE_RULE + "）'>" +
                         "<button onclick='doJoinClass()' class='lq-btn lq-btn-primary px-4'>加入</button></div>";
                 }
             } else if (u.role === 'parent') {

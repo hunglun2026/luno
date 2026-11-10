@@ -16,7 +16,7 @@
 import { handleBank, retryPendingBank } from "./bank.js";
 import { handleOcr } from "./ocr.js";
 import { handleGradeAnswer } from "./grade.js";
-import { findClassByCodeOrName, ensureClassCode, insertClass, handleSetClassCode, validateCustomCode, codeIsFree } from "./classcode.js";
+import { newClassCode, findClassByCodeOrName, ensureClassCode, insertClass, handleSetClassCode, validateCustomCode, codeIsFree } from "./classcode.js";
 import { buildStats } from "./livestats.js";
 
 const COOLDOWN_MS = 30000;
@@ -1253,17 +1253,31 @@ async function handleAuthRegister(request, env) {
     let className = "";
     let customCode = "";
     if (role === "teacher") {
+      // 2026-11-10：註冊表單不再問班級名稱（老師可能帶很多班，代碼才是識別）。舊用戶端還是可以帶 className。
       className = String(body.className || "").trim().slice(0, 50);
-      if (!className) return json({ error: { message: "老師註冊請填寫班級名稱" } }, 400);
       // 班級名稱全站唯一（舊版學生輸入名稱加入，現在仍可用）；正式的加入代碼是 classes.join_code，見 classcode.js
-      const existingClass = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(className).first();
-      if (existingClass) return json({ error: { message: "這個班級名稱已經被使用，請換一個更完整的名稱（例如加上學校或年度）" } }, 400);
+      if (className) {
+        const existingClass = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(className).first();
+        if (existingClass) return json({ error: { message: "這個班級名稱已經被使用，請換一個更完整的名稱（例如加上學校或年度）" } }, 400);
+      }
       // 老師自訂班級代碼（選填）；沒填就由系統產一組好唸的
       if (String(body.joinCode || "").trim()) {
         const v = validateCustomCode(body.joinCode);
         if (v.error) return json({ error: { message: v.error } }, 400);
         if (!(await codeIsFree(env, v.code, null))) return json({ error: { message: "這個班級代碼已經有人用了，請換一個" } }, 400);
         customCode = v.code;
+      } else if (!className) {
+        // 沒填班級名稱時要先知道代碼，名稱重複才能補代碼區分
+        for (let i = 0; i < 12 && !customCode; i++) {
+          const c = newClassCode();
+          if (await codeIsFree(env, c, null)) customCode = c;
+        }
+      }
+      if (!className) {
+        // 自動命名「<顯示名稱>的班級」；已被用走就加上代碼（班級名稱有唯一索引）
+        className = (displayName + "的班級").slice(0, 50);
+        const taken = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(className).first();
+        if (taken) className = (displayName.slice(0, 30) + "的班級（" + (customCode || newClassCode()) + "）").slice(0, 50);
       }
     } else if (role === "student" && body.classCode) {
       // 班級代碼(選填)：學生可以先註冊，之後再透過 /api/auth/join-class 補填

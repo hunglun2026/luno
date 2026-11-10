@@ -29,13 +29,23 @@ describe("註冊規則", () => {
     expect((await reg(env, { privacyVersion: "" })).status).toBe(400);
     expect((await reg(env, { privacyVersion: "昨天" })).status).toBe(400);
   });
-  it("老師要填班級名稱，班級名稱不能重複", async () => {
+  it("有帶班級名稱時名稱不能重複", async () => {
     const env = makeEnv();
-    expect((await reg(env, { className: "" })).status).toBe(400);
     expect((await reg(env)).status).toBe(200);
     const dup = await reg(env, { username: "teacher2" });
     expect(dup.status).toBe(400);
     expect((await dup.json()).error.message).toMatch(/班級名稱/);
+  });
+  it("老師註冊可以不填班級名稱：自動命名，同名顯示名稱不會撞，代碼自動發", async () => {
+    const env = makeEnv();
+    const a = await (await reg(env, { username: "t1", className: "", displayName: "劉德華 老師" })).json();
+    expect(a.user.className).toBe("劉德華 老師的班級");
+    expect(a.user.classCode).toMatch(/^[A-Z0-9]{4,10}$/);
+    const r = await reg(env, { username: "t2", className: "", displayName: "劉德華 老師" });
+    expect(r.status).toBe(200);
+    const b = await r.json();
+    expect(b.user.className).toContain(b.user.classCode);
+    expect(b.user.classCode).not.toBe(a.user.classCode);
   });
   it("帳號不分大小寫，重複註冊被擋", async () => {
     const env = makeEnv();

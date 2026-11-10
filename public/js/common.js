@@ -50,6 +50,42 @@ const PRIVACY_VERSION = '2026-11-05';
         const CRED_PASS_HINT = "密碼（6～16字，不分大小寫）";
         function lqCredFilter(el) {
             el.value = el.value.replace(/[^!-~]/g, '').slice(0, CRED_MAX_LEN);
+            lqPwCheck();
+        }
+
+        // 班級代碼的說明與輸入屬性（老師自訂、學生輸入共用）：4～10 碼，英文、數字、混搭都行，不分大小寫
+        const CLASS_CODE_RULE = "4～10 碼，英文、數字都可以，混搭也行，不分大小寫";
+        const CLASS_CODE_ATTRS = " maxlength='10' autocapitalize='characters' autocomplete='off' spellcheck='false'";
+
+        // 密碼欄：右側有眼睛可切換顯示，讓人確認自己打了什麼。confirmOf 有值代表這是「再輸入一次」，
+        // 下方即時顯示兩次是否一致（由 lqPwCheck 更新）
+        function lqPwField(id, placeholder, attrs, role) {
+            const mark = role === 'main' ? " data-pw='main'" : role === 'confirm' ? " data-pw='confirm'" : "";
+            let h = "<div><div class='lq-pw'><input id='" + id + "' type='password' class='lq-input' placeholder='" + placeholder + "'" + (attrs || '') + mark + ">" +
+                "<button type='button' class='lq-eye' aria-label='顯示密碼' title='顯示密碼' onclick='lqTogglePw(this)'><i class='ph-duotone ph-eye'></i></button></div>";
+            if (role === 'confirm') h += "<div class='lq-pw-hint' aria-live='polite'></div>";
+            return h + "</div>";
+        }
+        function lqTogglePw(btn) {
+            const input = btn.parentNode.querySelector('input');
+            const show = input.type === 'password';
+            input.type = show ? 'text' : 'password';
+            btn.setAttribute('aria-label', show ? '隱藏密碼' : '顯示密碼');
+            btn.title = show ? '隱藏密碼' : '顯示密碼';
+            btn.querySelector('i').className = 'ph-duotone ' + (show ? 'ph-eye-slash' : 'ph-eye');
+            input.focus();
+        }
+        function lqPwCheck() {
+            if (typeof document === 'undefined') return;
+            const main = document.querySelector('input[data-pw="main"]');
+            const conf = document.querySelector('input[data-pw="confirm"]');
+            if (!main || !conf) return;
+            const hint = conf.parentNode.parentNode.querySelector('.lq-pw-hint');
+            if (!hint) return;
+            if (!conf.value) { hint.textContent = ''; hint.className = 'lq-pw-hint'; return; }
+            const same = main.value === conf.value;
+            hint.textContent = same ? '✓ 兩次密碼一致' : '✗ 兩次密碼不一致';
+            hint.className = 'lq-pw-hint ' + (same ? 'ok' : 'bad');
         }
         // 回傳錯誤訊息，通過回 ''；username 傳 null 代表只檢查密碼（重設密碼用）
         function credentialInputError(username, password) {
