@@ -31,4 +31,4 @@ Allow: /
 User-agent: CCBot
 Allow: /
 
-Sitemap: https://luno.hunglun.com/sitemap.xml
+Sitemap: https://kedu.hunglun.com/sitemap.xml
