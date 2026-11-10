@@ -13,7 +13,7 @@ function typedAnswerHtml(q, i) {
     window.__qtSel[i] = null;
     return "<input type='hidden' id='ans-text-" + i + "' value=''>" +
         "<div class='lq-typed' id='qt-box-" + i + "'>" + typedBoxHtml(q, i, '') + "</div>" +
-        "<button type='button' onclick='confirmAnswer(" + i + ")' id='ans-confirm-" + i + "' class='ans-confirm-btn lq-btn lq-btn-primary text-sm px-3 py-1.5 mt-2' style='display:none;'>✅ 確認這題</button>";
+        "<button type='button' onclick='confirmAnswer(" + i + ")' id='ans-confirm-" + i + "' class='ans-confirm-btn lq-btn lq-btn-primary text-sm px-3 py-1.5 mt-2' style='display:none;'>✅ 檢查這題</button>";
 }
 
 function typedBoxHtml(q, i, value) {

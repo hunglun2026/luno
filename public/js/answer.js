@@ -197,8 +197,13 @@
             // 保留「出完題預設進線上作答」，只在最上面說明身分並給發送出口；學生從連結進來、自己練習、交接給學生時不顯示。
             const teacherPreview = !window.isSharedView && !isSelfStudent() && !(typeof handoffActive === 'function' && handoffActive());
             if (teacherPreview) {
-                html += "<div class='lq-preview-banner'><div class='lq-pb-text'><b>👀 老師預覽</b><span>學生點開你發送的連結，看到的就是下面這個畫面。</span></div>" +
-                    "<button type='button' onclick='openSendQuizModal()' class='lq-btn lq-btn-primary lq-pb-btn'>📤 發送給學生</button></div>";
+                // 三步引導：每一步一顆按鈕，主要動作（發送）用主色。2026-11-11 Steve：要引導式、更直觀
+                html += "<div class='lq-preview-banner'><div class='lq-pb-text'><b>👀 出好了！下面是學生會看到的畫面</b><span>照這三步走就可以了：</span></div>" +
+                    "<div class='lq-pb-steps'>" +
+                    "<button type='button' onclick='openEditItems()' class='lq-pb-step'><i>1</i><span class='lq-pb-ic'>✏️</span><span>看題目、<br>要改就改</span></button>" +
+                    "<button type='button' onclick='openSendQuizModal()' class='lq-pb-step is-main'><i>2</i><span class='lq-pb-ic'>📤</span><span>發送給學生</span></button>" +
+                    "<button type='button' onclick='openLiveMonitor()' class='lq-pb-step'><i>3</i><span class='lq-pb-ic'>📊</span><span>看全班<br>寫到哪</span></button>" +
+                    "</div></div>";
             }
             html += "<div class='lq-card p-6 mb-4 text-center'><h2 class='font-bold text-lg mb-1'>📱 線上作答</h2><p class='text-sm text-gray-500'>選擇/複選題會自動判分；填空/簡答題只能做文字比對，僅供參考，請自行核對。</p></div>";
 
@@ -273,7 +278,7 @@
                 // 只有選擇/複選題才需要「確認這題」按鈕(即時模式用)：原本一點選項就馬上判定，
                 // 誤按到旁邊的選項也會被當成已送出，Steve反映要有明確的送出動作才不會誤按。
                 // 是否顯示由startAnswerQuiz()依選定的模式決定(批次模式不需要,只用最下面的送出評分)
-                html += "<button type='button' onclick='confirmAnswer(" + i + ")' id='ans-confirm-" + i + "' class='ans-confirm-btn lq-btn lq-btn-primary text-sm px-3 py-1.5 mt-2' style='display:none;'>✅ 確認這題</button>";
+                html += "<button type='button' onclick='confirmAnswer(" + i + ")' id='ans-confirm-" + i + "' class='ans-confirm-btn lq-btn lq-btn-primary text-sm px-3 py-1.5 mt-2' style='display:none;'>✅ 檢查這題</button>";
             } else {
                 html += "<textarea class='lq-input mt-1' rows='2' id='ans-text-" + i + "' placeholder='請輸入答案' onblur='onTextAnswerBlur(" + i + ")'></textarea>";
             }
@@ -301,7 +306,7 @@
             html += "<nav class='lq-quiz-bottombar' aria-label='作答進度'>" +
                 "<div class='lq-bar-progress-box'><div class='lq-bar-meta'><span>已作答</span><b id='ansProgressText' aria-live='polite' aria-atomic='true'>0 / " + items.length + " 題</b></div>" +
                 "<div class='lq-bar-track'><div class='lq-bar-fill' id='ansProgressFill' style='width:0%'></div></div></div>" +
-                "<button type='button' onclick='requestGrade()' class='lq-btn lq-btn-primary lq-bar-submit'>✅ 送出評分</button></nav>";
+                "<button type='button' onclick='requestGrade()' class='lq-btn lq-btn-primary lq-bar-submit'>🏁 交卷看成績</button></nav>";
             html += "</div>";
 
             html += "</div>";
@@ -432,19 +437,22 @@
 
         // 「送出評分」按鈕入口。交接模式下學生可能亂按，送出前先提醒還有幾題沒寫（評分後不能重寫）
         async function requestGrade() {
+            const items = window.currentItems || [];
+            let blank = 0;
+            items.forEach((q, i) => {
+                if (q.o && q.o.length > 0) {
+                    if (!document.querySelector('input[name="ans-' + i + '"]:checked')) blank++;
+                } else {
+                    const t = document.getElementById('ans-text-' + i);
+                    if (!t || !t.value.trim()) blank++;
+                }
+            });
             if (handoffActive()) {
-                const items = window.currentItems || [];
-                let blank = 0;
-                items.forEach((q, i) => {
-                    if (q.o && q.o.length > 0) {
-                        if (!document.querySelector('input[name="ans-' + i + '"]:checked')) blank++;
-                    } else {
-                        const t = document.getElementById('ans-text-' + i);
-                        if (!t || !t.value.trim()) blank++;
-                    }
-                });
                 const msg = blank > 0 ? ('還有 ' + blank + ' 題沒寫，確定要交卷嗎？交卷後就不能再修改。') : '確定要交卷嗎？交卷後就不能再修改。';
                 if (!(await askConfirm(msg))) return;
+            } else if (blank > 0) {
+                // 2026-11-11：一般作答也要提醒（以前只有交接模式會問，漏寫的題目直接算 0 分，學生以為還能補）
+                if (!(await askConfirm('還有 ' + blank + ' 題沒寫，現在交卷這幾題會算沒答。', { okText: '現在交卷', cancelText: '回去寫' }))) return;
             }
             gradeAnswers();
         }

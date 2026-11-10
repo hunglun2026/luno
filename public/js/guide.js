@@ -15,7 +15,7 @@
     var GUEST_MAX = 20;                  // 訪客一份最多幾題
 
     var STEP_INFO = {
-        1: { title: '要怎麼出題？', hint: '選一種方式，下一步就開始填條件' },
+        1: { title: '要怎麼出題？', hint: '選一種方式，再按下面的「下一步」' },
         2: { title: '選年級和科目', hint: '兩個都選好，按下面亮起的「下一步」' },
         3: { title: '版本和範圍', hint: '都可以不填：不選版本就依一般課綱，範圍空白就是整冊' },
         4: { title: '題數、題型、難度', hint: '都有預設值，看一眼沒問題就出題' }
@@ -148,10 +148,8 @@
 
     function bindStepEvents() {
         // 選出題方式：點完卡片（既有 toggleSource 先跑）直接到下一步；紙本卷會自己切到原卷畫面
-        ['btnSourceAI', 'btnSourceFile'].forEach(function (id) {
-            var el = $(id);
-            if (el) el.addEventListener('click', function () { if (cur === 1) setTimeout(function () { go(2); }, 150); });
-        });
+        // 2026-11-11：卡片點下去只是「選」，不再 150 毫秒後自動跳走；第 1 步也看得到「下一步」，
+        // 每一步都用同一個位置的同一顆按鈕前進（以前第 1 步沒有按鈕、第 2 步才出現，使用者找不到下一步在哪）
 
         // 年級、科目選好後不再自動跳下一步（2026-11-05：點錯會被瞬間帶走）；
         // 改由「下一步」按鈕亮起來（is-ready）引導視線，讓使用者自己確認
@@ -215,9 +213,8 @@
         if (sum) sum.innerHTML = '<span>這次出題：</span>' + escapeHtml(summaryText());
 
         $('lgNext').hidden = cur === 4;
-        $('lgNext').classList.toggle('is-ready', cur === 2 && step2Ok());
+        $('lgNext').classList.toggle('is-ready', cur === 1 || (cur === 2 && step2Ok()));
         $('lgNext').classList.toggle('lg-wait', cur === 2 && !step2Ok());
-        $('lgNext').classList.toggle('lg-off', cur === 1); // 第一步點卡片就會往下，不需要下一步
         $('lgPrev').textContent = '← 回上一頁';
     }
 

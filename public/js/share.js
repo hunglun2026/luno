@@ -215,7 +215,7 @@
                 if (btnQuiz) btnQuiz.classList.add('hidden');
                 if (btnKey) btnKey.classList.add('hidden');
                 if (btnAnswerMode) btnAnswerMode.classList.add('hidden');
-                if (hintText) hintText.textContent = "📱 請完成以下題目，作答完按「送出評分」";
+                if (hintText) hintText.textContent = "📱 請完成以下題目，作答完按「交卷看成績」";
             } else {
                 if (btnAnswerMode) btnAnswerMode.classList.add('hidden');
                 if (hintText) hintText.textContent = "👨‍👩‍👧 家長答案檢視（僅供查看，內容不可編輯）";
