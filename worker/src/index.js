@@ -314,7 +314,9 @@ async function handleShareCreate(request, env) {
       if ("s" in it) it.s = Number(it.s) || 0;
     }
 
-    const payload = JSON.stringify({ items, title, createdAt: Date.now() });
+    // 學生作答方式由老師／家長決定（instant＝每題即時反饋，batch＝全部寫完再送出）；沒帶的舊分享一律當 batch
+    const mode = body.mode === "instant" ? "instant" : "batch";
+    const payload = JSON.stringify({ items, title, mode, createdAt: Date.now() });
     const shareSession = payload.length > SHARE_MAX_BYTES ? await verifySession(request, env) : null;
     const shareLimit = shareSession && (shareSession.role === "teacher" || shareSession.role === "superadmin") ? SHARE_MAX_BYTES_TEACHER : SHARE_MAX_BYTES;
     if (payload.length > shareLimit) {

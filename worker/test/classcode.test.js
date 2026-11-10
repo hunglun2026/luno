@@ -162,3 +162,17 @@ describe("老師自訂班級代碼", () => {
     expect((await call(env, "/api/class/code", { method: "GET", headers: auth(t) })).status).toBe(405);
   });
 });
+
+describe("分享存下老師設定的作答方式", () => {
+  const items = [{ q: "第一題", o: ["甲", "乙"], a: "A", e: "解析", s: 5 }];
+  it("mode=instant 存起來，學生讀得到；沒帶或亂帶一律 batch", async () => {
+    const env = makeEnv();
+    const get = async (id) => (await (await call(env, "/api/share/" + id)).json());
+    const a = await (await call(env, "/api/share", { method: "POST", body: { items, mode: "instant" } })).json();
+    expect((await get(a.id)).mode).toBe("instant");
+    const b = await (await call(env, "/api/share", { method: "POST", body: { items } })).json();
+    expect((await get(b.id)).mode).toBe("batch");
+    const c = await (await call(env, "/api/share", { method: "POST", body: { items, mode: "<script>" } })).json();
+    expect((await get(c.id)).mode).toBe("batch");
+  });
+});

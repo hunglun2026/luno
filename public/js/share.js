@@ -178,6 +178,7 @@
                 if (data.error) throw new Error(data.error.message);
 
                 window.currentItems = mathClean(data.items);
+                window.sharedGradeMode = data.mode === 'instant' ? 'instant' : 'batch';   // 老師設定的作答方式，學生不能改
                 window.currentSettings = { sType: '1' };
 
                 renderPaperFixed(data.items, data.title);

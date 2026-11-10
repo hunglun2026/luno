@@ -40,8 +40,25 @@
         function getGradeMode() {
             // 交接模式（家長／教師把手機遞給學生）一律「全部寫完再送出」，不逐題公布對錯與解析
             if (handoffActive()) return 'batch';
+            // 學生從老師／家長的連結進來：一律照分享時設定的方式，不能自己選
+            if (window.isSharedView && window.sharedMode === 'student') return window.sharedGradeMode === 'instant' ? 'instant' : 'batch';
             const el = document.querySelector('input[name="ansGradeMode"]:checked');
-            return el ? el.value : 'instant';
+            if (el) return el.value;
+            // 學生自己練習沒有老師可以問：登入了就即時反饋，沒登入就寫完再送出
+            if (isSelfStudent()) return window.currentUser ? 'instant' : 'batch';
+            return 'instant';
+        }
+
+        // 學生（登入或免登入練習）都不選作答方式
+        function isSelfStudent() {
+            return !!((window.currentUser && window.currentUser.role === 'student') || window.guestRole === 'student' || window.practiceMode);
+        }
+
+        // 老師／家長在作答頁選的「學生作答方式」，發送測驗時存進分享；還沒進作答頁就用上次選的，預設即時反饋
+        function teacherGradeMode() {
+            const el = document.querySelector('input[name="ansGradeMode"]:checked');
+            if (el) return el.value === 'batch' ? 'batch' : 'instant';
+            return window.teacherGradeModePref === 'batch' ? 'batch' : 'instant';
         }
 
         // 即時模式下按「確認這題」才算送出(不是選了就馬上判定，避免誤按選項就被當成作答完畢)。
@@ -184,13 +201,17 @@
                 html += "<div id='ansLoginBox'>" + buildAnswerLoginBoxHtml() + "</div>";
             }
 
-            html += "<div class='lq-card p-4 mb-4'>" +
+            // 已登入的學生：姓名、班級帳號裡就有，整塊不顯示，直接帶帳號資料（老師看全班進度時仍認得出是誰）
+            const loggedStudent = !!(window.currentUser && window.currentUser.role === 'student');
+            const stuName = loggedStudent ? escapeHtml(window.currentUser.displayName || '') : '';
+            const stuClass = loggedStudent ? escapeHtml(window.currentUser.className || '') : '';
+            html += "<div class='lq-card p-4 mb-4" + (loggedStudent ? " hidden" : "") + "' id='ansInfoBox'>" +
                 "<div class='text-sm text-gray-500 mb-2'>👤 填寫資料（選填，方便老師/家長核對是誰寫的）</div>" +
                 "<div class='grid grid-cols-2 sm:grid-cols-4 gap-2'>" +
                 "<input id='ansStuGrade' placeholder='年級' class='lq-input text-sm py-1.5'>" +
-                "<input id='ansStuClass' placeholder='班級' class='lq-input text-sm py-1.5'>" +
+                "<input id='ansStuClass' placeholder='班級' value='" + stuClass + "' class='lq-input text-sm py-1.5'>" +
                 "<input id='ansStuSeat' placeholder='座號' class='lq-input text-sm py-1.5'>" +
-                "<input id='ansStuName' placeholder='姓名' class='lq-input text-sm py-1.5'>" +
+                "<input id='ansStuName' placeholder='姓名' value='" + stuName + "' class='lq-input text-sm py-1.5'>" +
                 "</div>" +
                 "<div style='font-size:0.75rem;color:#5f6368;margin-top:0.5rem;line-height:1.5;'>這些資料只給出這份測驗的老師或家長看，用途與保存期限見<a href='privacy.html' target='_blank' rel='noopener' style='color:#1A73E8;text-decoration:underline;'>個人資料蒐集告知</a>。不想填可以留空。</div></div>";
 
@@ -198,12 +219,19 @@
             // 未登入者只給「全部寫完再送出」，並直接告訴他登入就能解鎖
             // 老師／訪客自己預覽（不是學生從連結進來）也開放，才看得到學生會看到的即時回饋
             const canInstant = !!window.currentUser || !window.isSharedView;
+            const modeNow = getGradeMode();
+            if ((window.isSharedView && window.sharedMode === 'student') || isSelfStudent()) {
+                // 學生不再自己選：照老師／家長發送時的設定（自己練習則登入即時反饋、沒登入寫完再送出）
+                html += "<div class='text-center text-sm text-gray-600 mb-4' id='ansModeBox'>作答方式：" +
+                    (modeNow === 'instant' ? "⚡ 每題答完馬上看對錯" : "📋 全部寫完再送出，最後一起看結果") + "</div>";
+            } else
             html += "<div class='lq-card p-4 mb-5' id='ansModeBox'>" +
-                "<div class='text-sm text-gray-500 mb-3 text-center font-semibold'>請選擇作答模式</div>" +
+                "<div class='text-sm text-gray-500 mb-1 text-center font-semibold'>學生作答方式</div>" +
+                "<div class='text-xs text-gray-400 mb-3 text-center'>發送測驗給學生時，會照這裡選的方式作答</div>" +
                 "<div class='flex items-center justify-center gap-4 sm:gap-6 text-sm flex-wrap'>" +
                 "<label class='flex items-center gap-1.5 font-semibold " + (canInstant ? "cursor-pointer" : "opacity-50 cursor-not-allowed") + "'>" +
-                    "<input type='radio' name='ansGradeMode' value='instant'" + (canInstant ? " checked" : " disabled") + "> ⚡ 即時反饋（每題答完馬上看對錯）" + (canInstant ? "" : "🔒") + "</label>" +
-                "<label class='flex items-center gap-1.5 cursor-pointer font-semibold'><input type='radio' name='ansGradeMode' value='batch'" + (canInstant ? "" : " checked") + "> 📋 全部寫完再送出（最後一起看結果）</label>" +
+                    "<input type='radio' name='ansGradeMode' value='instant' onchange=\"window.teacherGradeModePref=this.value\"" + (window.teacherGradeModePref === 'batch' ? "" : (canInstant ? " checked" : " disabled")) + "> ⚡ 即時反饋（每題答完馬上看對錯）" + (canInstant ? "" : "🔒") + "</label>" +
+                "<label class='flex items-center gap-1.5 cursor-pointer font-semibold'><input type='radio' name='ansGradeMode' value='batch' onchange=\"window.teacherGradeModePref=this.value\"" + (window.teacherGradeModePref === 'batch' || !canInstant ? " checked" : "") + "> 📋 全部寫完再送出（最後一起看結果）</label>" +
                 "</div>" +
                 (canInstant ? "" :
                     "<div class='text-xs text-gray-500 text-center mt-3'>想寫一題就馬上知道對不對？登入帳號就能用，分數也會存進你自己的紀錄。" +

@@ -521,18 +521,20 @@
         // 這樣即時進度儀表板才能跟真正分享給學生的那個連結對上號。用currentItems的參考位址判斷是不是同一份，
         // 換題目(重新出題)後currentItems會變成新陣列，快取自然失效，下次分享會產生新的shareId
         async function getOrCreateShareId() {
-            if (window.lastShareId && window.lastShareItemsRef === window.currentItems && window.lastShareVersion === (window.itemsVersion || 0)) {
+            const wantMode = teacherGradeMode();
+            if (window.lastShareId && window.lastShareItemsRef === window.currentItems && window.lastShareVersion === (window.itemsVersion || 0) && window.lastShareMode === wantMode) {
                 return window.lastShareId;
             }
             const title = window.docTitle || '測驗';
             const res = await fetch(API_BASE + "/api/share", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-Session-Token': lqGetToken() || '' },
-                body: JSON.stringify({ items: window.currentItems, title })
+                body: JSON.stringify({ items: window.currentItems, title, mode: wantMode })
             });
             const data = await res.json();
             if (data.error) throw new Error(data.error.message);
             window.lastShareId = data.id;
+            window.lastShareMode = wantMode;
             // 儀表板金鑰：只有出題這一端拿得到，老師不登入也能看全班進度；學生手上的作答連結沒有這把key
             window.lastShareDashKey = data.dashKey || '';
             window.lastShareItemsRef = window.currentItems;

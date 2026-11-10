@@ -117,7 +117,7 @@
         function setGenBusy(on) {
             const btn = document.getElementById('btnGo');
             btn.disabled = on;
-            btn.innerText = on ? "⏳ 運算中..." : "🚀 開始出題";
+            btn.innerText = on ? "✏️ 小度 努力出題中..." : "🚀 開始出題";
             // 運算中直接亮四色跑馬燈邊框：這時按鈕是disabled，滑鼠移過去也不會觸發hover特效
             btn.classList.toggle('is-working', on);
             document.getElementById('barBox').classList.toggle('hidden', !on);

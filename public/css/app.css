@@ -491,3 +491,11 @@
 .lq-send-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.9rem; }
 .lq-send-tab { flex: 1; min-height: 44px; padding: 0.4rem 0.3rem; border: 1.5px solid var(--hl-border, #e5e7eb); border-radius: 0.75rem; background: transparent; color: var(--hl-text-secondary, #6b7280); font-weight: 700; font-size: 0.85rem; cursor: pointer; }
 .lq-send-tab.is-on { border-color: var(--hl-blue, #1a73e8); background: var(--hl-blue, #1a73e8); color: #fff; }
+
+/* 2026-11-10：瀏覽器自動填入的輸入框不要變成灰藍底（原本白字壓灰底很難看）；停用的輸入框用淡灰底深灰字；
+   出題中的按鈕保持鮮豔，不要被一般停用樣式壓成半透明灰 */
+.lq-input:-webkit-autofill, .lq-input:-webkit-autofill:hover, .lq-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #fff inset; -webkit-text-fill-color: #1f2937; caret-color: #1f2937;
+}
+.lq-input:disabled, .lq-input[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+.lq-btn.lq-cta.is-working:disabled { opacity: 1; cursor: progress; }

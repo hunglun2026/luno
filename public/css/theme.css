@@ -114,3 +114,8 @@
 [data-theme="dark"] #answerModeContainer .lq-card { background: #fff; color: #1f2937; border-color: #e5e7eb; }
 [data-theme="dark"] #answerModeContainer .lq-input { background: #fff; color: #1f2937; border-color: #d1d5db; }
 [data-theme="dark"] #answerModeContainer .lq-ans-opt { color: #1f2937; }
+
+[data-theme="dark"] .lq-input:-webkit-autofill, [data-theme="dark"] .lq-input:-webkit-autofill:hover, [data-theme="dark"] .lq-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #0d1730 inset; -webkit-text-fill-color: #e5e7eb; caret-color: #e5e7eb;
+}
+[data-theme="dark"] .lq-input:disabled, [data-theme="dark"] .lq-input[readonly] { background: #14203d; color: #94a3b8; }
