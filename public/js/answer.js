@@ -63,11 +63,19 @@
 
         // 即時模式下按「確認這題」才算送出(不是選了就馬上判定，避免誤按選項就被當成作答完畢)。
         // 判定後鎖住該題選項+隱藏確認按鈕，避免同一題重複送出
-        function confirmAnswer(i) {
+        async function confirmAnswer(i) {
             const typed = qtIsTyped((window.currentItems || [])[i]);   // 配合題、排序題：作答值在隱藏欄位，按鈕在 answer-qtypes.js
             const inputs = document.querySelectorAll('input[name="ans-' + i + '"]');
             const hasSelection = typed ? !!(qtHidden(i) && qtHidden(i).value) : Array.from(inputs).some(el => el.checked);
             if (!hasSelection) { lqAlert('請先選擇答案再確認'); return; }
+            // 學生版：答案在伺服器，先送去判分才有對錯可以顯示（送出期間鎖住按鈕，避免連按）
+            if (serverGradeOn()) {
+                const cbtn = document.getElementById('ans-confirm-' + i);
+                if (cbtn) cbtn.disabled = true;
+                const ok = await serverGradeFetch([i]);
+                if (cbtn) cbtn.disabled = false;
+                if (!ok) { lqAlert('連線不穩，這題還沒送出去，請再按一次「檢查這題」。'); return; }
+            }
             gradeOneQuestion(i);
             inputs.forEach(el => el.disabled = true);
             if (typed) lockTypedCard(i);
@@ -267,7 +275,7 @@
             if (qtIsTyped(q)) {
                 html += typedAnswerHtml(q, i);
             } else if (q.o && q.o.length > 0) {
-                const inputType = letters && letters.length > 1 ? 'checkbox' : 'radio';
+                const inputType = (q.m || (letters && letters.length > 1)) ? 'checkbox' : 'radio';   // q.m：學生版題目沒有答案，伺服器另外標了是複選題
                 q.o.forEach((o, oi) => {
                     const label = String.fromCharCode(65 + oi);
                     html += "<label class='lq-ans-opt flex items-center gap-2 cursor-pointer'>" +
@@ -410,6 +418,12 @@
             const q = items[i];
             const fb = document.getElementById('ans-feedback-' + i);
             if (!q || !fb) return null;
+            // 學生版：用伺服器判好的結果（server-grade.js），本機沒有答案可以算
+            if (serverGradeOn()) {
+                const sr = gradeFromServer(i, q, fb);
+                if (sr) { window.gradedDetails = window.gradedDetails || {}; window.gradedDetails[i] = sr; }
+                return sr;
+            }
             const letters = getCorrectLetters(q);
             let result;
             if (qtIsTyped(q)) {
@@ -476,6 +490,17 @@
             pushLiveProgress(true);
             const items = window.currentItems || [];
             let totalScore = 0, maxScore = 0, needReview = 0;
+            // 學生版：先把還沒判過的題目送去伺服器判分（失敗就停在這裡，學生可以再按一次交卷，作答內容不會掉）
+            if (serverGradeOn()) {
+                if (window.__grading) return;
+                window.__grading = true;
+                const submitBtn = document.querySelector('.lq-bar-submit');
+                if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = '⏳ 評分中…'; }
+                const ok = await serverGradeFetch(items.map(function (_, i) { return i; }));
+                window.__grading = false;
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = '🏁 交卷看成績'; }
+                if (!ok) { lqAlert('連線不穩，還沒交卷成功。你的答案都還在，請再按一次「交卷看成績」。'); return; }
+            }
             window.gradedDetails = {};
             items.forEach((q, i) => { gradeOneQuestion(i); });
             // 填空、簡答：標了 g 的題目（紙本卷拍照轉題目）請 AI 依參考答案批改，失敗或次數用完就維持文字比對（ai-grade.js）

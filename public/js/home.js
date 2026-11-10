@@ -537,6 +537,7 @@
             window.lastShareMode = wantMode;
             // 儀表板金鑰：只有出題這一端拿得到，老師不登入也能看全班進度；學生手上的作答連結沒有這把key
             window.lastShareDashKey = data.dashKey || '';
+            window.lastShareAnsKey = data.ansKey || '';   // 家長答案連結要帶這把，沒帶的人只拿得到不含答案的題目
             window.lastShareItemsRef = window.currentItems;
             window.lastShareVersion = window.itemsVersion || 0;   // 之後題目被編輯過（版本變了）就要重發新連結
             return data.id;

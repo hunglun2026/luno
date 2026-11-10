@@ -76,7 +76,7 @@
                 const shareId = await getOrCreateShareId();
                 const base = location.origin + location.pathname;
                 const studentUrl = base + "?share=" + shareId + "&mode=student";
-                const parentUrl = base + "?share=" + shareId + "&mode=key";
+                const parentUrl = base + "?share=" + shareId + "&mode=key" + (window.lastShareAnsKey ? ("&ak=" + window.lastShareAnsKey) : "");
                 const dashUrl = liveDashboardUrl(shareId);
 
                 // 代碼要登入才產得出來，失敗不影響其他三個出口，所以單獨 try
@@ -185,10 +185,13 @@
             document.getElementById('paperContainer').innerHTML = "<div class='text-center text-white py-20 text-lg'>⏳ 載入題目中...</div>";
 
             try {
-                const res = await fetch(API_BASE + "/api/share/" + encodeURIComponent(shareId));
+                // 家長答案連結帶 ak（答案金鑰）才拿得到答案；學生連結沒有，題目不含答案，作答後才由伺服器判分
+                const ak = params.get('ak');
+                const res = await fetch(API_BASE + "/api/share/" + encodeURIComponent(shareId) + (ak ? ("?ak=" + encodeURIComponent(ak)) : ""));
                 const data = await res.json();
                 if (data.error) throw new Error(data.error.message);
 
+                window.shareStripped = !!data.stripped;
                 window.currentItems = mathClean(data.items);
                 window.sharedGradeMode = data.mode === 'instant' ? 'instant' : 'batch';   // 老師設定的作答方式，學生不能改
                 window.currentSettings = { sType: '1' };
@@ -198,6 +201,9 @@
 
                 switchSheet(window.sharedMode === 'student' ? 'answer' : 'key');
                 applySharedViewChrome();
+                if (window.sharedMode === 'key' && window.shareStripped) {
+                    lqAlert('這條家長連結缺少答案金鑰，看不到答案。請老師在「發送給學生」視窗的「家長與老師」頁籤重新複製家長連結。');
+                }
             } catch (e) {
                 document.getElementById('paperContainer').innerHTML = "<div class='text-center text-white py-20 text-lg'>❌ 載入失敗：" + escapeHtml(e.message) + "</div>";
             }

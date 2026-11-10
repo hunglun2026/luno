@@ -18,6 +18,7 @@ import { handleOcr } from "./ocr.js";
 import { handleGradeAnswer } from "./grade.js";
 import { newClassCode, findClassByCodeOrName, ensureClassCode, insertClass, handleSetClassCode, validateCustomCode, codeIsFree } from "./classcode.js";
 import { buildStats } from "./livestats.js";
+import { publicShare, gradeShareAnswers } from "./sharegrade.js";
 
 const COOLDOWN_MS = 30000;
 // 一次出題（第 0 批通過冷卻後）最多還能打幾次後續批次／重試；用完要重新走冷卻。
@@ -122,6 +123,9 @@ export default {
     }
     if (url.pathname === "/api/share" && request.method !== "GET") {
       return handleShareCreate(request, env);
+    }
+    if (url.pathname === "/api/share-grade") {
+      return handleShareGrade(request, env);
     }
     if (url.pathname.startsWith("/api/share/")) {
       return handleShareGet(request, env, url.pathname.slice("/api/share/".length));
@@ -339,7 +343,11 @@ async function handleShareCreate(request, env) {
     const dashKey = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
     await env.COOLDOWN_KV.put("dashkey:" + id, dashKey, { expirationTtl: SHARE_TTL_SECONDS });
 
-    return new Response(JSON.stringify({ id, dashKey }), {
+    // 答案金鑰：沒有它拿到的是「不含答案」的學生版題目（見 handleShareGet）；家長答案連結才帶這把
+    const ansKey = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
+    await env.COOLDOWN_KV.put("anskey:" + id, ansKey, { expirationTtl: SHARE_TTL_SECONDS });
+
+    return new Response(JSON.stringify({ id, dashKey, ansKey }), {
       status: 200,
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
@@ -370,10 +378,48 @@ async function handleShareGet(request, env, id) {
     });
   }
 
+  // 2026-11-11：學生版不含答案與解析，答案要在作答（送到 /api/share-grade 判分）之後才公布。
+  // 有答案金鑰（家長答案連結）、儀表板金鑰（老師）、管理者密碼才給完整內容。
+  // 沒有 anskey 的是這個改版之前發出去的舊分享，維持原樣（最多 30 天自然過期）。
+  const ansKeyStored = await env.COOLDOWN_KV.get("anskey:" + id);
+  if (ansKeyStored) {
+    const url = new URL(request.url);
+    const given = request.headers.get("X-Ans-Key") || url.searchParams.get("ak") || "";
+    const full = (given && given === ansKeyStored) || (await hasValidDashKey(request, env, id)) || adminPassMatches(request, env);
+    if (!full) {
+      let share;
+      try { share = JSON.parse(raw); } catch (e) { share = null; }
+      if (share) {
+        return new Response(JSON.stringify(publicShare(share)), {
+          status: 200,
+          headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+        });
+      }
+    }
+  }
+
   return new Response(raw, {
     status: 200,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
+}
+
+// 學生作答後送來判分：只回「這次送來的題目」的對錯、正確答案與解析，所以學生在交卷或按「檢查這題」之前拿不到答案。
+// 舊分享（沒有 anskey）前端仍在本機判分，這裡一樣可以用。
+async function handleShareGrade(request, env) {
+  if (request.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== "POST") return json({ error: { message: "Method Not Allowed" } }, 405);
+  let body;
+  try { body = await request.json(); } catch (e) { return json({ error: { message: "格式不正確" } }, 400); }
+  const shareId = String((body && body.shareId) || "").trim();
+  if (!shareId || !ID_RE.test(shareId)) return json({ error: { message: "缺少或不正確的shareId" } }, 400);
+  const answers = Array.isArray(body.answers) ? body.answers.slice(0, 200) : [];
+  if (answers.length === 0) return json({ error: { message: "沒有要判分的答案" } }, 400);
+  const raw = await env.COOLDOWN_KV.get("share:" + shareId);
+  if (!raw) return json({ error: { message: "找不到這份分享內容，可能已過期" } }, 404);
+  let share;
+  try { share = JSON.parse(raw); } catch (e) { return json({ error: { message: "分享內容損毀" } }, 500); }
+  return json({ results: gradeShareAnswers(share.items || [], answers) });
 }
 
 // 學生線上作答完成後，把評分結果(含選填的學生資料)存進KV,產生短ID,

@@ -48,6 +48,8 @@ function qtHash(str) {
 // 洗牌結果 perm：畫面第 p 個位置放的是原本第 perm[p] 個。保證不等於原順序（不然排序題一開始就是答案）
 function qtShuffle(q) {
     const n = q.l.length;
+    // 學生版（伺服器不送答案）：伺服器已經把 l／r 洗好再送，畫面順序就是送來的順序（pre:1），這裡不能再洗一次
+    if (q.pre) { const id = []; for (let k = 0; k < n; k++) id.push(k); return id; }
     let st = qtHash([q.t, q.q, q.l.join('|'), (q.r || []).join('|')].join('\u0001'));
     const rnd = function () {
         st = (st + 0x6D2B79F5) | 0;
@@ -67,6 +69,7 @@ function qtShuffle(q) {
 
 // 正確答案的人看得懂的寫法：配合題 1→C；2→A；3→B　排序題 ② → ① → ③（標號是畫面上洗牌後的標號）
 function qtAnswerText(q) {
+    if (q.pre) return '(判分後才會公布)';   // 學生版題目沒有正確配對，不能自己算
     const perm = qtShuffle(q);
     if (q.t === 'match') {
         return q.l.map(function (_, i) { return (i + 1) + '→' + QT_LABELS[perm.indexOf(i)]; }).join('；');
