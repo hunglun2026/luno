@@ -91,7 +91,7 @@
                 let cardHtml = "";
                 if (code) {
                     cardHtml += "<div class='lq-card p-4 text-center mb-4' style='border:2px solid var(--hl-blue);'>" +
-                        "<div class='text-xs text-gray-500 mb-1'>課堂上最快的方式：報這組代碼，學生在首頁輸入就進得去</div>" +
+                        "<div class='text-xs text-gray-500 mb-1'>課堂上最快的方式：報這組代碼。學生打開刻度（" + escapeHtml(location.host) + "）→ 按「學生」→ 輸入代碼，就進得去，不用登入</div>" +
                         "<div class='font-black' style='font-size:2.6rem; letter-spacing:0.15em; color:var(--hl-blue);'>" + escapeHtml(code.replace(/(\d{3})(\d{3})/, '$1 $2')) + "</div>" +
                         "<div class='flex gap-2 justify-center mt-3'>" +
                         "<button onclick=\"copySendQuizItem('code', this)\" class='lq-btn lq-btn-primary text-sm px-3 py-1.5'>複製代碼</button>" +
@@ -99,7 +99,7 @@
                         "</div></div>";
                 }
                 const panes = {
-                    student: "<button onclick=\"copySendQuizItem('notice', this)\" class='lq-btn lq-btn-primary w-full py-3 mb-3 font-bold'>📋 複製班級公告（含代碼與連結）</button>" + "<div class='mb-3'></div>" + sendQuizRow('student', '🎓 學生作答連結', '傳給學生（LINE／Google Classroom）。開啟直接線上作答＋自動評分。適合練習與平時小考，不適合正式考試（會用開發者工具的學生查得到答案）。'),
+                    student: "<div class='lq-card p-3 mb-3 text-sm' style='line-height:1.7;'><b>學生會這樣考（不用登入）</b><br>點開連結 → 填姓名座號（可以不填）→ 按「開始測驗」→ 寫完按「交卷看成績」，馬上看到分數與解析。</div>" + "<button onclick=\"copySendQuizItem('notice', this)\" class='lq-btn lq-btn-primary w-full py-3 mb-3 font-bold'>📋 複製班級公告（含代碼與連結）</button>" + "<div class='mb-3'></div>" + sendQuizRow('student', '🎓 學生作答連結', '傳給學生（LINE／Google Classroom）。開啟直接線上作答＋自動評分。適合練習與平時小考，不適合正式考試（會用開發者工具的學生查得到答案）。'),
                     class: cardHtml || "<div class='lq-card p-4 text-sm text-gray-500'>這次沒有產生測驗代碼（需要登入），請改用「傳給學生」的連結。</div>",
                     adult: sendQuizRow('parent', '👨‍👩‍👧 家長答案連結', '傳給家長。可以看題目、答案與解析，唯讀不能改。') + sendQuizRow('dash', '📊 老師即時進度儀表板', '你自己留著。開啟不用登入就能看全班進度，所以<b class="text-red-600">不要轉給學生或貼到班級群組</b>。')
                 };
@@ -139,8 +139,12 @@
             const labels = { code: '測驗代碼', student: '學生作答連結', parent: '家長答案連結', dash: '即時進度儀表板(老師用，勿外流)' };
             if (key === 'notice') {
                 const c = L.code ? L.code.replace(/(\d{3})(\d{3})/, '$1 $2') : '';
-                const notice = "【" + L.title + "】線上測驗開始囉\n" +
-                    (c ? "測驗代碼：" + c + "（登入學生帳號後，在學生首頁輸入即可）\n或是" : "") + "直接點連結作答：" + L.student + "\n作答完會自動評分，加油！";
+                // 2026-11-11：學生看公告要一眼知道怎麼做。最簡單是點連結（不用登入）；代碼是備案（打開刻度、按學生、輸入）
+                const site = location.origin + "/";
+                const notice = "【" + L.title + "】線上測驗開始囉！\n\n" +
+                    "👉 最簡單：直接點連結，不用登入就能作答\n" + L.student + "\n" +
+                    (c ? "\n或是用代碼：打開 " + site + " → 按「學生」→ 輸入代碼 " + c + "\n" : "") +
+                    "\n寫完按「交卷看成績」，會自動評分。加油！";
                 try {
                     await navigator.clipboard.writeText(notice);
                     if (btnEl) { const o = btnEl.textContent; btnEl.textContent = '✅ 已複製，可以貼到班級群組'; setTimeout(function () { btnEl.textContent = o; }, 2000); }
@@ -149,7 +153,9 @@
             }
             const value = L[key] || '';
             if (!value) return;
-            const text = key === 'code' ? value : "【" + L.title + "】" + labels[key] + "\n" + value;
+            let text = key === 'code' ? value : "【" + L.title + "】" + labels[key] + "\n" + value;
+            // 學生連結單獨貼出去時，要讓學生知道點了會發生什麼事
+            if (key === 'student') text = "【" + L.title + "】線上測驗\n點開連結就能作答，不用登入：\n" + value + "\n寫完按「交卷看成績」，會自動評分。";
             const original = btnEl ? btnEl.textContent : '';
             try {
                 await navigator.clipboard.writeText(text);
