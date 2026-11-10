@@ -121,7 +121,7 @@
                     "<option value='parent'>家長</option>" +
                     "</select>";
                 html += "<input id='authClassName' class='lq-input hidden' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
-                html += "<input id='authClassCode' class='lq-input hidden' placeholder='老師的班級名稱（選填，之後也可以在帳號頁面補填）'>";
+                html += "<input id='authClassCode' class='lq-input hidden' placeholder='老師給的班級代碼（選填，之後也可以在帳號頁面補填）'>";
                 html += "<label class='flex gap-2 items-start text-xs text-gray-600 cursor-pointer'><input type='checkbox' id='authPrivacyOk' class='mt-1'><span>我已閱讀並同意<a href='privacy.html' target='_blank' rel='noopener' class='text-blue-600 underline'>《個人資料蒐集告知》</a>。未滿 18 歲請在家長或老師陪同下註冊。</span></label>";
             }
             html += "<div id='authErrorMsg' class='text-sm text-red-600 hidden'></div>";
@@ -187,13 +187,29 @@
             } catch (e) { showAuthError('登入失敗：' + e.message); }
         }
 
+        // 複製班級代碼：瀏覽器不給剪貼簿權限時不假裝成功
+        function copyClassCode(code, btn) {
+            if (!(navigator.clipboard && navigator.clipboard.writeText)) return;
+            navigator.clipboard.writeText(code).then(function () {
+                btn.textContent = '已複製';
+                setTimeout(function () { btn.textContent = '複製代碼'; }, 1500);
+            }, function () {});
+        }
+
         async function renderAccountLoggedInBody() {
             const u = window.currentUser;
             document.getElementById('accountModalTitle').textContent = '👤 我的帳號';
             let html = "<div class='space-y-3'>";
             html += "<div class='lq-card p-3 text-sm'><b>" + escapeHtml(u.displayName) + "</b>（" + escapeHtml(u.username) + "）</div>";
             if (u.role === 'teacher') {
-                html += "<div class='text-sm text-gray-500'>班級代碼（給學生註冊/加入用）：<b>" + escapeHtml(u.className || '') + "</b></div>";
+                // 給學生的加入代碼：大字、可複製；後端沒給代碼（舊版）時退回顯示班級名稱，學生輸入名稱一樣能加入
+                const joinCode = u.classCode || '';
+                html += "<div class='lq-card p-3 text-center'>" +
+                    "<div class='text-xs text-gray-500 mb-1'>班級代碼（學生註冊或加入班級時輸入）</div>" +
+                    "<div class='font-black' style='font-size:2rem; letter-spacing:0.18em; color:var(--hl-blue);'>" + escapeHtml(joinCode || u.className || '') + "</div>" +
+                    "<div class='text-xs text-gray-500 mt-1'>班級：" + escapeHtml(u.className || '') + "</div>" +
+                    (joinCode ? "<button type='button' onclick=\"copyClassCode('" + escapeHtml(joinCode) + "', this)\" class='lq-btn lq-btn-secondary text-xs px-3 py-1 mt-2'>複製代碼</button>" : "") +
+                    "</div>";
                 html += "<button onclick=\"closeAccountModal(); openClassHistory();\" class='lq-btn lq-btn-secondary w-full py-2'>📚 查看班級歷史</button>";
             } else if (u.role === 'student') {
                 html += "<div class='lq-card p-3'><div class='text-sm font-bold mb-1'>👨‍👩‍👧 讓家長看我的作答</div>" +
@@ -203,7 +219,7 @@
                     html += "<div class='text-sm text-gray-500'>班級：" + escapeHtml(u.className || '') + "</div>";
                 } else {
                     html += "<div class='text-sm text-gray-500'>尚未加入班級（選填，不影響作答/家長監看）</div>";
-                    html += "<div class='flex gap-2'><input id='joinClassCode' class='lq-input' placeholder='老師的班級名稱（例如：六年1班）'>" +
+                    html += "<div class='flex gap-2'><input id='joinClassCode' class='lq-input' placeholder='老師給的班級代碼（6 碼，例如：K7M3QX）'>" +
                         "<button onclick='doJoinClass()' class='lq-btn lq-btn-primary px-4'>加入</button></div>";
                 }
             } else if (u.role === 'parent') {

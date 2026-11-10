@@ -16,6 +16,7 @@
 import { handleBank, retryPendingBank } from "./bank.js";
 import { handleOcr } from "./ocr.js";
 import { handleGradeAnswer } from "./grade.js";
+import { findClassByCodeOrName, ensureClassCode, insertClass } from "./classcode.js";
 
 const COOLDOWN_MS = 30000;
 // 一次出題（第 0 批通過冷卻後）最多還能打幾次後續批次／重試；用完要重新走冷卻。
@@ -1216,14 +1217,13 @@ async function handleAuthRegister(request, env) {
     if (role === "teacher") {
       className = String(body.className || "").trim().slice(0, 50);
       if (!className) return json({ error: { message: "老師註冊請填寫班級名稱" } }, 400);
-      // 班級名稱本身就是學生加入班級用的代碼(如「六年1班」)，必須全站唯一才能拿來查找
+      // 班級名稱全站唯一（舊版學生輸入名稱加入，現在仍可用）；正式的加入代碼是 classes.join_code，見 classcode.js
       const existingClass = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(className).first();
       if (existingClass) return json({ error: { message: "這個班級名稱已經被使用，請換一個更完整的名稱（例如加上學校或年度）" } }, 400);
     } else if (role === "student" && body.classCode) {
       // 班級代碼(選填)：學生可以先註冊，之後再透過 /api/auth/join-class 補填
-      const classCode = String(body.classCode || "").trim().slice(0, 50);
-      const cls = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(classCode).first();
-      if (!cls) return json({ error: { message: "找不到這個班級代碼，請跟老師確認名稱是否正確" } }, 400);
+      const cls = await findClassByCodeOrName(env, body.classCode);
+      if (!cls) return json({ error: { message: "找不到這個班級代碼，請跟老師確認代碼是否正確" } }, 400);
       classId = cls.id;
     }
 
@@ -1242,15 +1242,13 @@ async function handleAuthRegister(request, env) {
     const userId = insertUser.meta.last_row_id;
 
     if (role === "teacher") {
-      const clsInsert = await env.DB.prepare(
-        "INSERT INTO classes (name, teacher_id, created_at) VALUES (?, ?, ?)"
-      ).bind(className, userId, now).run();
-      classId = clsInsert.meta.last_row_id;
+      classId = await insertClass(env, className, userId, now);
       await env.DB.prepare("UPDATE users SET class_id = ? WHERE id = ?").bind(classId, userId).run();
     }
 
     const token = await signToken({ uid: userId, role, exp: now + SESSION_TTL_SECONDS * 1000 }, env.SESSION_SECRET || "");
-    return json({ token, user: { id: userId, username, role, displayName, classId, className: role === "teacher" ? className : null } });
+    const classCode = role === "teacher" && classId ? await ensureClassCode(env, classId) : null;
+    return json({ token, user: { id: userId, username, role, displayName, classId, className: role === "teacher" ? className : null, classCode } });
   } catch (err) {
     return json({ error: { message: err.message } }, 500);
   }
@@ -1301,9 +1299,10 @@ async function handleAuthLogin(request, env) {
       const cls = await env.DB.prepare("SELECT name FROM classes WHERE id = ?").bind(user.class_id).first();
       className = cls ? cls.name : null;
     }
+    const classCode = user.role === "teacher" && user.class_id ? await ensureClassCode(env, user.class_id) : null;
     return json({
       token,
-      user: { id: user.id, username: user.username, role: user.role, displayName: user.display_name, classId: user.class_id, className },
+      user: { id: user.id, username: user.username, role: user.role, displayName: user.display_name, classId: user.class_id, className, classCode },
     });
   } catch (err) {
     return json({ error: { message: err.message } }, 500);
@@ -1415,6 +1414,7 @@ async function handleAuthMe(request, env) {
     const cls = await env.DB.prepare("SELECT name FROM classes WHERE id = ?").bind(user.class_id).first();
     className = cls ? cls.name : null;
   }
+  const classCode = user.role === "teacher" && user.class_id ? await ensureClassCode(env, user.class_id) : null;
 
   return json({
     user: {
@@ -1424,6 +1424,7 @@ async function handleAuthMe(request, env) {
       displayName: user.display_name,
       classId: user.class_id,
       className,
+      classCode,
     },
   });
 }
@@ -1439,10 +1440,9 @@ async function handleAuthJoinClass(request, env) {
 
   try {
     const body = await request.json();
-    const classCode = String(body.classCode || "").trim().slice(0, 50);
-    if (!classCode) return json({ error: { message: "請輸入班級代碼" } }, 400);
-    const cls = await env.DB.prepare("SELECT id, name FROM classes WHERE name = ?").bind(classCode).first();
-    if (!cls) return json({ error: { message: "找不到這個班級代碼，請跟老師確認名稱是否正確" } }, 400);
+    if (!String(body.classCode || "").trim()) return json({ error: { message: "請輸入班級代碼" } }, 400);
+    const cls = await findClassByCodeOrName(env, body.classCode);
+    if (!cls) return json({ error: { message: "找不到這個班級代碼，請跟老師確認代碼是否正確" } }, 400);
 
     await env.DB.prepare("UPDATE users SET class_id = ? WHERE id = ?").bind(cls.id, session.uid).run();
     return json({ classId: cls.id, className: cls.name });
@@ -1751,10 +1751,7 @@ async function handleAdminUsersCreate(request, env) {
     const userId = insertUser.meta.last_row_id;
 
     if (role === "teacher") {
-      const clsInsert = await env.DB.prepare(
-        "INSERT INTO classes (name, teacher_id, created_at) VALUES (?, ?, ?)"
-      ).bind(className, userId, now).run();
-      classId = clsInsert.meta.last_row_id;
+      classId = await insertClass(env, className, userId, now);
       await env.DB.prepare("UPDATE users SET class_id = ? WHERE id = ?").bind(classId, userId).run();
     }
 

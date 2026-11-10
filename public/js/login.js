@@ -23,7 +23,7 @@
                 if (kind === 'teacher') {
                     html += "<input id='splashClassName' class='lq-input' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
                 } else if (kind === 'student') {
-                    html += "<input id='splashClassCode' class='lq-input' placeholder='老師的班級名稱（選填，之後也可以在帳號頁面補填）'>";
+                    html += "<input id='splashClassCode' class='lq-input' placeholder='老師給的班級代碼（選填，之後也可以在帳號頁面補填）'>";
                 }
             }
             if (!isLogin) html += privacyConsentHtml();
