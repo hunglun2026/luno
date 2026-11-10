@@ -358,7 +358,7 @@
             if (students.length === 0) {
                 body.innerHTML = "<div class='lq-card p-4 text-center text-gray-500'>" +
                     "<img src='assets/illust/waiting-students.webp' alt='' class='lq-illust' style='max-width:15rem' width='640' height='480' loading='lazy'>" +
-                    "還沒有學生進來。學生按下「開始測驗」就會出現在這裡。<br>若學生已經進去了還是空的：請確認他用的是「發送給學生」視窗現在顯示的代碼或連結（改過題目或作答方式後要重新發送）</div>";
+                    "還沒有學生進來。學生一點開連結或輸入代碼進來，就會出現在這裡。<br>若學生已經進去了還是空的：請確認他用的是「發送給學生」視窗現在顯示的代碼或連結（改過題目或作答方式後要重新發送）</div>";
                 return;
             }
             students.sort((a, b) => (b.answered || 0) - (a.answered || 0));
@@ -368,11 +368,11 @@
                 const answered = Number(s.answered) || 0;
                 const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
                 const infoParts = [s.grade, s.className, s.seat ? ('座號' + s.seat) : '', s.name].filter(Boolean);
-                const infoLine = infoParts.length > 0 ? infoParts.map(escapeHtml).join('・') : '(未填寫姓名)';
+                const infoLine = infoParts.length > 0 ? infoParts.map(escapeHtml).join('・') : '（剛進來，還沒輸入名字）';
                 html += "<div class='lq-card p-3 mb-2'>" +
                     "<div class='flex items-center justify-between mb-1'><span class='font-semibold text-sm'>" + infoLine + "</span>" +
                     "<button onclick=\"openProctorDetailTeacher(" + jsArg(shareId) + "," + jsArg(s.studentId) + ")\" class='lq-btn lq-btn-secondary text-xs px-2 py-1'>🔍 查看詳情</button></div>" +
-                    "<div class='flex items-center justify-between mb-1'><span class='text-xs text-gray-400'>" + (answered === 0 ? "已進入，還沒答題　" : "") + answered + " / " + total + " 題</span></div>" +
+                    "<div class='flex items-center justify-between mb-1'><span class='text-xs text-gray-400'>" + (answered === 0 ? "已加入，還沒答題　" : "") + answered + " / " + total + " 題</span></div>" +
                     "<div class='h-2 w-full bg-gray-200 rounded-full overflow-hidden'><div class='progress-bar' style='width:" + pct + "%;height:100%;'></div></div>" +
                     "</div>";
             });
@@ -439,7 +439,7 @@
                     const pct = total > 0 ? Math.round((answered / total) * 100) : 0;
                     const s = data.studentInfo || {};
                     const infoParts = [s.grade, s.className, s.seat ? ('座號' + s.seat) : '', s.name].filter(Boolean);
-                    const infoLine = infoParts.length > 0 ? infoParts.map(escapeHtml).join('・') : '(未填寫姓名)';
+                    const infoLine = infoParts.length > 0 ? infoParts.map(escapeHtml).join('・') : '（剛進來，還沒輸入名字）';
                     body.innerHTML = "<div class='lq-card p-6 text-center'>" +
                         "<div class='text-sm text-gray-500 mb-1'>👀 即時作答進度</div>" +
                         "<div class='font-bold mb-3'>" + infoLine + "</div>" +

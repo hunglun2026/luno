@@ -218,13 +218,13 @@
             const stuName = loggedStudent ? escapeHtml(window.currentUser.displayName || '') : '';
             const stuClass = loggedStudent ? escapeHtml(window.currentUser.className || '') : '';
             // 老師預覽也不顯示（欄位還在 DOM，自己試寫與進度上報照樣讀得到空值）
-            html += "<div class='lq-card p-4 mb-4" + (loggedStudent || teacherPreview ? " hidden" : "") + "' id='ansInfoBox' onchange='pushLiveProgress()'>" +
-                "<div class='text-sm text-gray-500 mb-2'>👤 填寫資料（選填，方便老師/家長核對是誰寫的）</div>" +
+            html += "<div class='lq-card p-4 mb-4" + (loggedStudent || teacherPreview ? " hidden" : "") + "' id='ansInfoBox' oninput='pushLiveProgress()'>" +
+                "<div class='text-sm mb-2' style='" + (window.isSharedView ? "font-weight:700;color:var(--hl-blue);" : "color:#6b7280;") + "'>👤 " + (window.isSharedView ? "先輸入你的姓名或暱稱（必填），老師才知道是誰在寫" : "填寫資料（選填，方便老師/家長核對是誰寫的）") + "</div>" +
                 "<div class='grid grid-cols-2 sm:grid-cols-4 gap-2'>" +
                 "<input id='ansStuGrade' placeholder='年級' class='lq-input text-sm py-1.5'>" +
                 "<input id='ansStuClass' placeholder='班級' value='" + stuClass + "' class='lq-input text-sm py-1.5'>" +
                 "<input id='ansStuSeat' placeholder='座號' class='lq-input text-sm py-1.5'>" +
-                "<input id='ansStuName' placeholder='姓名' value='" + stuName + "' class='lq-input text-sm py-1.5'>" +
+                "<input id='ansStuName' placeholder='" + (window.isSharedView ? "姓名或暱稱（必填）" : "姓名") + "' maxlength='20' value='" + stuName + "' class='lq-input text-sm py-1.5'>" +
                 "</div>" +
                 "<div style='font-size:0.75rem;color:#5f6368;margin-top:0.5rem;line-height:1.5;'>這些資料只給出這份測驗的老師或家長看，用途與保存期限見<a href='privacy.html' target='_blank' rel='noopener' style='color:#1A73E8;text-decoration:underline;'>個人資料蒐集告知</a>。不想填可以留空。</div></div>";
 
@@ -314,6 +314,8 @@
             // 選項／選擇題用 change（點一下才觸發）；文字題用 input 但防抖 250 毫秒：
             // 以前每打一個字就掃過整份卷子的所有題目與選項並重設樣式，題數多的手機上打字會卡
             let progTimer = null;
+            // 學生一進到作答頁就先報到（還沒有名字也先出現在老師的名單裡）
+            if (window.isSharedView && window.sharedMode === 'student') pushLiveProgress(true);
             container.onchange = updateAnsProgress;
             container.oninput = function (e) {
                 const t = e && e.target;
@@ -351,6 +353,15 @@
         // 確認模式+資料後才會呼叫，把題目本體從隱藏切成顯示；學生資料/模式選擇的input
         // 都還留在DOM裡(只是視覺隱藏)，之後gradeAnswers()/shareResult()一樣讀得到值
         function startAnswerQuiz() {
+            // 從連結／代碼進來的學生一定要留名字（姓名或暱稱都行）：沒登入也沒有名字，老師與家長就不知道是誰
+            if (window.isSharedView && window.sharedMode === 'student') {
+                const nameEl = document.getElementById('ansStuName');
+                if (nameEl && !nameEl.value.trim()) {
+                    lqAlert('請先輸入你的姓名或暱稱，老師才知道是誰在寫。');
+                    nameEl.focus();
+                    return;
+                }
+            }
             const startScreen = document.getElementById('ansStartScreen');
             const quizBody = document.getElementById('ansQuizBody');
             if (startScreen) startScreen.classList.add('hidden');
