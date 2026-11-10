@@ -247,7 +247,10 @@
         function answerCardHtml(q, i) {
             const letters = getCorrectLetters(q);
             let html = "<div class='lq-card p-4 mb-3 ans-card' id='ans-card-" + i + "'>";
-            html += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) + " <span class='text-xs text-gray-400'>(" + (Number(q.s) || 0) + "分)</span></div>" + qImgHtml(q);
+            // 🔊 朗讀題目（瀏覽器內建語音，不送出任何資料；不支援的瀏覽器不顯示）
+            const speakBtn = (typeof speakSupported === 'function' && speakSupported())
+                ? " <button type='button' class='ans-speak' onclick='speakQuestion(" + i + ")' aria-label='朗讀第 " + (i + 1) + " 題' title='朗讀題目'>🔊</button>" : "";
+            html += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) + " <span class='text-xs text-gray-400'>(" + (Number(q.s) || 0) + "分)</span>" + speakBtn + "</div>" + qImgHtml(q);
             if (qtIsTyped(q)) {
                 html += typedAnswerHtml(q, i);
             } else if (q.o && q.o.length > 0) {

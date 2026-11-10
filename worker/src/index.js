@@ -17,6 +17,7 @@ import { handleBank, retryPendingBank } from "./bank.js";
 import { handleOcr } from "./ocr.js";
 import { handleGradeAnswer } from "./grade.js";
 import { findClassByCodeOrName, ensureClassCode, insertClass, handleSetClassCode, validateCustomCode, codeIsFree } from "./classcode.js";
+import { buildStats } from "./livestats.js";
 
 const COOLDOWN_MS = 30000;
 // 一次出題（第 0 批通過冷卻後）最多還能打幾次後續批次／重試；用完要重新走冷卻。
@@ -166,6 +167,9 @@ export default {
     }
     if (url.pathname === "/api/auth/join-class") {
       return handleAuthJoinClass(request, env);
+    }
+    if (url.pathname.startsWith("/api/live-stats/")) {
+      return handleLiveStats(request, env, decodeURIComponent(url.pathname.slice("/api/live-stats/".length)));
     }
     if (url.pathname === "/api/class/code") {
       return handleSetClassCode(request, env, { json, CORS_HEADERS, verifySession });
@@ -698,20 +702,10 @@ async function parentOwnsLiveStudent(env, parentId, shareId, studentId) {
   return !!row;
 }
 
-async function handleLiveProgressList(request, env, shareId) {
-  if (request.method === "OPTIONS") {
-    return new Response(null, { headers: CORS_HEADERS });
-  }
-
-  if (!shareId) {
-    return new Response(JSON.stringify({ error: { message: "缺少shareId" } }), {
-      status: 400,
-      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
-    });
-  }
-
-  // 三種身分都可以看全班進度：
-  // (1) 儀表板金鑰(免登入，出題當下拿到的那條連結) (2) 登入的老師/超級管理員 (3) 管理者密碼(舊有用法)
+// 看全班進度與答題分析的資格；通過回 null，不通過回要送出的 Response。
+// 三種身分都可以看全班進度：
+// (1) 儀表板金鑰(免登入，出題當下拿到的那條連結) (2) 登入的老師/超級管理員 (3) 管理者密碼(舊有用法)
+async function liveViewerDenied(request, env, shareId) {
   const hasKey = await hasValidDashKey(request, env, shareId);
   const isAdminPass = adminPassMatches(request, env);
   let isTeacher = false;
@@ -725,7 +719,6 @@ async function handleLiveProgressList(request, env, shareId) {
       headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
-
   // 老師按過「停止監看」就讓這條金鑰連結失效(帳號/密碼身分不受影響，因為那是自己的帳號)
   if (hasKey && !isAdminPass && !isTeacher) {
     const revoked = await env.COOLDOWN_KV.get("revoke:dash:" + shareId);
@@ -736,6 +729,45 @@ async function handleLiveProgressList(request, env, shareId) {
       });
     }
   }
+  return null;
+}
+
+// 全班答題分析：每題答對率、各選項人數、最需要檢討的題目（計算在 livestats.js）
+async function handleLiveStats(request, env, shareId) {
+  if (request.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== "GET") return json({ error: { message: "Method Not Allowed" } }, 405);
+  if (!shareId || !ID_RE.test(shareId)) return json({ error: { message: "缺少或不正確的shareId" } }, 400);
+  const denied = await liveViewerDenied(request, env, shareId);
+  if (denied) return denied;
+
+  const raw = await env.COOLDOWN_KV.get("share:" + shareId);
+  if (!raw) return json({ error: { message: "找不到這份分享內容，可能已過期" } }, 404);
+  let items = [];
+  try { items = JSON.parse(raw).items || []; } catch (e) { items = []; }
+
+  const rows = await env.DB.prepare(
+    "SELECT answers FROM live_progress WHERE share_id = ? AND updated_at >= ?"
+  ).bind(shareId, Date.now() - LIVE_PROGRESS_TTL_SECONDS * 1000).all();
+  const parsed = (rows.results || []).map((r) => {
+    try { return { answers: JSON.parse(r.answers || "[]") }; } catch (e) { return { answers: [] }; }
+  });
+  return json(buildStats(items, parsed));
+}
+
+async function handleLiveProgressList(request, env, shareId) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { headers: CORS_HEADERS });
+  }
+
+  if (!shareId) {
+    return new Response(JSON.stringify({ error: { message: "缺少shareId" } }), {
+      status: 400,
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
+    });
+  }
+
+  const denied = await liveViewerDenied(request, env, shareId);
+  if (denied) return denied;
 
   // 總覽只取輕量欄位，不撈 answers（那是單人詳情視窗才要的）
   const rows = await env.DB.prepare(
