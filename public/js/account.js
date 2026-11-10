@@ -333,7 +333,7 @@
         function loadClassHistoryItem(i) {
             const h = (window.__classHistoryCache || [])[i];
             if (!h) return;
-            window.currentItems = h.items;
+            window.currentItems = mathClean(h.items);
             closeClassHistory();
             renderPaperFixed(h.items, h.title);
             window.itemsVersion = (window.itemsVersion || 0) + 1;

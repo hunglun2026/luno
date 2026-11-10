@@ -250,7 +250,7 @@
             let h = hist[i];
             if (!h) return;
             if (h.settings) applySettings(h.settings);
-            window.currentItems = h.items;
+            window.currentItems = mathClean(h.items);
             window.currentSettings = h.settings;
             closeHistory();
             renderPaperFixed(h.items);

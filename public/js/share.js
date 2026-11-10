@@ -36,6 +36,25 @@
             document.getElementById('sendQuizModal').classList.add('hidden');
         }
 
+        // 工具列「即時監看」：不用先開發送視窗，直接開全班進度儀表板（沒發過就先建立分享，跟發送測驗共用同一個 shareId）。
+        // 先同步開空白分頁再填網址，不然等網路回來才開會被瀏覽器當成彈出視窗擋掉。
+        async function openLiveMonitor() {
+            if (!window.currentItems || window.currentItems.length === 0) {
+                lqAlert('目前沒有題目可以監看');
+                return;
+            }
+            const newTab = window.open('', '_blank');
+            if (newTab) newTab.document.write('<p style="font-family:sans-serif;padding:2rem;">⏳ 準備即時監看...</p>');
+            try {
+                const shareId = await getOrCreateShareId();
+                const url = liveDashboardUrl(shareId);
+                if (newTab) newTab.location.href = url; else window.open(url, '_blank');
+            } catch (e) {
+                if (newTab) newTab.close();
+                lqAlert('開啟即時監看失敗：' + e.message);
+            }
+        }
+
         async function openSendQuizModal() {
             if (!requireLoginForShare()) return;
             if (!window.currentItems || window.currentItems.length === 0) {
@@ -158,7 +177,7 @@
                 const data = await res.json();
                 if (data.error) throw new Error(data.error.message);
 
-                window.currentItems = data.items;
+                window.currentItems = mathClean(data.items);
                 window.currentSettings = { sType: '1' };
 
                 renderPaperFixed(data.items, data.title);
@@ -254,7 +273,7 @@
             const container = document.getElementById('paperContainer');
             container.innerHTML = "<div class='max-w-2xl mx-auto p-4'><div class='lq-card p-5 mb-4 text-center'>" +
                 "<h2 class='font-bold text-lg mb-1'>📊 即時進度儀表板</h2>" +
-                "<p class='text-sm text-gray-500'>每 8-10 秒自動更新" + (dashKey ? "（這條連結本身就是權限，不用登入）" : "（老師帳號登入即可，未登入才需要管理者密碼）") + "</p>" +
+                "<p class='text-sm text-gray-500'>每 3 秒自動更新" + (dashKey ? "（這條連結本身就是權限，不用登入）" : "（老師帳號登入即可，未登入才需要管理者密碼）") + "</p>" +
                 "<div id='liveCodeBox' class='hidden mt-3 text-sm'></div>" +
                 "<button id='btnRevokeDash' onclick='toggleRevokeDashboard()' class='lq-btn lq-btn-secondary text-xs px-3 py-1 mt-3'>⏹ 停止監看（讓這條連結失效）</button>" +
                 "</div>" +

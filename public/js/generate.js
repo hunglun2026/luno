@@ -29,6 +29,7 @@
         const SELF_CORRECT_RE = /選項\s*\d*\s*(寫錯|有誤)|讓我(再)?(想|檢查|重新)|重新(檢查|計算|確認)|等等[，,]|抱歉|更正[：:，,]/;
         // wantKind：整份都要同一種新題型時（'match'／'order'），AI 回了別種題型的整題剔除
         function vetItems(items, wantKind) {
+            items = mathClean(items);   // AI 偶爾寫 LaTeX（$a^2$），轉成一般文字，見 mathtext.js
             const kept = [];
             items.forEach(q => {
                 if (!q || typeof q.q !== 'string' || !q.q.trim()) return;
@@ -196,7 +197,7 @@
             if (typeVal.includes('綜合') || typeVal.includes('題填充')) {
                 taskDescription += "【題型順序】：嚴格依題型要求的順序出題；單選與是非題的 'o' 給選項，填充題的 'o' 必須是空陣列 []。\n";
             }
-            const formatRule = ' 【嚴格格式要求】：必須且只能回傳合法的 JSON Array。格式：[{"q":"題目內容","o":["選項1","選項2"],"a":"答案","e":"解析","s":' + scorePerQ + '}]。';
+            const formatRule = ' 【嚴格格式要求】：必須且只能回傳合法的 JSON Array。格式：[{"q":"題目內容","o":["選項1","選項2"],"a":"答案","e":"解析","s":' + scorePerQ + '}]。' + ' 【數學式寫法】：數學式一律用一般文字與符號直接寫，例如 a²+2ab+b²、(a+b)²、x²−5x+6、√2、1/2、30°、π、×、÷、≤、≥；絕對不要使用 LaTeX、$ 符號、反斜線寫法或 ^ 次方符號。';
 
             const parts = [{ text: taskDescription + formatRule }];
             if (sType === "2" && uploadItems.length > 0) {

@@ -202,8 +202,8 @@
                 "<div class='text-sm text-gray-500 mb-3 text-center font-semibold'>請選擇作答模式</div>" +
                 "<div class='flex items-center justify-center gap-4 sm:gap-6 text-sm flex-wrap'>" +
                 "<label class='flex items-center gap-1.5 font-semibold " + (canInstant ? "cursor-pointer" : "opacity-50 cursor-not-allowed") + "'>" +
-                    "<input type='radio' name='ansGradeMode' value='instant'" + (canInstant ? " checked" : " disabled") + "> ⚡ 每題即時看結果" + (canInstant ? "" : "🔒") + "</label>" +
-                "<label class='flex items-center gap-1.5 cursor-pointer font-semibold'><input type='radio' name='ansGradeMode' value='batch'" + (canInstant ? "" : " checked") + "> 📋 全部寫完再送出</label>" +
+                    "<input type='radio' name='ansGradeMode' value='instant'" + (canInstant ? " checked" : " disabled") + "> ⚡ 即時反饋（每題答完馬上看對錯）" + (canInstant ? "" : "🔒") + "</label>" +
+                "<label class='flex items-center gap-1.5 cursor-pointer font-semibold'><input type='radio' name='ansGradeMode' value='batch'" + (canInstant ? "" : " checked") + "> 📋 全部寫完再送出（最後一起看結果）</label>" +
                 "</div>" +
                 (canInstant ? "" :
                     "<div class='text-xs text-gray-500 text-center mt-3'>想寫一題就馬上知道對不對？登入帳號就能用，分數也會存進你自己的紀錄。" +
