@@ -193,6 +193,13 @@
         // 避免模式選項跟題目混在一起、寫到一半才發現選錯模式。2026-11-03 從 renderAnswerMode 拆出
         function answerStartScreenHtml() {
             let html = "<div id='ansStartScreen'>";
+            // 老師／訪客自己出完題看到的就是這個畫面，常被誤會成「要我自己填座號寫考卷」（2026-11-10 Steve 試用回報不夠直觀）。
+            // 保留「出完題預設進線上作答」，只在最上面說明身分並給發送出口；學生從連結進來、自己練習、交接給學生時不顯示。
+            const teacherPreview = !window.isSharedView && !isSelfStudent() && !(typeof handoffActive === 'function' && handoffActive());
+            if (teacherPreview) {
+                html += "<div class='lq-preview-banner'><div class='lq-pb-text'><b>👀 老師預覽</b><span>學生點開你發送的連結，看到的就是下面這個畫面。</span></div>" +
+                    "<button type='button' onclick='openSendQuizModal()' class='lq-btn lq-btn-primary lq-pb-btn'>📤 發送給學生</button></div>";
+            }
             html += "<div class='lq-card p-6 mb-4 text-center'><h2 class='font-bold text-lg mb-1'>📱 線上作答</h2><p class='text-sm text-gray-500'>選擇/複選題會自動判分；填空/簡答題只能做文字比對，僅供參考，請自行核對。</p></div>";
 
             // 登入狀態區塊：只有透過分享連結進來作答的學生需要(家長監看要靠學生帳號)，
@@ -205,7 +212,8 @@
             const loggedStudent = !!(window.currentUser && window.currentUser.role === 'student');
             const stuName = loggedStudent ? escapeHtml(window.currentUser.displayName || '') : '';
             const stuClass = loggedStudent ? escapeHtml(window.currentUser.className || '') : '';
-            html += "<div class='lq-card p-4 mb-4" + (loggedStudent ? " hidden" : "") + "' id='ansInfoBox'>" +
+            // 老師預覽也不顯示（欄位還在 DOM，自己試寫與進度上報照樣讀得到空值）
+            html += "<div class='lq-card p-4 mb-4" + (loggedStudent || teacherPreview ? " hidden" : "") + "' id='ansInfoBox'>" +
                 "<div class='text-sm text-gray-500 mb-2'>👤 填寫資料（選填，方便老師/家長核對是誰寫的）</div>" +
                 "<div class='grid grid-cols-2 sm:grid-cols-4 gap-2'>" +
                 "<input id='ansStuGrade' placeholder='年級' class='lq-input text-sm py-1.5'>" +
@@ -298,7 +306,19 @@
 
             html += "</div>";
             container.innerHTML = html;
-            container.oninput = container.onchange = updateAnsProgress;
+            // 選項／選擇題用 change（點一下才觸發）；文字題用 input 但防抖 250 毫秒：
+            // 以前每打一個字就掃過整份卷子的所有題目與選項並重設樣式，題數多的手機上打字會卡
+            let progTimer = null;
+            container.onchange = updateAnsProgress;
+            container.oninput = function (e) {
+                const t = e && e.target;
+                if (t && (t.tagName === 'TEXTAREA' || t.type === 'text')) {
+                    clearTimeout(progTimer);
+                    progTimer = setTimeout(updateAnsProgress, 250);
+                } else {
+                    updateAnsProgress();
+                }
+            };
         }
 
         // 已作答題數：選擇題有勾選、文字題有內容才算
@@ -358,8 +378,10 @@
             const card = document.getElementById('ans-card-' + i);
             if (!card) return;
             card.classList.remove('ans-correct', 'ans-wrong');
-            void card.offsetWidth;
-            card.classList.add(correct ? 'ans-correct' : 'ans-wrong');
+            // 下一個畫面影格再加回 class，動畫一樣會重播，但不用 offsetWidth 強迫瀏覽器馬上重排
+            requestAnimationFrame(function () { requestAnimationFrame(function () {
+                card.classList.add(correct ? 'ans-correct' : 'ans-wrong');
+            }); });
         }
 
         // 單題判分：即時模式的onchange跟批次的送出評分共用同一套邏輯，

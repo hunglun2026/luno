@@ -34,8 +34,7 @@
            使用說明／出題紀錄／管理者那排收上來,表單本身只留「填東西」這件事 */
         .lq-appbar {
             position: sticky; top: 0; z-index: 40;
-            background: rgba(255,255,255,0.92);
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.98);
             border-bottom: 1px solid var(--hl-border, #e5e7eb);
         }
         .lq-appbar-inner {
@@ -242,9 +241,7 @@
            避免像上一版一樣太細緻反而完全看不出來有改過 */
         .sticky-header {
             position: relative;
-            background: linear-gradient(135deg, rgba(11,17,32,0.85) 0%, rgba(30,43,71,0.85) 50%, rgba(11,17,32,0.85) 100%);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: linear-gradient(135deg, rgba(11,17,32,0.97) 0%, rgba(30,43,71,0.97) 50%, rgba(11,17,32,0.97) 100%);
         }
         .sticky-header::after {
             content: ''; position: absolute; left: 0; right: 0; bottom: -2px; height: 3px;
@@ -285,8 +282,7 @@
             position: sticky; top: 0.5rem; z-index: 40;
             display: flex; align-items: center; gap: 0.7rem;
             padding: 0.6rem 0.75rem;
-            background: rgba(255,255,255,0.92);
-            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.98);
             border: 1px solid #e8ebef; border-radius: var(--lq-radius);
             box-shadow: var(--lq-shadow-sm);
             margin-bottom: 1rem;
@@ -383,7 +379,7 @@
         #practiceLoading {
             position: fixed; inset: 0; z-index: 120;
             display: flex; align-items: center; justify-content: center; padding: 1.5rem;
-            background: rgba(15,23,42,0.55); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+            background: rgba(15,23,42,0.62);
         }
         #practiceLoading.hidden { display: none; }
         .lq-practice-loading-card {
