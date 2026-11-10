@@ -3,7 +3,7 @@
 import { describe, it, expect } from "vitest";
 import worker from "../src/index.js";
 import { makeEnv, req, registerUser } from "./helpers.js";
-import { newClassCode, normalizeClassCode, findClassByCodeOrName, ensureClassCode } from "../src/classcode.js";
+import { newClassCode, normalizeClassCode, findClassByCodeOrName, ensureClassCode, validateCustomCode } from "../src/classcode.js";
 
 const call = (env, path, opts) => worker.fetch(req(path, opts), env, {});
 const auth = (u) => ({ "X-Session-Token": u.token });
@@ -88,5 +88,77 @@ describe("舊班級（沒有代碼）第一次被讀到就補發", () => {
     expect(me2.user.classCode).toBe(me1.user.classCode);
     expect((await findClassByCodeOrName(env, me1.user.classCode)).id).toBe(t.user.classId);
     expect(await ensureClassCode(env, 99999)).toBe(null);
+  });
+});
+
+describe("系統產的代碼好唸：子音母音交錯", () => {
+  it("連產 200 組都是 子音＋母音 ×3", () => {
+    for (let i = 0; i < 200; i++) expect(newClassCode()).toMatch(/^([BDFGHKMNPRSTVZ][AEU]){3}$/);
+  });
+});
+
+describe("validateCustomCode 規則", () => {
+  it("4 到 10 個英數字，不分大小寫", () => {
+    expect(validateCustomCode("lin602").code).toBe("LIN602");
+    expect(validateCustomCode(" 6a-class ").code).toBe("6ACLASS");
+  });
+  it("太短、太長、中文、符號、常見字都被擋", () => {
+    for (const bad of ["abc", "ABCDEFGHIJK", "六年一班", "ab_cd", "1234", "admin", ""]) expect(validateCustomCode(bad).error).toBeTruthy();
+  });
+});
+
+describe("老師自訂班級代碼", () => {
+  it("註冊時就能自訂；學生用它加入", async () => {
+    const env = makeEnv();
+    const t = await registerUser(worker, env, { joinCode: "lin602" });
+    expect(t.user.classCode).toBe("LIN602");
+    const s = await registerUser(worker, env, { username: "stu1", role: "student", className: undefined, classCode: "Lin-602" });
+    expect(s.user.classId).toBe(t.user.classId);
+  });
+  it("註冊時自訂的代碼不合格，整個註冊被擋，不會留下半個帳號", async () => {
+    const env = makeEnv();
+    const r = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "teacher1", password: "abc123", role: "teacher", className: "六年1班", joinCode: "六年", privacyVersion: "2026-11-05" } }), env, {});
+    expect(r.status).toBe(400);
+    expect(env.DB._db.prepare("SELECT COUNT(*) c FROM users").get().c).toBe(0);
+  });
+  it("代碼全站唯一：註冊與修改都不能跟別班重複", async () => {
+    const env = makeEnv();
+    await registerUser(worker, env, { joinCode: "LIN602" });
+    const r = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "teacher2", password: "abc123", role: "teacher", className: "五年2班", joinCode: "lin602", privacyVersion: "2026-11-05" } }), env, {});
+    expect(r.status).toBe(400);
+    const t2 = await registerUser(worker, env, { username: "teacher3", className: "四年3班" });
+    const r2 = await call(env, "/api/class/code", { method: "POST", body: { code: "LIN602" }, headers: auth(t2) });
+    expect(r2.status).toBe(400);
+  });
+  it("登入後修改自己的代碼：舊代碼失效、新代碼生效，已加入的學生仍在班上", async () => {
+    const env = makeEnv();
+    const t = await registerUser(worker, env);
+    const old = t.user.classCode;
+    const s = await registerUser(worker, env, { username: "stu1", role: "student", className: undefined, classCode: old });
+    const r = await call(env, "/api/class/code", { method: "POST", body: { code: "mybest7" }, headers: auth(t) });
+    expect(r.status).toBe(200);
+    expect((await r.json()).classCode).toBe("MYBEST7");
+    expect((await call(env, "/api/auth/me", { headers: auth(t) }).then((x) => x.json())).user.classCode).toBe("MYBEST7");
+    expect((await call(env, "/api/auth/me", { headers: auth(s) }).then((x) => x.json())).user.classId).toBe(t.user.classId);
+    const s2 = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "stu2", password: "abc123", role: "student", classCode: old, privacyVersion: "2026-11-05" } }), env, {});
+    expect(s2.status).toBe(400);
+    const s3 = await registerUser(worker, env, { username: "stu3", role: "student", className: undefined, classCode: "MYBEST7" });
+    expect(s3.user.classId).toBe(t.user.classId);
+  });
+  it("換一組系統好唸的代碼", async () => {
+    const env = makeEnv();
+    const t = await registerUser(worker, env);
+    const r = await call(env, "/api/class/code", { method: "POST", body: { random: true }, headers: auth(t) });
+    expect(r.status).toBe(200);
+    expect((await r.json()).classCode).toMatch(/^([BDFGHKMNPRSTVZ][AEU]){3}$/);
+  });
+  it("只有老師能改；沒登入、學生都被擋；格式錯 400", async () => {
+    const env = makeEnv();
+    const t = await registerUser(worker, env);
+    const s = await registerUser(worker, env, { username: "stu1", role: "student", className: undefined, classCode: t.user.classCode });
+    expect((await call(env, "/api/class/code", { method: "POST", body: { code: "ABCDEF" } })).status).toBe(401);
+    expect((await call(env, "/api/class/code", { method: "POST", body: { code: "ABCDEF" }, headers: auth(s) })).status).toBe(401);
+    expect((await call(env, "/api/class/code", { method: "POST", body: { code: "中文" }, headers: auth(t) })).status).toBe(400);
+    expect((await call(env, "/api/class/code", { method: "GET", headers: auth(t) })).status).toBe(405);
   });
 });

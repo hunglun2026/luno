@@ -42,7 +42,9 @@
             const loginBtn = document.getElementById('lqLoginBtn');
             if (loginBtn) loginBtn.classList.toggle('hidden', !!window.currentUser);
             if (window.currentUser) {
-                statusEl.textContent = window.currentUser.displayName + '（' + (roleLabel[window.currentUser.role] || window.currentUser.role) + '）';
+                statusEl.textContent = window.currentUser.displayName + '（' + (roleLabel[window.currentUser.role] || window.currentUser.role) + '）' +
+                    (window.currentUser.role === 'teacher' && window.currentUser.classCode ? '　班級代碼 ' + window.currentUser.classCode : '');
+                showClassCodeOnce();
             } else {
                 statusEl.textContent = '';
             }
@@ -121,6 +123,7 @@
                     "<option value='parent'>家長</option>" +
                     "</select>";
                 html += "<input id='authClassName' class='lq-input hidden' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
+                html += "<input id='authJoinCode' class='lq-input hidden' maxlength='10' autocapitalize='characters' placeholder='想自己設班級代碼？（選填，4 到 10 個英文字母或數字，例如 LIN602；不填系統幫你取一組好唸的）'>";
                 html += "<input id='authClassCode' class='lq-input hidden' placeholder='老師給的班級代碼（選填，之後也可以在帳號頁面補填）'>";
                 html += "<label class='flex gap-2 items-start text-xs text-gray-600 cursor-pointer'><input type='checkbox' id='authPrivacyOk' class='mt-1'><span>我已閱讀並同意<a href='privacy.html' target='_blank' rel='noopener' class='text-blue-600 underline'>《個人資料蒐集告知》</a>。未滿 18 歲請在家長或老師陪同下註冊。</span></label>";
             }
@@ -135,6 +138,7 @@
         function onAuthRoleChange() {
             const role = document.getElementById('authRole').value;
             document.getElementById('authClassName').classList.toggle('hidden', role !== 'teacher');
+            document.getElementById('authJoinCode').classList.toggle('hidden', role !== 'teacher');
             document.getElementById('authClassCode').classList.toggle('hidden', role !== 'student');
         }
 
@@ -156,10 +160,11 @@
             const role = document.getElementById('authRole').value;
             const className = (document.getElementById('authClassName') || {}).value || '';
             const classCode = (document.getElementById('authClassCode') || {}).value || '';
+            const joinCode = (document.getElementById('authJoinCode') || {}).value || '';
             try {
                 const res = await fetch(API_BASE + "/api/auth/register", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, displayName, role, className, classCode, privacyVersion: PRIVACY_VERSION })
+                    body: JSON.stringify({ username, password, displayName, role, className, classCode, joinCode, privacyVersion: PRIVACY_VERSION })
                 });
                 const data = await res.json();
                 if (data.error) { showAuthError(data.error.message); return; }
@@ -187,6 +192,38 @@
             } catch (e) { showAuthError('登入失敗：' + e.message); }
         }
 
+        // 老師自己設定班級代碼：已加入的學生不受影響，只有「之後」註冊或加入的人要輸入新代碼；舊代碼立刻失效
+        async function saveClassCode(payload) {
+            try {
+                const res = await fetch(API_BASE + "/api/class/code", {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Session-Token': lqGetToken() || '' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.error) { await lqAlert(data.error.message); return; }
+                window.currentUser.classCode = data.classCode;
+                updateAccountUI();
+                renderAccountLoggedInBody();
+            } catch (e) { lqAlert('修改失敗：' + e.message); }
+        }
+        async function editClassCode() {
+            const v = await askText('設定你的班級代碼（4 到 10 個英文字母或數字，例如 LIN602）。\n改了之後，舊代碼就不能再用；已經加入的學生不受影響。', { value: (window.currentUser && window.currentUser.classCode) || '' });
+            if (v === null || v === undefined || !String(v).trim()) return;
+            saveClassCode({ code: String(v).trim() });
+        }
+        async function randomClassCode() {
+            const ok = await askConfirm('換一組新的班級代碼？舊代碼會立刻失效，已經加入的學生不受影響。', { okText: '換一組', cancelText: '取消' });
+            if (ok) saveClassCode({ random: true });
+        }
+
+        // 老師登入後每次開啟都先跳一次大字班級代碼（同一個分頁只跳一次），報給學生用
+        function showClassCodeOnce() {
+            const u = window.currentUser;
+            if (!u || u.role !== 'teacher' || !u.classCode) return;
+            try { if (sessionStorage.getItem('lun_code_seen')) return; sessionStorage.setItem('lun_code_seen', '1'); } catch (e) { return; }
+            lqAlert('你的班級代碼：' + u.classCode + '\n\n學生註冊或加入班級時輸入這組代碼。\n頂端列隨時看得到，到「我的帳號」可以複製、自己改。');
+        }
+
         // 複製班級代碼：瀏覽器不給剪貼簿權限時不假裝成功
         function copyClassCode(code, btn) {
             if (!(navigator.clipboard && navigator.clipboard.writeText)) return;
@@ -208,7 +245,10 @@
                     "<div class='text-xs text-gray-500 mb-1'>班級代碼（學生註冊或加入班級時輸入）</div>" +
                     "<div class='font-black' style='font-size:2rem; letter-spacing:0.18em; color:var(--hl-blue);'>" + escapeHtml(joinCode || u.className || '') + "</div>" +
                     "<div class='text-xs text-gray-500 mt-1'>班級：" + escapeHtml(u.className || '') + "</div>" +
-                    (joinCode ? "<button type='button' onclick=\"copyClassCode('" + escapeHtml(joinCode) + "', this)\" class='lq-btn lq-btn-secondary text-xs px-3 py-1 mt-2'>複製代碼</button>" : "") +
+                    (joinCode ? "<div class='flex gap-2 justify-center flex-wrap mt-2'>" +
+                        "<button type='button' onclick=\"copyClassCode('" + escapeHtml(joinCode) + "', this)\" class='lq-btn lq-btn-secondary text-xs px-3 py-1'>複製代碼</button>" +
+                        "<button type='button' onclick='editClassCode()' class='lq-btn lq-btn-secondary text-xs px-3 py-1'>自己設定</button>" +
+                        "<button type='button' onclick='randomClassCode()' class='lq-btn lq-btn-secondary text-xs px-3 py-1'>換一組好唸的</button></div>" : "") +
                     "</div>";
                 html += "<button onclick=\"closeAccountModal(); openClassHistory();\" class='lq-btn lq-btn-secondary w-full py-2'>📚 查看班級歷史</button>";
             } else if (u.role === 'student') {

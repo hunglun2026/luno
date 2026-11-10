@@ -22,6 +22,7 @@
                 html += "<input id='splashDisplayName' class='lq-input' placeholder='顯示名稱（例如：王小明）'>";
                 if (kind === 'teacher') {
                     html += "<input id='splashClassName' class='lq-input' placeholder='幫班級取個名字（例如：六年1班，全站需唯一，重複會被擋下）'>";
+                    html += "<input id='splashJoinCode' class='lq-input' maxlength='10' autocapitalize='characters' placeholder='想自己設班級代碼？（選填，4 到 10 個英文字母或數字，例如 LIN602；不填系統幫你取一組好唸的）'>";
                 } else if (kind === 'student') {
                     html += "<input id='splashClassCode' class='lq-input' placeholder='老師給的班級代碼（選填，之後也可以在帳號頁面補填）'>";
                 }
@@ -81,7 +82,7 @@
 
         async function splashLoginSuccess(data) {
             lqSetToken(data.token);
-            try { sessionStorage.removeItem(SS_ROLE); } catch (e) {}
+            try { sessionStorage.removeItem(SS_ROLE); sessionStorage.removeItem('lun_code_seen'); } catch (e) {}
             if (data.user && data.user.role === 'teacher') {
                 const btn = document.querySelector('#hlAuthFormBody button.lq-btn-primary');
                 if (btn) { btn.disabled = true; btn.textContent = '正在把這台裝置的試卷存進帳號…'; }
@@ -122,10 +123,11 @@
             const role = SPLASH_ROLE_TO_API[kind];
             const className = (document.getElementById('splashClassName') || {}).value || '';
             const classCode = (document.getElementById('splashClassCode') || {}).value || '';
+            const joinCode = (document.getElementById('splashJoinCode') || {}).value || '';
             try {
                 const res = await fetch(API_BASE + "/api/auth/register", {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, displayName, role, className, classCode, privacyVersion: PRIVACY_VERSION })
+                    body: JSON.stringify({ username, password, displayName, role, className, classCode, joinCode, privacyVersion: PRIVACY_VERSION })
                 });
                 const data = await res.json();
                 if (data.error) { showSplashAuthError(data.error.message); return; }
