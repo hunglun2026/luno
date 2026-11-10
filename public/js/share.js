@@ -47,6 +47,12 @@
             if (newTab) newTab.document.write('<p style="font-family:sans-serif;padding:2rem;">⏳ 準備即時監看...</p>');
             try {
                 const shareId = await getOrCreateShareId();
+                // 題目或作答方式改過就會產生新的一份測驗：之前發給學生的代碼與連結還指向舊的一份，
+                // 這個監看看不到那些學生，所以要明講（以前悄悄換掉，老師只覺得「沒反應」）
+                const sent = window._sendQuizLinks && window._sendQuizLinks.shareId;
+                if (sent && sent !== shareId) {
+                    lqAlert('你發出代碼或連結之後，題目或作答方式有改過，這裡監看的是新的一份。請按「發送給學生」重新發一次，學生用新代碼進來才看得到。');
+                }
                 const url = liveDashboardUrl(shareId);
                 if (newTab) newTab.location.href = url; else window.open(url, '_blank');
             } catch (e) {
@@ -85,7 +91,7 @@
                     if (!data.error) code = String(data.code || '');
                 } catch (e) {}
 
-                window._sendQuizLinks = { code: code, student: studentUrl, parent: parentUrl, dash: dashUrl, title: window.docTitle || '測驗' };
+                window._sendQuizLinks = { shareId: shareId, code: code, student: studentUrl, parent: parentUrl, dash: dashUrl, title: window.docTitle || '測驗' };
 
                 // 三個情境頁籤（2026-11-05）：傳給學生／課堂投影／家長與老師，一次只看一種，不再堆四個出口
                 let cardHtml = "";
@@ -352,7 +358,7 @@
             if (students.length === 0) {
                 body.innerHTML = "<div class='lq-card p-4 text-center text-gray-500'>" +
                     "<img src='assets/illust/waiting-students.webp' alt='' class='lq-illust' style='max-width:15rem' width='640' height='480' loading='lazy'>" +
-                    "還沒有學生開始作答。請先把測驗代碼或連結傳給學生，他們開始作答後就會出現在這裡</div>";
+                    "還沒有學生進來。學生按下「開始測驗」就會出現在這裡。<br>若學生已經進去了還是空的：請確認他用的是「發送給學生」視窗現在顯示的代碼或連結（改過題目或作答方式後要重新發送）</div>";
                 return;
             }
             students.sort((a, b) => (b.answered || 0) - (a.answered || 0));
@@ -366,7 +372,7 @@
                 html += "<div class='lq-card p-3 mb-2'>" +
                     "<div class='flex items-center justify-between mb-1'><span class='font-semibold text-sm'>" + infoLine + "</span>" +
                     "<button onclick=\"openProctorDetailTeacher(" + jsArg(shareId) + "," + jsArg(s.studentId) + ")\" class='lq-btn lq-btn-secondary text-xs px-2 py-1'>🔍 查看詳情</button></div>" +
-                    "<div class='flex items-center justify-between mb-1'><span class='text-xs text-gray-400'>" + answered + " / " + total + " 題</span></div>" +
+                    "<div class='flex items-center justify-between mb-1'><span class='text-xs text-gray-400'>" + (answered === 0 ? "已進入，還沒答題　" : "") + answered + " / " + total + " 題</span></div>" +
                     "<div class='h-2 w-full bg-gray-200 rounded-full overflow-hidden'><div class='progress-bar' style='width:" + pct + "%;height:100%;'></div></div>" +
                     "</div>";
             });

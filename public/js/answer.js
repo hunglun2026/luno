@@ -218,7 +218,7 @@
             const stuName = loggedStudent ? escapeHtml(window.currentUser.displayName || '') : '';
             const stuClass = loggedStudent ? escapeHtml(window.currentUser.className || '') : '';
             // 老師預覽也不顯示（欄位還在 DOM，自己試寫與進度上報照樣讀得到空值）
-            html += "<div class='lq-card p-4 mb-4" + (loggedStudent || teacherPreview ? " hidden" : "") + "' id='ansInfoBox'>" +
+            html += "<div class='lq-card p-4 mb-4" + (loggedStudent || teacherPreview ? " hidden" : "") + "' id='ansInfoBox' onchange='pushLiveProgress()'>" +
                 "<div class='text-sm text-gray-500 mb-2'>👤 填寫資料（選填，方便老師/家長核對是誰寫的）</div>" +
                 "<div class='grid grid-cols-2 sm:grid-cols-4 gap-2'>" +
                 "<input id='ansStuGrade' placeholder='年級' class='lq-input text-sm py-1.5'>" +
@@ -363,6 +363,9 @@
             document.querySelectorAll('.ans-confirm-btn').forEach(btn => {
                 btn.style.display = showConfirmBtns ? 'inline-flex' : 'none';
             });
+            // 學生按下開始就先報到（0 題也送）：老師的監看畫面馬上看到「某某人進來了」，
+            // 不用等他選第一個答案（以前進來沒答題，老師端一片空白，像是監看壞掉）
+            pushLiveProgress(true);
         }
 
         // 用DOM節點組回饋文字(而非字串拼innerHTML)，即使q.e/correctAns等內容來自AI也不會有XSS風險，
