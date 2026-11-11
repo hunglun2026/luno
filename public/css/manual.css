@@ -130,19 +130,26 @@ img { max-width: 100%; height: auto; }
 .m-pick-all { margin: 0.8rem 0 0; font-size: 0.9rem; }
 .m-link { padding: 0; border: 0; background: none; color: var(--hl-blue, #1A73E8); font: inherit; text-decoration: underline; cursor: pointer; }
 .m-link.is-on { font-weight: 700; }
-.m-quick { margin-top: 1.1rem; padding: 1rem 1.2rem; border-left: 4px solid var(--hl-blue, #1A73E8); border-radius: 0.6rem; background: #f1f6fe; }
-.m-quick h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
-.m-quick ol { margin: 0; padding-left: 1.3rem; }
-.m-quick li { margin: 0.2rem 0; }
-/* 選了身分後章節編號會跳號（1、2、3、5…），乾脆不顯示 */
-body.m-guided .m-no { display: none; }
 @media (max-width: 640px) {
     .m-pick { padding: 1.1rem; }
     .m-pick-cards { grid-template-columns: 1fr 1fr; }
 }
 /* 列印一律印整份，不管選了哪個身分 */
 @media print {
-    .m-pick, .m-quick { display: none !important; }
-    .m-chapter[hidden], .m-toc li[hidden] { display: block !important; }
-    body.m-guided .m-no { display: inline; }
+    .m-pick { display: none !important; }
+    .m-chapter[hidden] { display: block !important; }
 }
+
+/* 步驟清單（每個身分最短路徑）：大一點的編號圓圈，一眼看出順序 */
+.m-steps { list-style: none; counter-reset: st; margin: 0.6rem 0 1rem; padding: 0; }
+.m-steps > li { counter-increment: st; position: relative; margin: 0.55rem 0; padding: 0.15rem 0 0.15rem 2.6rem; min-height: 2rem; }
+.m-steps > li::before { content: counter(st); position: absolute; left: 0; top: 0.05rem; width: 1.9rem; height: 1.9rem; border-radius: 50%; background: var(--hl-blue, #1A73E8); color: #fff; font-weight: 700; text-align: center; line-height: 1.9rem; }
+/* 收合的細節：一行標題，要看才展開 */
+.m-more { margin-top: 0.6rem; border: 1px solid #e5e7eb; border-radius: 0.7rem; background: #fafbfc; }
+.m-more > summary { padding: 0.6rem 0.9rem; font-weight: 700; cursor: pointer; }
+.m-more[open] > summary { border-bottom: 1px solid #e5e7eb; }
+.m-more > :not(summary) { margin-left: 0.9rem; margin-right: 0.9rem; }
+.m-more > p { margin-top: 0.6rem; margin-bottom: 0.7rem; }
+.m-more > ul, .m-more > ol { margin-top: 0.5rem; margin-bottom: 0.7rem; padding-left: 1.3rem; }
+.m-note { margin: 0.6rem 0 0; padding: 0.5rem 0.8rem; border-left: 4px solid #f59e0b; background: #fffbeb; border-radius: 0.4rem; font-size: 0.9rem; }
+@media print { .m-more > :not(summary) { display: block; } .m-more { border: none; } }

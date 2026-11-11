@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>刻度 使用說明書｜鴻綸科技</title>
-    <meta name="description" content="刻度互動式評量的完整使用說明：老師出題、發測驗、看全班進度，學生作答與練習，家長查看，一步一步配實際畫面。">
+    <meta name="description" content="刻度互動式評量的使用說明：選你的身分（訪客、老師、學生、家長），只看你要用的幾個步驟。手機、平板、電腦都能用。">
     <link rel="icon" href="favicon.ico" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
     <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 改 manual.css 時 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/manual.css?v=3">
+    <link rel="stylesheet" href="css/manual.css?v=4">
 <link rel="canonical" href="https://kedu.hunglun.com/manual">
 </head>
 <body>
@@ -27,276 +27,155 @@
 </header>
 
 <div class="m-wrap">
-<nav class="m-toc" aria-label="目錄">
-    <details open>
-        <summary>目錄</summary>
-        <ol>
-            <li><a href="#about">認識刻度</a></li>
-            <li><a href="#start">開始使用</a></li>
-            <li><a href="#make">老師：出一份考卷</a></li>
-            <li><a href="#after">老師：出完題之後</a></li>
-            <li><a href="#send">老師：讓學生作答</a></li>
-            <li><a href="#paper">老師：派現成的紙本卷</a></li>
-            <li><a href="#teacher-account">老師帳號與班級</a></li>
-            <li><a href="#student">學生</a></li>
-            <li><a href="#parent">家長</a></li>
-            <li><a href="#admin">管理員</a></li>
-            <li><a href="#faq">常見問題</a></li>
-            <li><a href="#contact">聯絡我們</a></li>
-        </ol>
-    </details>
-</nav>
-
 <main class="m-main">
 <section class="m-hero">
-    <h1>刻度 使用說明書</h1>
-    <p>刻度是鴻綸科技的互動式評量網站：老師選好年級、科目、範圍，AI 幾秒鐘出好一份附答案的考卷，可以下載列印，也能直接發給學生線上作答、自動判分，老師和家長即時看到作答進度。</p>
-    <p>網址：<a href="./">kedu.hunglun.com</a>。用電腦、平板、手機的瀏覽器打開就能用，不用安裝。這份說明書可以按右上角「列印／存成 PDF」印出來。</p>
+    <h1>刻度 使用說明</h1>
+    <p>手機、平板、電腦的瀏覽器都能用，不用安裝。選你的身分，只看你要用的步驟。</p>
 </section>
 
-<!-- 你是誰：選了身分，只顯示那個身分要看的章節（script 在頁尾；沒開 JS 就整份全顯示） -->
+<!-- 你是誰：選了身分，只顯示那個身分的章節（js/manual.js；沒開 JS 就整份全顯示）。新增章節要加 data-role -->
 <section class="m-pick" id="pick" aria-label="選擇你的身分">
-    <h2>你是誰？選一個，只看跟你有關的</h2>
+    <h2>你是誰？</h2>
     <div class="m-pick-cards" role="group">
-        <button type="button" class="m-pick-card" data-pick="guest"><b>訪客</b><span>只有一支手機，免登入先用</span></button>
+        <button type="button" class="m-pick-card" data-pick="guest"><b>訪客</b><span>一支手機，免登入先用</span></button>
         <button type="button" class="m-pick-card" data-pick="teacher"><b>老師</b><span>出題、發給全班、看進度</span></button>
-        <button type="button" class="m-pick-card" data-pick="student"><b>學生</b><span>寫老師的測驗、自己練習</span></button>
-        <button type="button" class="m-pick-card" data-pick="parent"><b>家長</b><span>看題目答案、孩子寫到哪</span></button>
+        <button type="button" class="m-pick-card" data-pick="student"><b>學生</b><span>寫測驗、自己練習</span></button>
+        <button type="button" class="m-pick-card" data-pick="parent"><b>家長</b><span>看答案、看孩子寫到哪</span></button>
     </div>
-    <p class="m-pick-all"><button type="button" class="m-link" data-pick="all">看完整說明書</button></p>
-
-    <div class="m-quick" data-for="guest">
-        <h3>訪客：4 步開始</h3>
-        <ol><li>按歡迎頁「進入」，選「訪客模式」。</li><li>選年級和科目，按「開始出題」（一份最多 20 題）。</li><li>出好後先看題目，沒問題就按上方「交給學生作答」。</li><li>設一組 4 位數密碼，把手機遞給學生寫。</li></ol>
-    </div>
-    <div class="m-quick" data-for="teacher">
-        <h3>老師：4 步發給全班</h3>
-        <ol><li>選「我是教師」，免登入就能先出題試用。</li><li>出好後先看題目，要改就按「編輯」。</li><li>登入教師帳號，按「發送測驗」，把連結或代碼傳給學生。</li><li>按「看全班寫到哪」，即時看每個人的進度。</li></ol>
-    </div>
-    <div class="m-quick" data-for="student">
-        <h3>學生：4 步開始寫</h3>
-        <ol><li>點老師傳的連結，或在學生首頁輸入測驗代碼。</li><li>輸入姓名或暱稱，老師才知道是誰在寫。</li><li>按「開始測驗」，一題一題寫。</li><li>寫完按「交卷看成績」。</li></ol>
-    </div>
-    <div class="m-quick" data-for="parent">
-        <h3>家長：3 件事</h3>
-        <ol><li>打開老師給的「家長答案連結」，看題目、答案與解析。</li><li>孩子作答後請他傳「即時監看連結」，你就看得到他寫到哪。</li><li>想長期看：選「我是家長」註冊，輸入孩子產生的 6 位數綁定碼。</li></ol>
-    </div>
+    <p class="m-pick-all"><button type="button" class="m-link" data-pick="all">全部一起看</button></p>
 </section>
 
-<!-- ===== 1 ===== -->
-<section class="m-chapter" id="about" data-role="all">
-    <h2><span class="m-no">1</span>認識刻度</h2>
-    <div class="m-table-wrap"><table class="m-table">
-        <tr><th>身分</th><th>可以做什麼</th><th>要不要帳號</th></tr>
-        <tr><td>老師</td><td>AI 出題、下載 Word／PDF、把現成的紙本卷拍照變成線上測驗、發測驗、看全班即時進度</td><td>出題、下載不用；<b>發送測驗要登入</b></td></tr>
-        <tr><td>學生</td><td>輸入老師給的 6 位數代碼或點連結作答、自己練習、看分數與解析</td><td>點老師傳來的連結作答不用登入；從首頁選「我是學生」要先登入（沒有帳號可以註冊）</td></tr>
-        <tr><td>家長</td><td>看孩子的作答進度、看題目答案與解析</td><td>不用；登入可以一次管多個孩子</td></tr>
-        <tr><td>管理員</td><td>管理全站帳號</td><td>要，帳號由既有管理員建立</td></tr>
-    </table></div>
-    <div class="m-warn"><b>提醒</b>題目由 AI 產生，可能有事實錯誤或超出年級範圍。發給學生前請先看過一遍，有問題的題目直接改字或按「換這題」。</div>
-</section>
-
-<!-- ===== 2 ===== -->
-<section class="m-chapter" id="start" data-role="guest teacher student parent">
-    <h2><span class="m-no">2</span>開始使用</h2>
-    <h3>歡迎頁</h3>
-    <h3>歡迎頁</h3>
-    <p>打開網站會先看到「刻度」歡迎頁，它會停在那裡，按「進入」才往下。使用說明就在歡迎頁下方，或按右上角「使用說明」直接捲到。右上角的月亮／太陽鈕可以切換深色與淺色，沒切過的話會跟著手機或電腦的設定走。</p>
-    <h3>選身分</h3>
-    <p>按「進入」後，最上面是「訪客模式」，下面是「我是教師」「我是家長」「我是學生」三列，<b>每一列都不用登入就能先用</b>。右邊的刻度尺說明差別：沒登入一份最多 20 題；教師登入後題數不限。已經有帳號的人，點列表下方的小字「教師登入」「家長登入」「學生登入」。管理員請點「管理員登入」。</p>
-    <ul>
-        <li><b>訪客模式</b>：不用登入，一支手機出題兼作答，一份最多 20 題，詳見<a href="#guest">訪客模式</a>。</li>
-        <li><b>我是教師</b>：先不登入也能出題試用（和訪客一樣一份最多 20 題）。用到想保存時按「註冊帳號，把試卷存起來」，註冊教師帳號後，這台裝置上的試卷會自動存進帳號；登入後出題不限題數，還能發測驗、看全班即時進度。</li>
-        <li><b>我是家長</b>：先不登入也能出題試用（功能和教師的出題相同）。要看孩子的作答與進度，得登入家長帳號並綁定孩子。</li>
-        <li><b>我是學生</b>：先不登入就能輸入老師給的測驗代碼、自己練習。練習紀錄先留在這台裝置，註冊學生帳號之後，換手機或電腦也看得到。</li>
-        <li><b>下次再來</b>：這頁最上面會出現「繼續當訪客 →」（或教師、學生），按一下直接進去。</li>
-        <li><b>換身分</b>：進去之後，畫面最上方的「換身分」可以隨時回到這一頁；身分頁的「回上一頁」可以回到最前面。</li>
-        <li>學生、家長點老師傳來的連結進來時，<b>不會</b>經過歡迎頁和選身分，直接打開那份測驗或進度。</li>
-    </ul>
-    <h3 id="guest">訪客模式</h3>
-    <p>只有一支手機、不想登入時用：按「訪客模式」，依序選年級、科目，題數只能選 5、10、15、20 題。出好題後，工具列最顯眼的就是「交給學生作答」，照下面第 5 章的做法設密碼、把手機遞給學生。訪客看不到「發送測驗」，那個要登入教師帳號才有。</p>
-</section>
-
-<!-- ===== 3 ===== -->
-<section class="m-chapter" id="make" data-role="guest teacher">
-    <h2><span class="m-no">3</span>老師：出一份考卷</h2>
-    <p>登入教師帳號（或用訪客）後，出題分成四步，每一頁只做一件事。上方的圓點是進度，左下角「上一步」可以回去改，選過的內容都會留著。</p>
-
-    <h3>第 1 步：要怎麼出題</h3>
-    <figure class="m-fig"><img src="manual/img/step1.webp" alt="第 1 步，三種出題方式的卡片" loading="lazy" width="992" height="525"><figcaption>三種出題方式，點一下就到下一步</figcaption></figure>
-    <ul>
-        <li><b>使用 AI 出題</b>：出一份新的，照你選的年級、科目、範圍，由 AI 依課綱出題。</li>
-        <li><b>依課本或講義出</b>：上傳 Word 檔、圖片（可以用手機拍課本）、PDF，或直接貼文字，AI 照這些內容出題。</li>
-        <li><b>派現成的紙本卷</b>：不出新題目，把手邊的卷子掃進來給學生線上作答，見<a href="#paper">第 6 章</a>。</li>
-    </ul>
-
-    <h3>第 2 步：選年級和科目</h3>
-    <figure class="m-fig"><img src="manual/img/step2.webp" alt="第 2 步，年級和科目的按鈕" loading="lazy" width="992" height="556"><figcaption>年級、科目各點一下，兩個都選好，按亮起的「下一步」</figcaption></figure>
-    <p>這兩項一定要自己選（選錯整份考卷就不能用，所以不給預設值）。清單裡沒有的，點「其他」或「其他科目」自己打字。選「依課本或講義出」時，這一步會換成上傳檔案。</p>
-
-    <h3>第 3 步：版本和範圍</h3>
-    <figure class="m-fig"><img src="manual/img/step3.webp?v=65" alt="第 3 步，版本選單和範圍輸入框" loading="lazy" width="992" height="369"><figcaption>都可以不填</figcaption></figure>
-    <ul>
-        <li><b>版本</b>：自己填寫，依照教材版本填入；空白就是依一般課綱出題。</li>
-        <li><b>範圍</b>：按照課本所寫的範圍輸入，才能保持準確，例如「第一課到第三課」。空白就是整冊。</li>
-    </ul>
-
-    <h3>第 4 步：題數、題型、難度</h3>
-    <figure class="m-fig"><img src="manual/img/step4.webp" alt="第 4 步，條件摘要、題數題型難度語言與開始出題按鈕" loading="lazy" width="992" height="838"><figcaption>上方一行是這次的出題條件，確認後按「開始出題」</figcaption></figure>
-    <div class="m-table-wrap"><table class="m-table">
-        <tr><th>項目</th><th>選項</th></tr>
-        <tr><td>題數</td><td>5、10、20、25、50、100 題，或自訂</td></tr>
-        <tr><td>題型</td><td>全部單選、全部複選、單選複選各半（照題數對分）、全部是非、克漏字、綜合題型、全部填充、全部簡答（計算題）、<b>全部配合題（連連看）</b>、<b>全部排序題（排出先後順序）</b>，或自訂</td></tr>
-        <tr><td>難度</td><td>基礎（課本原文、觀念複習）、普通（標準段考難度）、進階（跨概念、需要推理）、挑戰（多步驟思考、情境轉換）；不管哪一級，都不會超出該年級的課綱</td></tr>
-        <tr><td>輸出語言</td><td>繁體中文、英文</td></tr>
-    </table></div>
-    <p>按下出題後等十幾秒；題數多會分批出，時間會長一點。</p>
-
-    <h3>省時間的捷徑</h3>
-    <ul>
-        <li><b>記住這些條件</b>：第 4 步下方按一下，存在這台裝置。下次進來第 1 步會多一個「用上次的條件直接出題」，一鍵出題。</li>
-        <li><b>複製設定連結</b>：把整組條件做成連結傳給同事，對方打開會直接到第 4 步，條件都帶好。</li>
-    </ul>
-
-    <h3>每次出題間隔 30 秒</h3>
-    <p>使用刻度內建的 AI 額度時，同一台裝置每次出題要隔 30 秒。若你有自己的 Google API Key，在第 4 步點「其實我有自己的 API Key，改用這個」貼上，就不受這個限制，用量算在你自己的額度上（Key 可以在 Google AI Studio 免費申請）。</p>
-</section>
-
-<!-- ===== 4 ===== -->
-<section class="m-chapter" id="after" data-role="guest teacher">
-    <h2><span class="m-no">4</span>老師：出完題之後</h2>
-    <figure class="m-fig"><img src="manual/img/result.webp" alt="出好的試卷，上方工具列有線上作答、編輯題目、交給學生作答、要印轉成 Word 或 PDF、發送測驗、更多" loading="lazy" width="1100" height="773"><figcaption>出好的考卷與上方工具列</figcaption></figure>
-    <h3>線上作答、題目卷與答案卷</h3>
-    <p>出好題之後，畫面預設是<b>線上作答</b>：手機和電腦都能直接寫，這也是學生從連結進來看到的樣子。要看 A4 版面，按工具列最右邊「更多」，選「看 A4 題目卷」或「看答案卷與解析」；進去之後上方會出現「題目卷」「答案卷」分頁，按「線上作答」就回來。</p>
-    <p><b>提醒</b>：線上作答是邊寫邊給回饋的練習模式，題目和答案會一起送到學生的瀏覽器，會用開發者工具的學生查得到答案。它適合練習與平時小考；正式考試請用「要印？轉成 Word／PDF」印出紙本題目卷。</p>
-    <figure class="m-fig"><img src="manual/img/answer-key.webp" alt="答案卷畫面" loading="lazy" width="1100" height="773"><figcaption>答案卷</figcaption></figure>
-    <h3>編輯題目</h3>
-    <p>按工具列的「編輯題目」，可以改試卷標題，以及每一題的題目、選項、答案、解析、配分，也能調整順序、刪除或新增一題。按「儲存」後，線上作答、題目卷、答案卷、Word、PDF，還有你發給學生的連結，都會一起更新。（以前直接點試卷文字修改的做法已經取消，因為那樣改的字不會進線上作答與分享。）</p>
-    <h3>只換掉某一題</h3>
-    <figure class="m-fig"><img src="manual/img/regen.webp" alt="題號下方的換這題按鈕" loading="lazy" width="900" height="220"><figcaption>題號下方的「換這題」</figcaption></figure>
-    <p>某一題不滿意，先從「更多」進 A4 題目卷，按題號下方的「換這題」，只有這一題重出，其他題目和你改過的字都不會動。換題一樣有 30 秒間隔。要整份重來，在「更多」裡選「重新出整份」（會清掉目前題目）。</p>
-    <h3>要印？轉成 Word／PDF</h3>
-    <figure class="m-fig"><img src="manual/img/download.webp" alt="要印？轉成 Word／PDF 選單，有 Word 檔、PDF 題目卷、PDF 答案卷" loading="lazy" width="800" height="260"><figcaption>下載選單</figcaption></figure>
-    <ul>
-        <li><b>Word（.docx）</b>：可以再用 Word 或 Google 文件編輯。</li>
-        <li><b>PDF</b>：分「題目卷」和「答案卷」兩種，適合直接列印或傳給別人。在線上作答畫面直接按「要印？轉成 Word／PDF」就能下載，不用先切到 A4 畫面。</li>
-        <li>用 Chrome 時，可能會跳出視窗問你要存在哪裡，選好位置按「儲存」即可。</li>
-    </ul>
-    <div class="m-tip"><b>列印的正確做法</b>先下載成 PDF，打開 PDF 後用 PDF 閱讀器本身的列印。直接在網頁按列印，瀏覽器會在紙上多印日期、網址和頁碼。</div>
-    <h3>出題紀錄</h3>
-    <p>畫面最上方「出題紀錄」保留這台裝置最近 20 次出過的考卷，可以重新打開。換電腦或清除瀏覽器資料就看不到了；要長期保存請下載，或登入老師帳號存進班級歷史（見<a href="#teacher-account">第 7 章</a>）。</p>
-</section>
-
-<!-- ===== 5 ===== -->
-<section class="m-chapter" id="send" data-role="guest teacher">
-    <h2><span class="m-no">5</span>老師：讓學生作答</h2>
-    <div class="m-note"><b>先登入</b>發送測驗需要老師帳號。還沒有帳號，在選身分頁點「我是教師」，再按「還沒有帳號？點此註冊」（見<a href="#teacher-account">第 7 章</a>）。</div>
-    <h3>發送測驗</h3>
-    <p>工具列按綠色「發送測驗」，一次產生四種發法：</p>
-    <figure class="m-fig"><img src="manual/img/send.webp" alt="發送這份測驗視窗：6 位數代碼、學生作答連結、家長答案連結、老師即時進度儀表板" loading="lazy" width="512" height="672"><figcaption>發送測驗</figcaption></figure>
-    <div class="m-table-wrap"><table class="m-table">
-        <tr><th>發法</th><th>給誰</th><th>怎麼用</th></tr>
-        <tr><td>6 位數代碼</td><td>課堂上的學生</td><td>按「投影大字」放到螢幕上，學生在學生首頁輸入代碼就進得去。最快。</td></tr>
-        <tr><td>學生作答連結</td><td>學生</td><td>貼到 LINE 群組或 Google Classroom。學生打開直接作答、自動判分，看不到答案。</td></tr>
-        <tr><td>家長答案連結</td><td>家長</td><td>可以看題目、答案和解析，只能看不能改。</td></tr>
-        <tr><td>老師即時進度儀表板</td><td>老師自己</td><td>不用登入就看得到全班進度，所以<b>不要轉給學生或貼到班級群組</b>。</td></tr>
-    </table></div>
-    <p>代碼和連結都是 30 天內有效。</p>
-    <h3>看全班即時進度</h3>
-    <figure class="m-fig"><img src="manual/img/dashboard.webp" alt="即時進度儀表板，顯示學生座號姓名和已答題數" loading="lazy" width="576" height="224"><figcaption>即時進度儀表板</figcaption></figure>
-    <ul>
-        <li>每 8 到 10 秒自動更新，看得到每位學生寫到第幾題。</li>
-        <li>按學生卡片的「查看詳情」，可以看他每一題實際選了什麼、寫了什麼。</li>
-        <li>「停止監看」會讓這條儀表板連結失效，學生不能自己關掉被監看。</li>
-        <li>作答進度保留 8 小時，課堂上很夠用。</li>
-    </ul>
-    <h3>交給學生作答（同一支手機，不用登入，訪客也能用）</h3>
-    <p>家長或教師在手機出好題目後，按工具列「交給學生作答」，設一組 4 位數字密碼就能把手機直接遞給學生。學生交卷後只會看到「已交卷」，分數、對錯、正確答案與解析都先收起來。</p>
-    <ul>
-        <li>一支手機要輪流給幾位學生寫：學生交卷後按「換下一位同學寫」，不用密碼，作答會清空、成績先暫存。</li>
-        <li>學生寫完交還：按頂端細條的「家長／教師」，或按成績卡上的「查看詳解」，輸入密碼後會顯示全部學生的成績名單與每題解析。</li>
-        <li>解鎖後想讓學生再練一次：按「只重做錯題」，只會出現答錯的題目，沿用同一組密碼；寫完同樣要密碼才看得到結果，之後可按「還原成完整題目」。</li>
-        <li>忘記密碼：解鎖時留空直接按確定，改答一題算式（例如 47 × 8）就能解鎖，答案不會直接公開。</li>
-        <li>密碼與成績只存在這個畫面裡，重新整理或關掉頁面就會消失。</li>
-    </ul>
-    <div class="m-figs">
+<!-- ===== 訪客 ===== -->
+<section class="m-chapter" id="guest" data-role="guest">
+    <h2>訪客：一支手機就能用</h2>
+    <ol class="m-steps">
+        <li>歡迎頁按「進入」，選「訪客模式」，不用登入。</li>
+        <li>選年級和科目，按「開始出題」（一份最多 20 題）。</li>
+        <li>出好後先看題目，要改就按「編輯」。</li>
+        <li>按「交給學生作答」，設一組 4 位數密碼，把手機遞給學生。</li>
+    </ol>
+    <details class="m-more"><summary>學生寫完之後</summary>
+        <p>學生交卷後只看到「已交卷」，分數和答案先收起來。下一位同學按「換下一位同學寫」。你輸入密碼，才看得到全部成績和每題解析。</p>
         <figure class="m-fig is-phone"><img src="manual/img/handoff-setup.webp" alt="交給學生作答視窗，設定 4 位數密碼與學生暱稱" loading="lazy" width="780" height="1688"><figcaption>設密碼，交給學生</figcaption></figure>
-        <figure class="m-fig is-phone"><img src="manual/img/handoff-done.webp" alt="學生交卷後只看到已交卷，有換下一位同學寫與查看詳解兩個按鈕" loading="lazy" width="780" height="1688"><figcaption>學生交卷後只看到「已交卷」</figcaption></figure>
-        <figure class="m-fig is-phone"><img src="manual/img/handoff-unlocked.webp" alt="家長輸入密碼後，顯示成績名單、每題解析與只重做錯題按鈕" loading="lazy" width="780" height="1688"><figcaption>家長輸入密碼後看成績與解析</figcaption></figure>
-    </div>
-    <h3>自己先試寫一次</h3>
-    <p>用「交給學生作答」自己當學生寫一遍，確認題目沒問題再發；寫完輸入密碼就能看解析。</p>
+    </details>
+    <details class="m-more"><summary>想把試卷存起來</summary>
+        <p>訪客的試卷只留在這台手機。按結果選單的「註冊帳號，把試卷存起來」，註冊教師帳號後會自動存進帳號。</p>
+    </details>
 </section>
 
-<!-- ===== 6 ===== -->
-<section class="m-chapter" id="paper" data-role="teacher">
-    <h2><span class="m-no">6</span>老師：派現成的紙本卷</h2>
-    <p>手邊已經有出好的卷子（段考卷、講義、習作），不用重打。第 1 步選「派現成的紙本卷」，把卷子拍照或丟 PDF 上傳，AI 會把題目<b>照抄成整齊的數位題目</b>，你核對過後就變成跟 AI 出題一樣的手機線上測驗。這個功能要先登入教師帳號。</p>
-    <ol>
-        <li><b>上傳題目卷</b>：拍照、選照片或直接丟 PDF，一頁一張，最多 12 頁。拍的時候光線要均勻、整張入鏡、不要歪斜或反光。</li>
-        <li><b>上傳答案卷（建議）</b>：有答案卷的話，AI 會以它為準，把每題答案與解析填進去，批改最準；沒有的話，AI 會自己解題，每個答案都會標「答案是 AI 自己解的」，要請你核對。</li>
-        <li><b>按「開始辨識」</b>：每批約 10 到 40 秒。中途失敗可以按「從中斷的地方繼續」，已完成的部分不會白做。</li>
-        <li><b>核對辨識結果</b>：逐題對照原卷，AI 不確定的題目會標紅字（字跡或注音看不清楚、答案缺漏、題目有圖形等），可以點縮圖放大看原圖，直接修改題目、選項、答案。勾選「我已逐題對照原卷檢查過」才能產生測驗。</li>
-        <li><b>發給學生</b>：跟 AI 出題一樣，預設就是手機線上作答；要列印的 A4 題目卷、答案卷、PDF、Word，按工具列的「要印？轉成 Word／PDF」，選 Word 檔（題目卷與答案卷都在同一份，答案卷另起新頁）或單獨的 PDF 題目卷、PDF 答案卷下載。</li>
+<!-- ===== 老師 ===== -->
+<section class="m-chapter" id="t-make" data-role="teacher">
+    <h2>老師 1：出一份考卷</h2>
+    <ol class="m-steps">
+        <li>選「我是教師」。免登入就能先出題試用，登入後題數不限。</li>
+        <li>第 1 步選方式：<b>AI 出題</b>、<b>依課本或講義出</b>（上傳檔案、拍照或貼文字）、<b>派現成的紙本卷</b>。</li>
+        <li>選年級和科目（一定要選），版本和範圍可以不填，再選題數、題型、難度。</li>
+        <li>按「開始出題」。題數多會分批出，要多等一下。</li>
     </ol>
-    <div class="m-warn"><b>圖形多的卷子</b>目前只能辨識文字，題目裡的圖形、表格不會跟著過來，這樣的題目會標紅。圖形很多的卷子，可以改用「原卷圖片作答」（拍照頁面上的小連結）：學生直接在原卷圖片上作答，由你標出作答位置。</div>
-    <div class="m-warn"><b>隱私</b>照片只在辨識的當下傳給 Google Gemini 轉成文字，我們不保存。請避免拍到學生姓名等個人資料。</div>
+    <details class="m-more"><summary>題型、難度、限制</summary>
+        <ul>
+            <li><b>題型</b>：單選、複選、是非、克漏字、填充、簡答、配合題、排序題，也能自訂。</li>
+            <li><b>難度</b>：基礎、普通、進階、挑戰，都不會超出該年級課綱。</li>
+            <li><b>間隔</b>：同一台裝置每次出題要隔 30 秒；沒登入又沒自備 Google API Key，每天最多出 6 次。</li>
+            <li><b>省時間</b>：第 4 步下方「記住這些條件」，下次可以直接套用。</li>
+        </ul>
+    </details>
 </section>
 
-<!-- ===== 7 ===== -->
-<section class="m-chapter" id="teacher-account" data-role="teacher">
-    <h2><span class="m-no">7</span>老師帳號與班級</h2>
-    <figure class="m-fig"><img src="manual/img/login.webp" alt="教師登入畫面，有帳號、密碼欄位與登入鈕" loading="lazy" width="1100" height="900"><figcaption>選身分頁點「我是教師」</figcaption></figure>
+<section class="m-chapter" id="t-check" data-role="teacher">
+    <h2>老師 2：出好之後先看題目</h2>
+    <p>畫面會列出每一題，綠色是正確答案，學生看不到。AI 偶爾會出錯，發出去前請先看過一遍。</p>
     <ul>
-        <li><b>註冊</b>：在登入畫面按「還沒有帳號？點此註冊」。老師註冊時顯示名稱寫自己的名字就好（例如「劉德華 老師」），不用幫班級取名字。註冊時可以自己設班級代碼（4～10 碼，英文、數字都可以，混搭也行，不分大小寫，例如 LIN602，全站不能重複），不設的話系統會給一組好唸的，像 MOKABE。代碼登入後固定顯示在頂端列，也可以到「我的帳號」複製、自己修改或換一組；學生註冊或加入班級時輸入這組代碼（輸入班級名稱也一樣能加入）。改了代碼之後，舊代碼就不能再用，已經加入的學生不受影響。</li>
-        <li><b>帳號與密碼規則</b>：帳號和密碼都最多 16 個字，只能用英文、數字和符號（不能用中文、不能有空白），而且<b>不分大小寫</b>，打「ABC」和「abc」是同一個。密碼至少 6 碼。</li>
-        <li><b>登入後多的功能</b>：發送測驗；出題後在「更多」裡「存入班級歷史」，全班共用，最多 50 份，超過會自動刪最舊的；即時進度可以看每位學生的作答詳情。</li>
-        <li>登入狀態保留 30 天，之後要重新登入。</li>
-        <li>目前沒有自助重設密碼。忘記密碼請聯絡我們（<a href="#contact">第 12 章</a>）。</li>
+        <li><b>改題目</b>：按「編輯」，可以改題目、選項、答案、解析、配分，也能調順序、刪題、加題。</li>
+        <li><b>只換一題</b>：「更多」→「看 A4 題目卷」→ 該題的「換這題」。</li>
+        <li><b>要印</b>：按「要印？轉成 Word／PDF」。</li>
     </ul>
 </section>
 
-<!-- ===== 8 ===== -->
+<section class="m-chapter" id="t-send" data-role="teacher">
+    <h2>老師 3：發給學生、看進度</h2>
+    <p>發送要登入教師帳號。按「發送測驗」，一次給你四種發法，連結和代碼都 30 天內有效：</p>
+    <div class="m-table-wrap"><table class="m-table"><thead><tr><th>發法</th><th>怎麼用</th></tr></thead><tbody>
+        <tr><td>6 位數代碼</td><td>按「投影大字」放在螢幕上，學生在學生首頁輸入，最快</td></tr>
+        <tr><td>學生作答連結</td><td>貼到 LINE 或 Google Classroom，學生點開就寫，免登入</td></tr>
+        <tr><td>家長答案連結</td><td>家長可以看題目、答案和解析，只能看</td></tr>
+        <tr><td>老師進度儀表板</td><td>你自己看全班進度，不要轉給學生</td></tr>
+    </tbody></table></div>
+    <figure class="m-fig"><img src="manual/img/send.webp" alt="發送這份測驗視窗：6 位數代碼、學生作答連結、家長答案連結、老師即時進度儀表板" loading="lazy" width="512" height="672"><figcaption>發送測驗視窗</figcaption></figure>
+    <ul>
+        <li><b>學生看不到答案</b>：學生版連結不含答案，交卷或按「檢查這題」時才由伺服器判分、公布。</li>
+        <li><b>看進度</b>：按「看全班寫到哪」，每 8 到 10 秒更新，點學生可看他每題寫了什麼；還有「最需要檢討的題目」排行。進度保留 8 小時。</li>
+        <li><b>停止監看</b>：會讓儀表板連結失效。</li>
+    </ul>
+    <p class="m-note">2026 年 11 月 11 日以前發出的舊連結，學生版仍含答案，請重新發送。</p>
+</section>
+
+<section class="m-chapter" id="t-more" data-role="teacher">
+    <h2>老師 4：其他</h2>
+    <details class="m-more"><summary>手上已經有紙本考卷</summary>
+        <ol>
+            <li>第 1 步選「派現成的紙本卷」（要登入）。</li>
+            <li>上傳題目卷（拍照或 PDF，最多 12 頁）。有答案卷也一起上傳，沒有的話 AI 會自己解題並標註。</li>
+            <li>按「開始辨識」，每批約 10 到 40 秒。</li>
+            <li>逐題核對，標紅的是 AI 不確定的題目。勾「我已逐題對照原卷檢查過」才能發布。</li>
+        </ol>
+        <p>題目裡的圖形會盡量裁下來附在題目旁，裁不到的會標紅。照片只在辨識時傳給 Google Gemini，我們不保存，請避免拍到學生姓名。</p>
+    </details>
+    <details class="m-more"><summary>同一支手機輪流給學生寫</summary>
+        <p>按「交給學生作答」設 4 位數密碼，做法和訪客一樣。</p>
+    </details>
+    <details class="m-more"><summary>帳號與班級</summary>
+        <ul>
+            <li><b>註冊</b>：登入畫面按「還沒有帳號？點此註冊」，顯示名稱寫自己的名字就好。</li>
+            <li><b>班級代碼</b>：4 到 10 碼英文或數字，不分大小寫，全站不能重複；不設系統會給一組。學生加入班級時輸入它。</li>
+            <li><b>帳號與密碼</b>：最多 16 字，只能用英文、數字、符號，不分大小寫，密碼至少 6 碼。</li>
+            <li><b>存入班級歷史</b>：登入後出題，在「更多」裡存入，全班共用，最多 50 份。</li>
+            <li><b>登入狀態</b>保留 30 天。目前沒有自助重設密碼，請聯絡我們。</li>
+        </ul>
+    </details>
+</section>
+
+<!-- ===== 學生 ===== -->
 <section class="m-chapter" id="student" data-role="student">
-    <h2><span class="m-no">8</span>學生</h2>
-    <h3>進入學生首頁</h3>
-    <p>選「我是學生」要先登入；還沒有帳號就按「還沒有帳號？點此註冊」，註冊時要先閱讀並勾選《個人資料蒐集告知》。老師的班級名稱可以選填，之後也能補。</p>
-    <figure class="m-fig is-phone"><img src="manual/img/student-home.webp" alt="學生首頁，有進入老師的測驗和我要練習" loading="lazy" width="780" height="2108"><figcaption>學生首頁（手機）</figcaption></figure>
-    <h3>寫老師的測驗</h3>
-    <ol>
-        <li>在「進入老師的測驗」輸入老師報的 6 位數代碼按「進入」；或把老師給的連結貼上按「前往」，也可以直接點老師傳來的連結。</li>
-        <li>開始前可以填年級、班級、座號、姓名（選填，方便老師和家長核對是誰寫的）。</li>
-        <li>選作答方式：「全部寫完再送出」，或「即時反饋」（每題答完馬上看對錯，要登入才能用）。即時模式每題要按「確認這題」才算數，避免誤按。</li>
-        <li>寫完按「交卷看成績」，馬上看到分數，每一題標出答對或答錯、正確答案和解析。</li>
+    <h2>學生：寫測驗</h2>
+    <ol class="m-steps">
+        <li>點老師傳的連結，或在學生首頁輸入老師給的 6 位數代碼，都不用登入。</li>
+        <li>輸入姓名或暱稱，老師才知道是誰在寫。</li>
+        <li>按「開始測驗」，一題一題寫。</li>
+        <li>寫完按「交卷看成績」，會看到分數、每題對錯、正確答案和解析。</li>
     </ol>
-    <div class="m-figs">
-        <figure class="m-fig is-phone"><img src="manual/img/student-start.webp" alt="作答前填資料和選作答方式" loading="lazy" width="780" height="1688"><figcaption>開始前</figcaption></figure>
-        <figure class="m-fig is-phone"><img src="manual/img/student-answering.webp" alt="手機上一題一題作答" loading="lazy" width="780" height="1688"><figcaption>作答中</figcaption></figure>
-        <figure class="m-fig is-phone"><img src="manual/img/student-graded.webp" alt="送出後每題顯示答對答錯與解析" loading="lazy" width="780" height="1688"><figcaption>送出後看對錯與解析</figcaption></figure>
-    </div>
-    <p>送出後可以按「分享結果給家長／老師」產生結果連結（30 天有效），或「分享即時監看連結給家長」。</p>
-    <div class="m-note"><b>填充、簡答題</b>是用文字比對判分，寫法不同（例如多一個字）可能被判錯，分數僅供參考，以老師核對為準。</div>
-    <div class="m-note"><b>配合題、排序題</b>是確定的判分，不用文字比對。配合題每連對一對就拿該對的分；排序題依「放在正確位置的項目」按比例給分，沒作答是 0 分。手機上用點的：配合題先點左邊、再點右邊，點已配好的可以取消；排序題用 ↑ ↓ 鈕。印成紙本時，配合題在左邊括號填右邊的代號，排序題在下方括號填順序。老師要改內容，在「編輯題目」裡配合題一行寫一對（用「｜」隔開），排序題一行寫一項（由上到下就是正確順序）。</div>
-    <h3>自己練習</h3>
-    <p>學生首頁的「我要練習」：選年級、科目、課本版本（康軒、翰林、南一、部編，或不指定）、想練的範圍、題數（5 到 20 題）和難度，按「開始練習」，刻度出一份練習卷，寫完自動對答案。每次練習一樣間隔 30 秒，下方「我的練習紀錄」看得到以前的分數。</p>
-    <h3>要不要登入</h3>
-    <p>不登入也能寫測驗和練習。登入才有：即時反饋（每題答完馬上看對錯）、換手機或電腦也看得到自己的練習紀錄和分數。</p>
-    <p>教師先用訪客身分出了卷子也不會白做：註冊（或登入）教師帳號時，這台裝置「出題紀錄」裡的卷子會自動存進班級歷史。家長與學生的紀錄本來就只留在這台裝置，換裝置前請先登入。</p>
+    <figure class="m-fig is-phone"><img src="manual/img/student-answering.webp" alt="手機上一題一題作答" loading="lazy" width="780" height="1688"><figcaption>手機上作答</figcaption></figure>
+    <details class="m-more"><summary>配合題、排序題、填空題怎麼寫</summary>
+        <ul>
+            <li><b>配合題</b>：先點左邊，再點右邊；點已配好的可以取消。</li>
+            <li><b>排序題</b>：用 ↑ ↓ 鈕調順序。</li>
+            <li><b>填空、簡答</b>：用文字比對，寫法不同（例如多一個字）可能被判錯，分數僅供參考，以老師核對為準。</li>
+            <li>每題旁的 🔊 可以朗讀題目。</li>
+        </ul>
+    </details>
+    <details class="m-more"><summary>自己練習</summary>
+        <p>學生首頁按「我要練習」，選年級、科目、課本版本、範圍、題數（5 到 20 題）和難度，按「開始練習」，寫完自動對答案。不用登入，練習紀錄留在這台裝置。</p>
+    </details>
+    <details class="m-more"><summary>讓家長看結果</summary>
+        <p>交卷後按「分享結果給家長／老師」，產生 30 天有效的結果連結；或按「分享即時監看連結給家長」，家長就能看你寫到哪。</p>
+    </details>
 </section>
 
-<!-- ===== 9 ===== -->
+<!-- ===== 家長 ===== -->
 <section class="m-chapter" id="parent" data-role="parent">
-    <h2><span class="m-no">9</span>家長</h2>
-    <ul>
-        <li><b>看題目和答案</b>：打開老師給的「家長答案連結」，可以看題目、答案與解析。</li>
-        <li><b>看孩子寫到哪</b>：孩子作答後按「分享即時監看連結給家長」傳給你，打開就看得到進度；孩子寫完也可以傳「結果連結」給你看分數和每題對錯。</li>
-        <li><b>家長帳號</b>：在選身分頁點「我是家長」登入或註冊，請孩子登入自己的帳號，在「我的帳號」按「產生綁定碼」（10 分鐘有效、只能用一次），你登入後輸入這 6 位數字就能連結。連結後不用等孩子傳連結，就能直接查他的即時進度和作答詳情，一次可以管好幾個孩子。</li>
-    </ul>
+    <h2>家長：3 件事</h2>
+    <ol class="m-steps">
+        <li><b>看題目和答案</b>：打開老師給的「家長答案連結」。</li>
+        <li><b>看孩子寫到哪</b>：請孩子作答後按「分享即時監看連結給家長」傳給你，打開就看得到進度；寫完也可以請他傳「結果連結」，看分數和每題對錯。</li>
+        <li><b>長期關心</b>：選「我是家長」註冊，請孩子在「我的帳號」按「產生綁定碼」（6 位數，10 分鐘有效、只能用一次），你輸入後就連結好了，之後不用等孩子傳連結，一次可以管好幾個孩子。</li>
+    </ol>
+    <details class="m-more"><summary>家長自己出題給孩子練習</summary>
+        <p>選「我是家長」，免登入就能出題，做法和老師的「出一份考卷」一樣；交給孩子寫用「交給學生作答」。</p>
+    </details>
 </section>
 
-<!-- ===== 10 ===== -->
 <section class="m-chapter" id="admin" data-role="all">
-    <h2><span class="m-no">10</span>管理員</h2>
+    <h2>管理員</h2>
     <p>管理員帳號不開放自己註冊，由既有管理員建立。從選身分頁的「管理員登入」進入，畫面右上角會出現「管理後台」，可以：</p>
     <ul>
         <li>查看、搜尋全站帳號</li>
@@ -306,22 +185,20 @@
     </ul>
 </section>
 
-<!-- ===== 11 ===== -->
+<!-- ===== 常見問題 ===== -->
 <section class="m-chapter m-faq" id="faq" data-role="*">
-    <h2><span class="m-no">11</span>常見問題</h2>
-    <details><summary>為什麼要等 30 秒才能再出題？</summary><p>刻度內建的 AI 額度是大家共用的，同一台裝置每次出題要間隔 30 秒，避免額度被少數人用光。有自己的 Google API Key 就不受限制（見<a href="#make">第 3 章</a>）。</p></details>
-    <details><summary>AI 出的題目有錯怎麼辦？</summary><p>按「編輯題目」直接改掉，或在更多選單進 A4 題目卷，按該題的「換這題」。發給學生前請一定先看過；AI 偶爾會出現事實錯誤或超出年級的內容。</p></details>
-    <details><summary>填充題學生寫對了卻被判錯？</summary><p>填充和簡答是逐字比對，同義的不同寫法可能被判錯。請以老師核對為準；選擇題的判分不受影響。</p></details>
-    <details><summary>連結打不開了？</summary><p>分享連結、6 位數代碼、結果連結都是 30 天內有效，即時進度保留 8 小時。過期請老師重新按一次「發送測驗」。</p></details>
+    <h2>常見問題</h2>
+    <details><summary>手機、平板可以用嗎？</summary><p>可以。手機、平板、電腦的瀏覽器都能出題、作答、看進度，不用安裝。</p></details>
+    <details><summary>為什麼出題要等 30 秒？</summary><p>AI 額度是大家共用的，同一台裝置每次出題要間隔 30 秒。有自己的 Google API Key 就不受限制。</p></details>
+    <details><summary>AI 出的題目有錯怎麼辦？</summary><p>按「編輯」直接改，或用「換這題」重出那一題。發給學生前請先看過。</p></details>
+    <details><summary>連結打不開了？</summary><p>學生連結、代碼、結果連結都是 30 天有效，即時進度保留 8 小時。過期請老師重新按一次「發送測驗」。</p></details>
+    <details><summary>換裝置後出題紀錄不見了？</summary><p>出題紀錄只存在原本那台裝置的瀏覽器。要跨裝置保留，請下載 Word／PDF，或登入教師帳號存進班級歷史。</p></details>
+    <details><summary>怎麼換身分？</summary><p>畫面最上方的「換身分」可以隨時回到選身分頁。</p></details>
     <details><summary>忘記密碼怎麼辦？</summary><p>目前沒有自助重設密碼，請聯絡我們，由管理員幫你重設。</p></details>
-    <details><summary>換電腦後出題紀錄不見了？</summary><p>出題紀錄和「記住這些條件」只存在原本那台裝置的瀏覽器。要跨裝置保留，請下載 Word／PDF，或登入老師帳號存進班級歷史。</p></details>
-    <details><summary>手機、平板可以用嗎？</summary><p>可以。出題、作答、看進度都支援手機和平板；出題建議用電腦，下載和改字比較方便。</p></details>
-    <details><summary>不想每次都看歡迎畫面？</summary><p>按右下角「略過」即可；同一個分頁重新整理不會再播。</p></details>
 </section>
 
-<!-- ===== 12 ===== -->
 <section class="m-chapter" id="contact" data-role="*">
-    <h2><span class="m-no">12</span>聯絡我們</h2>
+    <h2>聯絡我們</h2>
     <ul>
         <!-- Cloudflare 的信箱混淆會把信箱改寫成亂碼（爬蟲與 AI 讀到的是亂碼），這段豁免 -->
         <!--email_off--><li>作者信箱：<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">gfeh@hunglun.com</a></li><!--/email_off-->
@@ -332,6 +209,6 @@
 </section>
 </main>
 </div>
-<script src="js/manual.js?v=1"></script>
+<script src="js/manual.js?v=2"></script>
 </body>
 </html>

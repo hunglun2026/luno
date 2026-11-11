@@ -5,8 +5,6 @@
     var ROLES = ['guest', 'teacher', 'student', 'parent', 'all'];
     var chapters = document.querySelectorAll('.m-chapter[data-role]');
     var cards = document.querySelectorAll('[data-pick]');
-    var quicks = document.querySelectorAll('.m-quick');
-    var tocLinks = document.querySelectorAll('.m-toc a[href^="#"]');
 
     function show(role, fromUser) {
         var guided = role !== 'all';
@@ -16,19 +14,14 @@
             var ok = !guided || r === '*' || r.split(' ').indexOf(role) >= 0;
             chapters[i].hidden = !ok;
         }
-        for (var q = 0; q < quicks.length; q++) quicks[q].hidden = quicks[q].getAttribute('data-for') !== role;
         for (var c = 0; c < cards.length; c++) cards[c].classList.toggle('is-on', cards[c].getAttribute('data-pick') === role);
-        for (var t = 0; t < tocLinks.length; t++) {
-            var target = document.getElementById(tocLinks[t].getAttribute('href').slice(1));
-            if (tocLinks[t].parentNode) tocLinks[t].parentNode.hidden = !!(target && target.hidden);
-        }
         try {
             var u = new URL(location.href);
             if (guided) u.searchParams.set('role', role); else u.searchParams.delete('role');
             history.replaceState(null, '', u.pathname + u.search + u.hash);
         } catch (e) { /* 網址列改不了就算了 */ }
         if (fromUser && guided) {
-            var first = document.querySelector('.m-quick:not([hidden])');
+            var first = document.querySelector('.m-chapter:not([hidden])');
             if (first && first.scrollIntoView) first.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     }
@@ -46,8 +39,6 @@
         // 第一次進來：先只給「你是誰」，章節收起來，選了再展開
         document.body.classList.add('m-guided', 'm-nopick');
         for (var i = 0; i < chapters.length; i++) chapters[i].hidden = true;
-        for (var q = 0; q < quicks.length; q++) quicks[q].hidden = true;
-        for (var t = 0; t < tocLinks.length; t++) if (tocLinks[t].parentNode) tocLinks[t].parentNode.hidden = true;
         var onPick = function (e) {
             if (e.target.closest && e.target.closest('[data-pick]')) {
                 document.body.classList.remove('m-nopick');
