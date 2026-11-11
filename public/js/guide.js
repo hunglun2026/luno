@@ -157,7 +157,7 @@
             var el = $(id);
             if (el) el.addEventListener('click', refresh);
         });
-        ['count', 'qType', 'difficulty', 'lang', 'scope', 'c_count', 'c_qType', 'c_diff'].forEach(function (id) {
+        ['count', 'qType', 'difficulty', 'lang', 'scope', 'c_publisher', 'c_count', 'c_qType', 'c_diff'].forEach(function (id) {
             var el = $(id);
             if (el) { el.addEventListener('change', refresh); el.addEventListener('input', refresh); }
         });
@@ -216,6 +216,12 @@
         $('lgNext').classList.toggle('is-ready', cur === 1 || (cur === 2 && step2Ok()));
         $('lgNext').classList.toggle('lg-wait', cur === 2 && !step2Ok());
         $('lgPrev').textContent = '← 回上一頁';
+        // 第 3 步（版本、範圍）整步選填：兩欄都空白就把按鈕寫成「略過」，一看就知道可以直接往下
+        var skip3 = cur === 3 && !($('scope') && $('scope').value.trim()) && !($('c_publisher') && $('c_publisher').value.trim());
+        $('lgNext').textContent = skip3 ? '略過，直接下一步 →' : '下一步 →';
+        // 語言選了非預設（例如載入「記住的條件」是英文）就展開，不要把已改過的值藏在收合裡
+        var langMore = $('langMore');
+        if (langMore && $('lang') && $('lang').value !== '繁體中文') langMore.open = true;
     }
 
     function go(n) {
