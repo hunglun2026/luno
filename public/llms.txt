@@ -1,10 +1,10 @@
-# 刻度 互動式評量
+# 刻度 隨時考 隨時評
 
-> 刻度 互動式評量
+> 刻度 隨時考 隨時評
 
 鴻綸科技（https://www.hunglun.com/）製作的免費學習網站，免註冊、免安裝，收錄於官網學習專區 https://www.hunglun.com/tools/games 。
 
 ## 頁面
-- [刻度 互動式評量](https://kedu.hunglun.com/): 刻度 互動式評量
+- [刻度 隨時考 隨時評](https://kedu.hunglun.com/): 刻度 隨時考 隨時評
 - [個人資料蒐集告知](https://kedu.hunglun.com/privacy): 蒐集機關、目的、資料類別、保存期間、當事人權利。
 - [刻度 使用說明書](https://kedu.hunglun.com/manual): 刻度互動式評量的完整使用說明：老師出題、發測驗、看全班進度，學生作答與練習，家長查看，一步一步配實際畫面。
