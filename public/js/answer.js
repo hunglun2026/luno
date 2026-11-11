@@ -205,13 +205,7 @@
             // 保留「出完題預設進線上作答」，只在最上面說明身分並給發送出口；學生從連結進來、自己練習、交接給學生時不顯示。
             const teacherPreview = !window.isSharedView && !isSelfStudent() && !(typeof handoffActive === 'function' && handoffActive());
             if (teacherPreview) {
-                // 三步引導：每一步一顆按鈕，主要動作（發送）用主色。2026-11-11 Steve：要引導式、更直觀
-                html += "<div class='lq-preview-banner'><div class='lq-pb-text'><b>✅ 出好了！題目在下面</b><span>看過沒問題就發送，要改再按編輯：</span></div>" +
-                    "<div class='lq-pb-steps'>" +
-                    "<button type='button' onclick='openEditItems()' class='lq-pb-step'><i>1</i><span class='lq-pb-ic'>✏️</span><span>看題目、<br>要改就改</span></button>" +
-                    "<button type='button' onclick='openSendQuizModal()' class='lq-pb-step is-main'><i>2</i><span class='lq-pb-ic'>📤</span><span>發送給學生</span></button>" +
-                    "<button type='button' onclick='openLiveMonitor()' class='lq-pb-step'><i>3</i><span class='lq-pb-ic'>📊</span><span>看全班<br>寫到哪</span></button>" +
-                    "</div></div>";
+                // 2026-11-11 精簡：拿掉三步橫幅（發給學生同一個畫面出現三次），題目就是主角
                 html += teacherPreviewListHtml(window.currentItems || []);   // teacher-preview.js：先看到題目與答案
             } else {
                 html += "<div class='lq-card p-6 mb-4 text-center'><h2 class='font-bold text-lg mb-1'>📱 線上作答</h2><p class='text-sm text-gray-500'>選擇/複選題會自動判分；填空/簡答題只能做文字比對，僅供參考，請自行核對。</p></div>";
@@ -262,8 +256,9 @@
                 "</div>";
 
             if (teacherPreview) {
-                // 老師的主要出口是發送；自己試寫降為次要。底下留白避免被左下角浮動的「回上一頁」蓋住
-                html += "<button onclick='openSendQuizModal()' class='lq-btn lq-cta lq-btn-primary w-full py-3 rounded-xl text-lg mb-2'>📤 " + (window.currentUser ? "發送給學生" : "登入後發送給學生") + "</button>" +
+                // 老師的主要出口是「給學生寫」（連結或這支手機二選一，見 teacher-preview.js）；自己試寫降為次要。
+                // 底下留白避免被左下角浮動的「回上一頁」蓋住
+                html += "<button onclick='openGiveToStudents()' class='lq-btn lq-cta lq-btn-primary w-full py-3 rounded-xl text-lg mb-2'>📤 給學生寫</button>" +
                     "<button onclick='startAnswerQuiz()' class='lq-btn lq-btn-secondary w-full py-2 rounded-xl text-sm'>▶ 我自己先試寫一遍</button>" +
                     "<div style='height:4.5rem'></div>";
             } else {

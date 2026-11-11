@@ -235,18 +235,6 @@ body.handoff-mode #answerModeContainer { padding-top: 44px; }
 .lq-ans-opt:has(input:disabled) { cursor: default; }
 .ans-confirm-btn { width: 100%; justify-content: center; min-height: 44px; }
 /* 老師預覽橫幅（線上作答開始畫面最上方）：用 --ld-* 色票，深淺色自動跟著變 */
-.lq-preview-banner { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 0.75rem 1rem; background: var(--ld-panel); border: 1px solid var(--ld-line); border-left: 4px solid var(--ld-accent); border-radius: 12px; color: var(--ld-text); }
-.lq-pb-text { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.85rem; line-height: 1.5; flex: 1 1 14rem; min-width: 0; }
-.lq-pb-text b { font-size: 0.95rem; }
-.lq-pb-text span { color: var(--ld-muted); }
-.lq-pb-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; flex: 1 1 100%; }
-.lq-pb-step { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.2rem; min-height: 4.6rem; padding: 0.6rem 0.4rem; border: 1px solid var(--ld-line); border-radius: 12px; background: var(--ld-bg); color: var(--ld-text); font: inherit; font-size: 0.8rem; font-weight: 700; line-height: 1.3; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
-.lq-pb-step:hover { border-color: var(--ld-accent); background: var(--ld-hover); }
-.lq-pb-step:focus-visible { outline: 2px solid var(--ld-accent); outline-offset: 2px; }
-.lq-pb-step.is-main { background: var(--ld-accent); border-color: var(--ld-accent); color: var(--ld-on-accent); }
-.lq-pb-step.is-main:hover { background: var(--ld-accent-2); }
-.lq-pb-step i { position: absolute; top: 0.3rem; left: 0.4rem; font-style: normal; font-size: 0.68rem; font-weight: 800; opacity: 0.6; }
-.lq-pb-ic { font-size: 1.35rem; line-height: 1; }
 /* 老師出完題的題目預覽（teacher-preview.js）：在永遠白底的作答區裡，所以用固定淺色，不跟深色主題變 */
 .lq-tp-head { margin: 0 0 0.5rem; font-size: 0.85rem; font-weight: 700; color: #5f6368; }
 .lq-tp-q { color: #1f2937; }
@@ -337,3 +325,15 @@ body:has(#ansQuizBody:not(.hidden)) .lq-quiz-bottombar { padding-left: 7.2rem; }
 .ans-speak:hover { border-color: #94a3b8; background: #f8fafc; }
 .ans-speak.is-on { background: #1a73e8; border-color: #1a73e8; }
 @media print { .ans-speak { display: none; } }
+
+/* 「給學生寫」二選一視窗（teacher-preview.js）：兩個大選項，一眼看出差別 */
+.lq-give-opt { display: flex; flex-direction: column; gap: 0.25rem; width: 100%; margin-top: 0.75rem; padding: 0.85rem 1rem; text-align: left; font: inherit; color: inherit; background: var(--ld-panel, #f1f5fb); border: 2px solid var(--ld-line, #dbe3ef); border-radius: 0.9rem; cursor: pointer; }
+.lq-give-opt b { font-size: 1rem; }
+.lq-give-opt span { font-size: 0.85rem; line-height: 1.5; color: var(--ld-muted, #46556f); }
+.lq-give-opt:hover, .lq-give-opt:focus-visible { border-color: var(--hl-blue, #1A73E8); outline: none; }
+
+/* 頂部工具列精簡（2026-11-11）：「發送測驗」「即時監看」「交給學生作答」不再各占一顆，
+   統一從底部「給學生寫」或「更多」選單進（元素仍在 DOM，share.js 的顯示切換不用改） */
+#resultSection .sticky-header #btnAnswerMode,
+#resultSection .sticky-header #shareBtnsWrap { display: none; }
+body.guest-mode .lq-more-live { display: none; }
