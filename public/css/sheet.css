@@ -247,6 +247,12 @@ body.handoff-mode #answerModeContainer { padding-top: 44px; }
 .lq-pb-step.is-main:hover { background: var(--ld-accent-2); }
 .lq-pb-step i { position: absolute; top: 0.3rem; left: 0.4rem; font-style: normal; font-size: 0.68rem; font-weight: 800; opacity: 0.6; }
 .lq-pb-ic { font-size: 1.35rem; line-height: 1; }
+/* 老師出完題的題目預覽（teacher-preview.js）：在永遠白底的作答區裡，所以用固定淺色，不跟深色主題變 */
+.lq-tp-head { margin: 0 0 0.5rem; font-size: 0.85rem; font-weight: 700; color: #5f6368; }
+.lq-tp-q { color: #1f2937; }
+.lq-tp-opt { margin-top: 0.3rem; padding: 0.35rem 0.6rem; border: 1px solid transparent; border-radius: 8px; font-size: 0.9rem; line-height: 1.5; }
+.lq-tp-opt.is-ok { background: #e6f4ea; border-color: #81c995; color: #0d652d; font-weight: 700; }
+.lq-tp-ans { margin-top: 0.5rem; font-size: 0.85rem; line-height: 1.6; color: #5f6368; }
 .lq-quiz-bottombar { position: sticky; bottom: 0; z-index: 40; display: flex; align-items: center; gap: 0.875rem; margin: 1rem -1rem 0; padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom)); background: rgba(255,255,255,0.98); border-top: 1px solid #e5e7eb; }
 .lq-bar-progress-box { flex: 1; min-width: 0; }
 .lq-bar-meta { display: flex; justify-content: space-between; font-size: 0.75rem; color: #6b7280; margin-bottom: 0.3rem; }
