@@ -29,12 +29,14 @@ describe("註冊規則", () => {
     expect((await reg(env, { privacyVersion: "" })).status).toBe(400);
     expect((await reg(env, { privacyVersion: "昨天" })).status).toBe(400);
   });
-  it("有帶班級名稱時名稱不能重複", async () => {
+  it("不同老師可以有同名班級（2026-11-11 起名稱不再全站唯一），代碼各自不同", async () => {
     const env = makeEnv();
-    expect((await reg(env)).status).toBe(200);
-    const dup = await reg(env, { username: "teacher2" });
-    expect(dup.status).toBe(400);
-    expect((await dup.json()).error.message).toMatch(/班級名稱/);
+    const a = await (await reg(env)).json();
+    const r = await reg(env, { username: "teacher2" });
+    expect(r.status).toBe(200);
+    const b = await r.json();
+    expect(b.user.className).toBe(a.user.className);
+    expect(b.user.classCode).not.toBe(a.user.classCode);
   });
   it("老師註冊可以不填班級名稱：自動命名，同名顯示名稱不會撞，代碼自動發", async () => {
     const env = makeEnv();

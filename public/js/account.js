@@ -43,7 +43,8 @@
             if (loginBtn) loginBtn.classList.toggle('hidden', !!window.currentUser);
             if (window.currentUser) {
                 statusEl.textContent = window.currentUser.displayName + '（' + (roleLabel[window.currentUser.role] || window.currentUser.role) + '）' +
-                    (window.currentUser.role === 'teacher' && window.currentUser.classCode ? '　班級代碼 ' + window.currentUser.classCode : '');
+                    (window.currentUser.role === 'teacher' && window.currentUser.classCode
+                        ? (lqClasses().length > 1 ? '　' + window.currentUser.className + '・代碼 ' : '　班級代碼 ') + window.currentUser.classCode : '');
                 showClassCodeOnce();
             } else {
                 statusEl.textContent = '';
@@ -191,46 +192,7 @@
             } catch (e) { showAuthError('登入失敗：' + e.message); }
         }
 
-        // 老師自己設定班級代碼：已加入的學生不受影響，只有「之後」註冊或加入的人要輸入新代碼；舊代碼立刻失效
-        async function saveClassCode(payload) {
-            try {
-                const res = await fetch(API_BASE + "/api/class/code", {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Session-Token': lqGetToken() || '' },
-                    body: JSON.stringify(payload)
-                });
-                const data = await res.json();
-                if (data.error) { await lqAlert(data.error.message); return; }
-                window.currentUser.classCode = data.classCode;
-                updateAccountUI();
-                renderAccountLoggedInBody();
-            } catch (e) { lqAlert('修改失敗：' + e.message); }
-        }
-        async function editClassCode() {
-            const v = await askText('設定你的班級代碼（4～10 碼，英文、數字都可以，混搭也行，不分大小寫，例如 LIN602）。\n改了之後，舊代碼就不能再用；已經加入的學生不受影響。', { value: (window.currentUser && window.currentUser.classCode) || '' });
-            if (v === null || v === undefined || !String(v).trim()) return;
-            saveClassCode({ code: String(v).trim() });
-        }
-        async function randomClassCode() {
-            const ok = await askConfirm('換一組新的班級代碼？舊代碼會立刻失效，已經加入的學生不受影響。', { okText: '換一組', cancelText: '取消' });
-            if (ok) saveClassCode({ random: true });
-        }
-
-        // 老師登入後每次開啟都先跳一次大字班級代碼（同一個分頁只跳一次），報給學生用
-        function showClassCodeOnce() {
-            const u = window.currentUser;
-            if (!u || u.role !== 'teacher' || !u.classCode) return;
-            try { if (sessionStorage.getItem('lun_code_seen')) return; sessionStorage.setItem('lun_code_seen', '1'); } catch (e) { return; }
-            lqAlert('你的班級代碼：' + u.classCode + '\n\n學生註冊或加入班級時輸入這組代碼。\n頂端列隨時看得到，到「我的帳號」可以複製、自己改。');
-        }
-
-        // 複製班級代碼：瀏覽器不給剪貼簿權限時不假裝成功
-        function copyClassCode(code, btn) {
-            if (!(navigator.clipboard && navigator.clipboard.writeText)) return;
-            navigator.clipboard.writeText(code).then(function () {
-                btn.textContent = '已複製';
-                setTimeout(function () { btn.textContent = '複製代碼'; }, 1500);
-            }, function () {});
-        }
+        // 班級代碼、多班管理、切換目前班都在 classes.js（2026-11-11 起老師可以有多個班）
 
         async function renderAccountLoggedInBody() {
             const u = window.currentUser;
@@ -238,18 +200,7 @@
             let html = "<div class='space-y-3'>";
             html += "<div class='lq-card p-3 text-sm'><b>" + escapeHtml(u.displayName) + "</b>（" + escapeHtml(u.username) + "）</div>";
             if (u.role === 'teacher') {
-                // 給學生的加入代碼：大字、可複製；後端沒給代碼（舊版）時退回顯示班級名稱，學生輸入名稱一樣能加入
-                const joinCode = u.classCode || '';
-                html += "<div class='lq-card p-3 text-center'>" +
-                    "<div class='text-xs text-gray-500 mb-1'>班級代碼（學生註冊或加入班級時輸入）</div>" +
-                    "<div class='font-black' style='font-size:2rem; letter-spacing:0.18em; color:var(--hl-blue);'>" + escapeHtml(joinCode || u.className || '') + "</div>" +
-                    "<div class='text-xs text-gray-500 mt-1'>班級：" + escapeHtml(u.className || '') + "</div>" +
-                    (joinCode ? "<div class='flex gap-2 justify-center flex-wrap mt-2'>" +
-                        "<button type='button' onclick=\"copyClassCode('" + escapeHtml(joinCode) + "', this)\" class='lq-btn lq-btn-secondary text-xs px-3 py-1'>複製代碼</button>" +
-                        "<button type='button' onclick='editClassCode()' class='lq-btn lq-btn-secondary text-xs px-3 py-1'>自己設定</button>" +
-                        "<button type='button' onclick='randomClassCode()' class='lq-btn lq-btn-secondary text-xs px-3 py-1'>換一組好唸的</button></div>" : "") +
-                    "</div>";
-                html += "<button onclick=\"closeAccountModal(); openClassHistory();\" class='lq-btn lq-btn-secondary w-full py-2'>📚 查看班級歷史</button>";
+                html += classManagerHtml();   // 每個班一張卡（代碼、改名、設為目前班、刪除）＋新增班級＋看歷史
             } else if (u.role === 'student') {
                 html += "<div class='lq-card p-3'><div class='text-sm font-bold mb-1'>👨‍👩‍👧 讓家長看我的作答</div>" +
                     "<div class='text-xs text-gray-500 mb-2'>按下產生綁定碼，把 6 位數字告訴家長；家長登入後輸入就能連結。10 分鐘內有效，只能用一次。</div>" +
@@ -346,15 +297,28 @@
             if (!window.currentItems || window.currentItems.length === 0) { lqAlert('目前沒有題目可以存'); return; }
             const token = lqGetToken() || '';
             const title = window.docTitle || '測驗';
+            // 多個班：問存進哪一班（預設目前班）；只有一個班就直接存
+            const classes = lqClasses();
+            let classId = window.currentUser.classId;
+            let className = window.currentUser.className || '';
+            if (classes.length > 1) {
+                const curIdx = Math.max(0, classes.findIndex(function (c) { return c.id === classId; }));
+                const pick = await askChoice('這份試卷要存進哪一個班？', classes.map(function (c) {
+                    return { label: c.name + (c.id === classId ? '（目前班）' : ''), value: c.id };
+                }), { defaultIndex: curIdx });
+                if (pick === null || pick === undefined) return;
+                classId = pick;
+                className = (classes.find(function (c) { return c.id === pick; }) || {}).name || '';
+            }
             try {
                 const res = await fetch(API_BASE + "/api/history", {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-Session-Token': token },
-                    body: JSON.stringify({ title, items: window.currentItems })
+                    body: JSON.stringify({ title, items: window.currentItems, classId })
                 });
                 const data = await res.json();
                 if (data.error) { lqAlert(data.error.message); return; }
-                lqAlert('✅ 已存入班級歷史「' + title + '」');
+                lqAlert('✅ 已存入' + (classes.length > 1 ? '「' + className + '」的' : '') + '班級歷史「' + title + '」');
             } catch (e) { lqAlert('存入失敗：' + e.message); }
         }
 
@@ -364,16 +328,25 @@
             list.innerHTML = "<div class='text-center text-gray-500 py-8'>⏳ 載入中...</div>";
             document.getElementById('classHistoryModal').classList.remove('hidden');
             try {
-                const res = await fetch(API_BASE + "/api/history", { headers: { 'X-Session-Token': token } });
+                // 多個班：上方有班級選單，預設看目前班；選過的班在這次登入期間會記住
+                const classes = lqClasses();
+                if (!classes.some(function (c) { return c.id === window.__historyClassId; })) window.__historyClassId = window.currentUser.classId;
+                const q = window.__historyClassId ? "?classId=" + encodeURIComponent(window.__historyClassId) : "";
+                const res = await fetch(API_BASE + "/api/history" + q, { headers: { 'X-Session-Token': token } });
                 const data = await res.json();
                 if (data.error) { list.innerHTML = "<p class='text-red-600 text-center py-8'>" + escapeHtml(data.error.message) + "</p>"; return; }
                 const history = data.history || [];
                 window.__classHistoryCache = history;
+                const picker = classes.length > 1
+                    ? "<select class='lq-input' style='margin-bottom:.75rem;' aria-label='選擇班級' onchange='switchHistoryClass(this.value)'>" +
+                        classes.map(function (c) { return "<option value='" + c.id + "'" + (c.id === window.__historyClassId ? " selected" : "") + ">" + escapeHtml(c.name) + "</option>"; }).join('') +
+                        "</select>"
+                    : "";
                 if (history.length === 0) {
-                    list.innerHTML = "<p class='text-gray-500 text-center py-8'>班級還沒有出題歷史</p>";
+                    list.innerHTML = picker + "<p class='text-gray-500 text-center py-8'>這個班還沒有出題歷史</p>";
                     return;
                 }
-                list.innerHTML = history.map((h, i) =>
+                list.innerHTML = picker + history.map((h, i) =>
                     "<div class='flex justify-between items-center bg-gray-50 p-3 rounded-xl mb-2 border border-gray-100'>" +
                     "<div class='truncate mr-2'><div class='font-bold truncate'>" + escapeHtml(h.title) + "</div><div class='text-xs text-gray-500'>" + new Date(h.createdAt).toLocaleString() + "・" + h.items.length + "題</div></div>" +
                     "<div class='flex gap-2 flex-shrink-0'>" +
@@ -383,6 +356,7 @@
                 ).join('');
             } catch (e) { list.innerHTML = "<p class='text-red-600 text-center py-8'>載入失敗：" + escapeHtml(e.message) + "</p>"; }
         }
+        function switchHistoryClass(id) { window.__historyClassId = Number(id); openClassHistory(); }
         function closeClassHistory() { document.getElementById('classHistoryModal').classList.add('hidden'); }
 
         function loadClassHistoryItem(i) {

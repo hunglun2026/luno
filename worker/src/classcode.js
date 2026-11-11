@@ -44,7 +44,10 @@ export async function findClassByCodeOrName(env, input) {
     const byCode = await env.DB.prepare("SELECT id, name FROM classes WHERE join_code = ?").bind(code).first();
     if (byCode) return byCode;
   }
-  return env.DB.prepare("SELECT id, name FROM classes WHERE name = ?").bind(raw).first();
+  // 舊做法輸入班級名稱：多位老師可能有同名班，只有名稱剛好對到一個班才採用，否則一律要輸入代碼
+  const byName = await env.DB.prepare("SELECT id, name FROM classes WHERE name = ? LIMIT 2").bind(raw).all();
+  const rows = byName.results || [];
+  return rows.length === 1 ? rows[0] : null;
 }
 
 // 這個代碼可不可以給班級用：沒人用、也不跟任何班級名稱相同（不然學生輸入會對到兩個班）。
@@ -70,8 +73,8 @@ export async function insertClass(env, name, teacherId, now, customCode) {
     } catch (e) {
       if (!/UNIQUE/i.test(String(e && e.message))) throw e;
       if (customCode) throw new Error("這個班級代碼剛被別人用走了，請換一個");
-      // 班級名稱重複由呼叫端事先檢查；這裡的唯一衝突只可能是代碼撞號，換一組再試
-      const dup = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(name).first();
+      // 同一老師底下名稱重複就不用再試；否則唯一衝突只可能是代碼撞號，換一組再試
+      const dup = await env.DB.prepare("SELECT id FROM classes WHERE name = ? AND teacher_id = ?").bind(name, teacherId).first();
       if (dup) throw e;
     }
   }
@@ -100,6 +103,34 @@ export async function ensureClassCode(env, classId) {
   return done ? done.join_code : null;
 }
 
+// 老師要操作的班級 id：有指定（requested）就必須是這位老師自己的班，沒指定就用 users.class_id（目前班）。
+// 不是自己的班或找不到回 null，呼叫端一律當成「找不到你的班級」，不透露別人的班存不存在
+export async function resolveTeacherClassId(env, uid, requested) {
+  if (requested !== undefined && requested !== null && requested !== "") {
+    const id = Number(requested);
+    if (!Number.isInteger(id) || id <= 0) return null;
+    const own = await env.DB.prepare("SELECT id FROM classes WHERE id = ? AND teacher_id = ?").bind(id, uid).first();
+    return own ? own.id : null;
+  }
+  const user = await env.DB.prepare("SELECT class_id FROM users WHERE id = ?").bind(uid).first();
+  if (!user || !user.class_id) return null;
+  const own = await env.DB.prepare("SELECT id FROM classes WHERE id = ? AND teacher_id = ?").bind(user.class_id, uid).first();
+  return own ? own.id : null;
+}
+
+// 老師名下所有班：[{ id, name, code, studentCount }]，舊班級沒代碼就順手補發
+export async function listTeacherClasses(env, uid) {
+  const rows = await env.DB.prepare(
+    "SELECT c.id, c.name, (SELECT COUNT(*) FROM users u WHERE u.class_id = c.id AND u.role = 'student') AS n " +
+    "FROM classes c WHERE c.teacher_id = ? ORDER BY c.created_at ASC, c.id ASC"
+  ).bind(uid).all();
+  const out = [];
+  for (const r of rows.results || []) {
+    out.push({ id: r.id, name: r.name, code: await ensureClassCode(env, r.id), studentCount: r.n });
+  }
+  return out;
+}
+
 // POST /api/class/code  body: { code: "LIN602" } 老師自訂；{ random: true } 換一組系統好唸的
 // 只有老師能改自己班的代碼；已經加入的學生不受影響（學生記的是 class_id，不是代碼）
 export async function handleSetClassCode(request, env, deps) {
@@ -110,25 +141,26 @@ export async function handleSetClassCode(request, env, deps) {
   const session = await verifySession(request, env);
   if (!session || session.role !== "teacher") return json({ error: { message: "只有登入的老師可以修改班級代碼" } }, 401);
   try {
-    const user = await env.DB.prepare("SELECT class_id FROM users WHERE id = ?").bind(session.uid).first();
-    if (!user || !user.class_id) return json({ error: { message: "找不到你的班級" } }, 400);
     const body = await request.json();
+    // 多班：body.classId 指定要改哪個班（必須是自己的）；沒帶就用目前班
+    const classId = await resolveTeacherClassId(env, session.uid, body.classId);
+    if (!classId) return json({ error: { message: "找不到你的班級" } }, 400);
 
     let code;
     if (body.random) {
       for (let i = 0; i < 12; i++) {
         const c = newClassCode();
-        if (await codeIsFree(env, c, user.class_id)) { code = c; break; }
+        if (await codeIsFree(env, c, classId)) { code = c; break; }
       }
       if (!code) return json({ error: { message: "產生失敗，請再按一次" } }, 500);
     } else {
       const v = validateCustomCode(body.code);
       if (v.error) return json({ error: { message: v.error } }, 400);
-      if (!(await codeIsFree(env, v.code, user.class_id))) return json({ error: { message: "這個代碼已經有人用了，請換一個" } }, 400);
+      if (!(await codeIsFree(env, v.code, classId))) return json({ error: { message: "這個代碼已經有人用了，請換一個" } }, 400);
       code = v.code;
     }
     try {
-      await env.DB.prepare("UPDATE classes SET join_code = ? WHERE id = ?").bind(code, user.class_id).run();
+      await env.DB.prepare("UPDATE classes SET join_code = ? WHERE id = ?").bind(code, classId).run();
     } catch (e) {
       if (/UNIQUE/i.test(String(e && e.message))) return json({ error: { message: "這個代碼已經有人用了，請換一個" } }, 400);
       throw e;

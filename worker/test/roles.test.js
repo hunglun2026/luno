@@ -237,7 +237,6 @@ describe("超級管理員後台", () => {
     expect((await make({ username: "x", password: "pw1234", role: "hacker" })).status).toBe(400);
     expect((await make({ username: "王小明", password: "pw1234", role: "student" })).status).toBe(400);
     expect((await make({ username: "t9", password: "pw1234", role: "teacher" })).status).toBe(400);
-    expect((await make({ username: "t9", password: "pw1234", role: "teacher", className: "六年1班" })).status).toBe(400);
     expect((await make({ username: "teacher1", password: "pw1234", role: "student" })).status).toBe(400);
     expect((await make({ username: "t9", password: "pw1234", role: "teacher", className: "新班" })).status).toBe(200);
     expect((await make({ username: "s9", password: "pw1234", role: "student" })).status).toBe(200);

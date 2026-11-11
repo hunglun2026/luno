@@ -16,7 +16,8 @@
 import { handleBank, retryPendingBank } from "./bank.js";
 import { handleOcr } from "./ocr.js";
 import { handleGradeAnswer } from "./grade.js";
-import { newClassCode, findClassByCodeOrName, ensureClassCode, insertClass, handleSetClassCode, validateCustomCode, codeIsFree } from "./classcode.js";
+import { newClassCode, findClassByCodeOrName, ensureClassCode, insertClass, handleSetClassCode, validateCustomCode, codeIsFree, resolveTeacherClassId, listTeacherClasses } from "./classcode.js";
+import { handleClasses } from "./classes.js";
 import { buildStats } from "./livestats.js";
 import { publicShare, gradeShareAnswers } from "./sharegrade.js";
 
@@ -178,7 +179,11 @@ export default {
     if (url.pathname === "/api/class/code") {
       return handleSetClassCode(request, env, { json, CORS_HEADERS, verifySession });
     }
+    if (url.pathname === "/api/classes" || url.pathname.startsWith("/api/classes/")) {
+      return handleClasses(request, env, { json, CORS_HEADERS, verifySession }, url.pathname.slice("/api/classes".length));
+    }
     if (url.pathname === "/api/history" && request.method === "GET") {
+      return handleHistoryList(request, env, url);
       return handleHistoryList(request, env);
     }
     if (url.pathname === "/api/history") {
@@ -1301,11 +1306,8 @@ async function handleAuthRegister(request, env) {
     if (role === "teacher") {
       // 2026-11-10：註冊表單不再問班級名稱（老師可能帶很多班，代碼才是識別）。舊用戶端還是可以帶 className。
       className = String(body.className || "").trim().slice(0, 50);
-      // 班級名稱全站唯一（舊版學生輸入名稱加入，現在仍可用）；正式的加入代碼是 classes.join_code，見 classcode.js
-      if (className) {
-        const existingClass = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(className).first();
-        if (existingClass) return json({ error: { message: "這個班級名稱已經被使用，請換一個更完整的名稱（例如加上學校或年度）" } }, 400);
-      }
+      // 2026-11-11 起班級名稱不再全站唯一（只要求同一老師不重名，新老師沒有舊班，所以這裡不用檢查）；
+      // 學生加入以 classes.join_code 為準，見 classcode.js
       // 老師自訂班級代碼（選填）；沒填就由系統產一組好唸的
       if (String(body.joinCode || "").trim()) {
         const v = validateCustomCode(body.joinCode);
@@ -1353,7 +1355,8 @@ async function handleAuthRegister(request, env) {
 
     const token = await signToken({ uid: userId, role, exp: now + SESSION_TTL_SECONDS * 1000 }, env.SESSION_SECRET || "");
     const classCode = role === "teacher" && classId ? await ensureClassCode(env, classId) : null;
-    return json({ token, user: { id: userId, username, role, displayName, classId, className: role === "teacher" ? className : null, classCode } });
+    const classes = role === "teacher" ? await listTeacherClasses(env, userId) : undefined;
+    return json({ token, user: { id: userId, username, role, displayName, classId, className: role === "teacher" ? className : null, classCode, classes } });
   } catch (err) {
     return json({ error: { message: err.message } }, 500);
   }
@@ -1405,9 +1408,10 @@ async function handleAuthLogin(request, env) {
       className = cls ? cls.name : null;
     }
     const classCode = user.role === "teacher" && user.class_id ? await ensureClassCode(env, user.class_id) : null;
+    const classes = user.role === "teacher" ? await listTeacherClasses(env, user.id) : undefined;
     return json({
       token,
-      user: { id: user.id, username: user.username, role: user.role, displayName: user.display_name, classId: user.class_id, className, classCode },
+      user: { id: user.id, username: user.username, role: user.role, displayName: user.display_name, classId: user.class_id, className, classCode, classes },
     });
   } catch (err) {
     return json({ error: { message: err.message } }, 500);
@@ -1520,6 +1524,7 @@ async function handleAuthMe(request, env) {
     className = cls ? cls.name : null;
   }
   const classCode = user.role === "teacher" && user.class_id ? await ensureClassCode(env, user.class_id) : null;
+  const classes = user.role === "teacher" ? await listTeacherClasses(env, user.id) : undefined;
 
   return json({
     user: {
@@ -1530,6 +1535,7 @@ async function handleAuthMe(request, env) {
       classId: user.class_id,
       className,
       classCode,
+      classes,
     },
   });
 }
@@ -1575,11 +1581,11 @@ async function handleHistoryCreate(request, env) {
       return json({ error: { message: "沒有題目內容可以存" } }, 400);
     }
 
-    const user = await env.DB.prepare("SELECT class_id FROM users WHERE id = ?").bind(session.uid).first();
-    if (!user || !user.class_id) {
+    // 多班：body.classId 指定存進哪個班（必須是自己的），沒帶就存進目前班
+    const classId = await resolveTeacherClassId(env, session.uid, body.classId);
+    if (!classId) {
       return json({ error: { message: "找不到你的班級" } }, 400);
     }
-    const classId = user.class_id;
     const itemsJson = JSON.stringify(items);
     const now = Date.now();
 
@@ -1605,7 +1611,7 @@ async function handleHistoryCreate(request, env) {
   }
 }
 
-async function handleHistoryList(request, env) {
+async function handleHistoryList(request, env, url) {
   if (request.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
 
   const session = await verifySession(request, env);
@@ -1613,12 +1619,17 @@ async function handleHistoryList(request, env) {
     return json({ error: { message: "只有登入的老師可以查看班級歷史" } }, 401);
   }
 
-  const user = await env.DB.prepare("SELECT class_id FROM users WHERE id = ?").bind(session.uid).first();
-  if (!user || !user.class_id) return json({ history: [] });
+  // ?classId=12 看指定班（必須是自己的，不是就回 404）；沒帶就看目前班
+  const wanted = url ? url.searchParams.get("classId") : null;
+  const classId = await resolveTeacherClassId(env, session.uid, wanted);
+  if (!classId) {
+    if (wanted) return json({ error: { message: "找不到這個班級" } }, 404);
+    return json({ history: [] });
+  }
 
   const rows = await env.DB.prepare(
     "SELECT id, title, items_json, created_at FROM quiz_history WHERE class_id = ? ORDER BY created_at DESC"
-  ).bind(user.class_id).all();
+  ).bind(classId).all();
 
   const history = rows.results.map((r) => ({
     id: r.id,
@@ -1640,9 +1651,11 @@ async function handleHistoryDelete(request, env, idStr) {
   }
 
   const id = Number(idStr);
-  const user = await env.DB.prepare("SELECT class_id FROM users WHERE id = ?").bind(session.uid).first();
-  const row = await env.DB.prepare("SELECT class_id FROM quiz_history WHERE id = ?").bind(id).first();
-  if (!row || !user || row.class_id !== user.class_id) {
+  // 這筆歷史所屬的班必須是這位老師自己的班（不限目前班，多班都能刪）
+  const row = await env.DB.prepare(
+    "SELECT h.class_id FROM quiz_history h JOIN classes c ON c.id = h.class_id WHERE h.id = ? AND c.teacher_id = ?"
+  ).bind(id, session.uid).first();
+  if (!row) {
     return json({ error: { message: "找不到這筆歷史記錄，或不屬於你的班級" } }, 404);
   }
 
@@ -1843,8 +1856,6 @@ async function handleAdminUsersCreate(request, env) {
     if (role === "teacher") {
       className = String(body.className || "").trim().slice(0, 50);
       if (!className) return json({ error: { message: "老師帳號請填寫班級名稱" } }, 400);
-      const existingClass = await env.DB.prepare("SELECT id FROM classes WHERE name = ?").bind(className).first();
-      if (existingClass) return json({ error: { message: "這個班級名稱已經被使用，請換一個更完整的名稱" } }, 400);
     }
 
     const { hash, salt } = await hashPassword(password);
@@ -1925,8 +1936,9 @@ async function handleAdminUsersDelete(request, env, idStr) {
 
   try {
     if (target.role === "teacher") {
-      const cls = await env.DB.prepare("SELECT id FROM classes WHERE teacher_id = ?").bind(id).first();
-      if (cls) {
+      // 一位老師可能有多個班，全部清掉
+      const owned = await env.DB.prepare("SELECT id FROM classes WHERE teacher_id = ?").bind(id).all();
+      for (const cls of owned.results || []) {
         await env.DB.prepare("DELETE FROM quiz_history WHERE class_id = ?").bind(cls.id).run();
         await env.DB.prepare("UPDATE users SET class_id = NULL WHERE class_id = ?").bind(cls.id).run();
         await env.DB.prepare("DELETE FROM classes WHERE id = ?").bind(cls.id).run();

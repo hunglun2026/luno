@@ -48,6 +48,22 @@
             box.appendChild(input);
         }
 
+        // 選項式：一排按鈕，點哪個就回傳那個選項的 value
+        let choiceBtns = [];
+        if (spec.kind === 'choice') {
+            const list = el('div', 'lq-dlg-choices');
+            list.style.cssText = 'display:flex;flex-direction:column;gap:.5rem;margin:.75rem 0;';
+            (spec.options || []).forEach(function (opt) {
+                const b = el('button', 'lq-btn lq-btn-secondary', opt.label);
+                b.type = 'button';
+                b.style.width = '100%';
+                b.onclick = function () { close(opt.value); };
+                list.appendChild(b);
+                choiceBtns.push(b);
+            });
+            box.appendChild(list);
+        }
+
         const row = el('div', 'lq-dlg-row');
         let finished = false;
         function close(value) {
@@ -58,7 +74,7 @@
             if (prevFocus && prevFocus.focus) { try { prevFocus.focus(); } catch (e) { } }
             done(value);
         }
-        const cancelValue = spec.kind === 'confirm' ? false : (spec.kind === 'text' ? null : undefined);
+        const cancelValue = spec.kind === 'confirm' ? false : (spec.kind === 'text' || spec.kind === 'choice' ? null : undefined);
         const okValue = function () { return spec.kind === 'confirm' ? true : (spec.kind === 'text' ? input.value : undefined); };
 
         if (spec.kind !== 'alert') {
@@ -70,18 +86,19 @@
         const ok = el('button', 'lq-btn ' + (spec.danger ? 'lq-btn-danger' : 'lq-btn-primary'), spec.okText || (spec.danger ? '確定刪除' : '確定'));
         ok.type = 'button';
         ok.onclick = function () { close(okValue()); };
-        row.appendChild(ok);
+        if (spec.kind !== 'choice') row.appendChild(ok);   // 選項式靠點選項回傳，不需要「確定」鈕
         box.appendChild(row);
         overlay.appendChild(box);
 
         function onKey(e) {
             if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(cancelValue); }
-            else if (e.key === 'Enter' && (!input || document.activeElement === input)) { e.preventDefault(); e.stopPropagation(); close(okValue()); }
+            else if (e.key === 'Enter' && spec.kind !== 'choice' && (!input || document.activeElement === input)) { e.preventDefault(); e.stopPropagation(); close(okValue()); }
         }
         document.addEventListener('keydown', onKey, true);
         // 點遮罩外面不關：避免手指誤觸就把「確定刪除」當成取消或確定
         document.body.appendChild(overlay);
         if (input) { input.focus(); if (spec.readonly) input.select(); }
+        else if (spec.kind === 'choice' && choiceBtns.length) choiceBtns[Math.max(0, spec.defaultIndex || 0)].focus();
         else if (spec.danger && spec.kind === 'confirm') row.firstChild.focus();
         else ok.focus();
     }
@@ -90,6 +107,11 @@
     window.askConfirm = function (message, opts) {
         opts = opts || {};
         return open({ kind: 'confirm', message: String(message), danger: !!opts.danger, okText: opts.okText, cancelText: opts.cancelText, image: opts.image });
+    };
+    // await askChoice(訊息, [{ label, value }], { defaultIndex })：點哪個回傳哪個 value，取消回 null
+    window.askChoice = function (message, options, opts) {
+        opts = opts || {};
+        return open({ kind: 'choice', message: String(message), options: options || [], defaultIndex: opts.defaultIndex, cancelText: opts.cancelText });
     };
     window.askText = function (message, opts) {
         opts = opts || {};
