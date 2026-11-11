@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 改 manual.css 時 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/manual.css?v=2">
+    <link rel="stylesheet" href="css/manual.css?v=3">
 <link rel="canonical" href="https://kedu.hunglun.com/manual">
 </head>
 <body>
@@ -54,8 +54,37 @@
     <p>網址：<a href="./">kedu.hunglun.com</a>。用電腦、平板、手機的瀏覽器打開就能用，不用安裝。這份說明書可以按右上角「列印／存成 PDF」印出來。</p>
 </section>
 
+<!-- 你是誰：選了身分，只顯示那個身分要看的章節（script 在頁尾；沒開 JS 就整份全顯示） -->
+<section class="m-pick" id="pick" aria-label="選擇你的身分">
+    <h2>你是誰？選一個，只看跟你有關的</h2>
+    <div class="m-pick-cards" role="group">
+        <button type="button" class="m-pick-card" data-pick="guest"><b>訪客</b><span>只有一支手機，免登入先用</span></button>
+        <button type="button" class="m-pick-card" data-pick="teacher"><b>老師</b><span>出題、發給全班、看進度</span></button>
+        <button type="button" class="m-pick-card" data-pick="student"><b>學生</b><span>寫老師的測驗、自己練習</span></button>
+        <button type="button" class="m-pick-card" data-pick="parent"><b>家長</b><span>看題目答案、孩子寫到哪</span></button>
+    </div>
+    <p class="m-pick-all"><button type="button" class="m-link" data-pick="all">看完整說明書</button></p>
+
+    <div class="m-quick" data-for="guest">
+        <h3>訪客：4 步開始</h3>
+        <ol><li>按歡迎頁「進入」，選「訪客模式」。</li><li>選年級和科目，按「開始出題」（一份最多 20 題）。</li><li>出好後先看題目，沒問題就按上方「交給學生作答」。</li><li>設一組 4 位數密碼，把手機遞給學生寫。</li></ol>
+    </div>
+    <div class="m-quick" data-for="teacher">
+        <h3>老師：4 步發給全班</h3>
+        <ol><li>選「我是教師」，免登入就能先出題試用。</li><li>出好後先看題目，要改就按「編輯」。</li><li>登入教師帳號，按「發送測驗」，把連結或代碼傳給學生。</li><li>按「看全班寫到哪」，即時看每個人的進度。</li></ol>
+    </div>
+    <div class="m-quick" data-for="student">
+        <h3>學生：4 步開始寫</h3>
+        <ol><li>點老師傳的連結，或在學生首頁輸入測驗代碼。</li><li>輸入姓名或暱稱，老師才知道是誰在寫。</li><li>按「開始測驗」，一題一題寫。</li><li>寫完按「交卷看成績」。</li></ol>
+    </div>
+    <div class="m-quick" data-for="parent">
+        <h3>家長：3 件事</h3>
+        <ol><li>打開老師給的「家長答案連結」，看題目、答案與解析。</li><li>孩子作答後請他傳「即時監看連結」，你就看得到他寫到哪。</li><li>想長期看：選「我是家長」註冊，輸入孩子產生的 6 位數綁定碼。</li></ol>
+    </div>
+</section>
+
 <!-- ===== 1 ===== -->
-<section class="m-chapter" id="about">
+<section class="m-chapter" id="about" data-role="all">
     <h2><span class="m-no">1</span>認識刻度</h2>
     <div class="m-table-wrap"><table class="m-table">
         <tr><th>身分</th><th>可以做什麼</th><th>要不要帳號</th></tr>
@@ -68,7 +97,7 @@
 </section>
 
 <!-- ===== 2 ===== -->
-<section class="m-chapter" id="start">
+<section class="m-chapter" id="start" data-role="guest teacher student parent">
     <h2><span class="m-no">2</span>開始使用</h2>
     <h3>歡迎頁</h3>
     <h3>歡迎頁</h3>
@@ -89,7 +118,7 @@
 </section>
 
 <!-- ===== 3 ===== -->
-<section class="m-chapter" id="make">
+<section class="m-chapter" id="make" data-role="guest teacher">
     <h2><span class="m-no">3</span>老師：出一份考卷</h2>
     <p>登入教師帳號（或用訪客）後，出題分成四步，每一頁只做一件事。上方的圓點是進度，左下角「上一步」可以回去改，選過的內容都會留著。</p>
 
@@ -106,7 +135,7 @@
     <p>這兩項一定要自己選（選錯整份考卷就不能用，所以不給預設值）。清單裡沒有的，點「其他」或「其他科目」自己打字。選「依課本或講義出」時，這一步會換成上傳檔案。</p>
 
     <h3>第 3 步：版本和範圍</h3>
-    <figure class="m-fig"><img src="manual/img/step3.webp?v=64" alt="第 3 步，版本選單和範圍輸入框" loading="lazy" width="992" height="369"><figcaption>都可以不填</figcaption></figure>
+    <figure class="m-fig"><img src="manual/img/step3.webp?v=65" alt="第 3 步，版本選單和範圍輸入框" loading="lazy" width="992" height="369"><figcaption>都可以不填</figcaption></figure>
     <ul>
         <li><b>版本</b>：自己填寫，依照教材版本填入；空白就是依一般課綱出題。</li>
         <li><b>範圍</b>：按照課本所寫的範圍輸入，才能保持準確，例如「第一課到第三課」。空白就是整冊。</li>
@@ -134,7 +163,7 @@
 </section>
 
 <!-- ===== 4 ===== -->
-<section class="m-chapter" id="after">
+<section class="m-chapter" id="after" data-role="guest teacher">
     <h2><span class="m-no">4</span>老師：出完題之後</h2>
     <figure class="m-fig"><img src="manual/img/result.webp" alt="出好的試卷，上方工具列有線上作答、編輯題目、交給學生作答、要印轉成 Word 或 PDF、發送測驗、更多" loading="lazy" width="1100" height="773"><figcaption>出好的考卷與上方工具列</figcaption></figure>
     <h3>線上作答、題目卷與答案卷</h3>
@@ -159,7 +188,7 @@
 </section>
 
 <!-- ===== 5 ===== -->
-<section class="m-chapter" id="send">
+<section class="m-chapter" id="send" data-role="guest teacher">
     <h2><span class="m-no">5</span>老師：讓學生作答</h2>
     <div class="m-note"><b>先登入</b>發送測驗需要老師帳號。還沒有帳號，在選身分頁點「我是教師」，再按「還沒有帳號？點此註冊」（見<a href="#teacher-account">第 7 章</a>）。</div>
     <h3>發送測驗</h3>
@@ -200,7 +229,7 @@
 </section>
 
 <!-- ===== 6 ===== -->
-<section class="m-chapter" id="paper">
+<section class="m-chapter" id="paper" data-role="teacher">
     <h2><span class="m-no">6</span>老師：派現成的紙本卷</h2>
     <p>手邊已經有出好的卷子（段考卷、講義、習作），不用重打。第 1 步選「派現成的紙本卷」，把卷子拍照或丟 PDF 上傳，AI 會把題目<b>照抄成整齊的數位題目</b>，你核對過後就變成跟 AI 出題一樣的手機線上測驗。這個功能要先登入教師帳號。</p>
     <ol>
@@ -215,7 +244,7 @@
 </section>
 
 <!-- ===== 7 ===== -->
-<section class="m-chapter" id="teacher-account">
+<section class="m-chapter" id="teacher-account" data-role="teacher">
     <h2><span class="m-no">7</span>老師帳號與班級</h2>
     <figure class="m-fig"><img src="manual/img/login.webp" alt="教師登入畫面，有帳號、密碼欄位與登入鈕" loading="lazy" width="1100" height="900"><figcaption>選身分頁點「我是教師」</figcaption></figure>
     <ul>
@@ -228,7 +257,7 @@
 </section>
 
 <!-- ===== 8 ===== -->
-<section class="m-chapter" id="student">
+<section class="m-chapter" id="student" data-role="student">
     <h2><span class="m-no">8</span>學生</h2>
     <h3>進入學生首頁</h3>
     <p>選「我是學生」要先登入；還沒有帳號就按「還沒有帳號？點此註冊」，註冊時要先閱讀並勾選《個人資料蒐集告知》。老師的班級名稱可以選填，之後也能補。</p>
@@ -256,7 +285,7 @@
 </section>
 
 <!-- ===== 9 ===== -->
-<section class="m-chapter" id="parent">
+<section class="m-chapter" id="parent" data-role="parent">
     <h2><span class="m-no">9</span>家長</h2>
     <ul>
         <li><b>看題目和答案</b>：打開老師給的「家長答案連結」，可以看題目、答案與解析。</li>
@@ -266,7 +295,7 @@
 </section>
 
 <!-- ===== 10 ===== -->
-<section class="m-chapter" id="admin">
+<section class="m-chapter" id="admin" data-role="all">
     <h2><span class="m-no">10</span>管理員</h2>
     <p>管理員帳號不開放自己註冊，由既有管理員建立。從選身分頁的「管理員登入」進入，畫面右上角會出現「管理後台」，可以：</p>
     <ul>
@@ -278,7 +307,7 @@
 </section>
 
 <!-- ===== 11 ===== -->
-<section class="m-chapter m-faq" id="faq">
+<section class="m-chapter m-faq" id="faq" data-role="*">
     <h2><span class="m-no">11</span>常見問題</h2>
     <details><summary>為什麼要等 30 秒才能再出題？</summary><p>刻度內建的 AI 額度是大家共用的，同一台裝置每次出題要間隔 30 秒，避免額度被少數人用光。有自己的 Google API Key 就不受限制（見<a href="#make">第 3 章</a>）。</p></details>
     <details><summary>AI 出的題目有錯怎麼辦？</summary><p>按「編輯題目」直接改掉，或在更多選單進 A4 題目卷，按該題的「換這題」。發給學生前請一定先看過；AI 偶爾會出現事實錯誤或超出年級的內容。</p></details>
@@ -291,7 +320,7 @@
 </section>
 
 <!-- ===== 12 ===== -->
-<section class="m-chapter" id="contact">
+<section class="m-chapter" id="contact" data-role="*">
     <h2><span class="m-no">12</span>聯絡我們</h2>
     <ul>
         <!-- Cloudflare 的信箱混淆會把信箱改寫成亂碼（爬蟲與 AI 讀到的是亂碼），這段豁免 -->
@@ -303,5 +332,6 @@
 </section>
 </main>
 </div>
+<script src="js/manual.js?v=1"></script>
 </body>
 </html>

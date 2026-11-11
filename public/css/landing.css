@@ -107,7 +107,11 @@
 @keyframes ld-pin { from { opacity: 0; transform: translateY(-1.6rem) scale(0.4); } to { opacity: 1; transform: none; } }
 .ld-tag { animation: ld-fade 0.8s ease 0.75s both; }
 .ld-lead { animation: ld-fade 0.8s ease 0.95s both; }
-.ld-cta-row { animation: ld-fade 0.8s ease 1.15s both; }
+.ld-devices { animation: ld-fade 0.8s ease 1.05s both; }
+.ld-cta-row { animation: ld-fade 0.8s ease 1.25s both; }
+/* 支援裝置標籤（歡迎頁）：手機、平板、電腦、不用安裝 */
+.ld-devices { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0 0; padding: 0; list-style: none; }
+.ld-devices li { padding: 0.3rem 0.85rem; border: 1px solid var(--ld-line); border-radius: 999px; background: var(--ld-panel); color: var(--ld-text); font-size: 0.95rem; font-weight: 700; }
 @keyframes ld-fade { from { opacity: 0; transform: translateY(0.9rem); } to { opacity: 1; transform: none; } }
 /* 進入鈕：進場後閃過一道光，箭頭輕輕往右點 */
 .ld-btn-primary { position: relative; overflow: hidden; }
@@ -142,11 +146,12 @@
     .ld-hero .ld-measure { width: 10rem; margin: 0.9rem auto 0; }
     .ld-hero .ld-tag { margin-top: 1.2rem; font-size: 1.6rem; }
     .ld-hero .ld-lead { margin: 1.2rem auto 0; max-width: 22rem; font-size: 1.1rem; line-height: 1.85; }
+    .ld-hero .ld-devices { justify-content: center; margin-top: 1rem; }
     .ld-hero .ld-cta-row { flex-direction: column; width: 100%; max-width: 22rem; margin-top: 2rem; }
     .ld-cta-row .ld-btn { justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .ld-title span, .ld-measure::before, .ld-measure b, .ld-tag, .ld-lead, .ld-cta-row,
+    .ld-title span, .ld-measure::before, .ld-measure b, .ld-tag, .ld-lead, .ld-devices, .ld-cta-row,
     .ld-btn-primary::after, #lqEnter .ph-arrow-right, .ld-float, .ld-float::after { animation: none; }
     .ld-btn-primary::after { display: none; }
 }

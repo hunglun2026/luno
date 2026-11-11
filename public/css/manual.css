@@ -115,3 +115,34 @@ img { max-width: 100%; height: auto; }
     .m-fig img { box-shadow: none; max-height: 120mm; width: auto; }
     a { color: inherit; text-decoration: none; }
 }
+
+/* ---------- 「你是誰」引導（2026-11-11，js/manual.js）---------- */
+[hidden] { display: none !important; }
+.m-pick { padding: 1.5rem 2rem; border-radius: 1.25rem; background: #fff; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
+.m-pick h2 { margin: 0 0 0.9rem; font-size: 1.25rem; line-height: 1.4; }
+.m-pick-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+.m-pick-card { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; padding: 0.9rem 1rem; text-align: left; font: inherit; color: inherit; background: #f8fafd; border: 2px solid #dbe3ef; border-radius: 0.9rem; cursor: pointer; transition: border-color .15s, background .15s; }
+.m-pick-card b { font-size: 1.15rem; }
+.m-pick-card span { color: #5f6368; font-size: 0.85rem; line-height: 1.5; }
+.m-pick-card:hover { border-color: var(--hl-blue, #1A73E8); }
+.m-pick-card:focus-visible { outline: 3px solid var(--hl-blue, #1A73E8); outline-offset: 2px; }
+.m-pick-card.is-on { border-color: var(--hl-blue, #1A73E8); background: #e8f0fe; }
+.m-pick-all { margin: 0.8rem 0 0; font-size: 0.9rem; }
+.m-link { padding: 0; border: 0; background: none; color: var(--hl-blue, #1A73E8); font: inherit; text-decoration: underline; cursor: pointer; }
+.m-link.is-on { font-weight: 700; }
+.m-quick { margin-top: 1.1rem; padding: 1rem 1.2rem; border-left: 4px solid var(--hl-blue, #1A73E8); border-radius: 0.6rem; background: #f1f6fe; }
+.m-quick h3 { margin: 0 0 0.4rem; font-size: 1.05rem; }
+.m-quick ol { margin: 0; padding-left: 1.3rem; }
+.m-quick li { margin: 0.2rem 0; }
+/* 選了身分後章節編號會跳號（1、2、3、5…），乾脆不顯示 */
+body.m-guided .m-no { display: none; }
+@media (max-width: 640px) {
+    .m-pick { padding: 1.1rem; }
+    .m-pick-cards { grid-template-columns: 1fr 1fr; }
+}
+/* 列印一律印整份，不管選了哪個身分 */
+@media print {
+    .m-pick, .m-quick { display: none !important; }
+    .m-chapter[hidden], .m-toc li[hidden] { display: block !important; }
+    body.m-guided .m-no { display: inline; }
+}
