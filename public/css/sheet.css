@@ -276,6 +276,17 @@ body:has(#ansQuizBody:not(.hidden)) .lq-quiz-bottombar { padding-left: 7.2rem; }
     .sticky-header .lq-iconbtn { min-width: 48px; min-height: 48px; flex-direction: column; gap: 3px; justify-content: center; padding-left: 0.4rem; padding-right: 0.4rem; }
 }
 
+/* 2026-11-11 手機頂部省版面：原本白色導覽卡＋深色工具列（兩排）都釘在頂端，合起來約占螢幕 1/6，捲動時蓋住題目。
+   導覽卡改成不釘（換身分、登入捲回最上面就有）；工具列留一排，只有一個「線上作答」分頁時整組藏起來（分頁沒得切）。
+   :has() 舊 iPad（iOS 15.4 以前）不支援，那種裝置只是多一顆分頁鈕，不影響使用 */
+@media (max-width: 640px) {
+    #lqAppbar { position: static; }
+    .sticky-header.sticky { padding: 0.3rem 0.5rem; gap: 0.35rem; }
+    .sticky-header.sticky > div:has(#btnOnline):not(:has(#btnQuiz:not(.hidden))) { display: none; }
+    .sticky-header.sticky > .order-2 { width: 100%; justify-content: space-between; gap: 0.3rem; }
+    .sticky-header.sticky .lq-btn:not(.lq-iconbtn) { font-size: 0.8rem; padding-left: 0.55rem; padding-right: 0.55rem; }
+}
+
 /* 試卷頁頁尾連結：灰藍底上字色提亮，對比拉到 4.5 以上（2026-11-05） */
 .lq-foot { color: #f3f4f6; }
 .lq-foot a { color: #a7f3d0; }
