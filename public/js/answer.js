@@ -263,7 +263,7 @@
 
             if (teacherPreview) {
                 // 老師的主要出口是發送；自己試寫降為次要。底下留白避免被左下角浮動的「回上一頁」蓋住
-                html += "<button onclick='openSendQuizModal()' class='lq-btn lq-cta lq-btn-primary w-full py-3 rounded-xl text-lg mb-2'>📤 發送給學生</button>" +
+                html += "<button onclick='openSendQuizModal()' class='lq-btn lq-cta lq-btn-primary w-full py-3 rounded-xl text-lg mb-2'>📤 " + (window.currentUser ? "發送給學生" : "登入後發送給學生") + "</button>" +
                     "<button onclick='startAnswerQuiz()' class='lq-btn lq-btn-secondary w-full py-2 rounded-xl text-sm'>▶ 我自己先試寫一遍</button>" +
                     "<div style='height:4.5rem'></div>";
             } else {
