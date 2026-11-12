@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://kedu.hunglun.com/</loc><lastmod>2026-11-05</lastmod></url>
-  <url><loc>https://kedu.hunglun.com/manual</loc><lastmod>2026-11-05</lastmod></url>
+  <url><loc>https://kedu.hunglun.com/manual</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://kedu.hunglun.com/manual-guest</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://kedu.hunglun.com/manual-teacher</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://kedu.hunglun.com/manual-student</loc><lastmod>2026-11-12</lastmod></url>
+  <url><loc>https://kedu.hunglun.com/manual-parent</loc><lastmod>2026-11-12</lastmod></url>
   <url><loc>https://kedu.hunglun.com/privacy</loc><lastmod>2026-11-05</lastmod></url>
 </urlset>

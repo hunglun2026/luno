@@ -1,50 +1,19 @@
-// 說明書「你是誰」引導：選身分後只顯示那個身分的章節（manual.html 每章有 data-role）。
-// HTML 裡整份內容都在（搜尋引擎、不開 JS、列印都看得到全部）；這支只做「收起不相關的」。
-// 網址 ?role=teacher 可直接指定身分；帶 #章節 錨點進來（App 內連結、目錄）就先顯示全部，免得錨點找不到。
+// 說明書首頁（manual.html）的舊連結轉址（2026-11-12）。
+// 說明書已拆成每個身分一個獨立網頁（manual-guest／teacher／student／parent／admin）；
+// 以前單頁版的 ?role=teacher 與 #t-send 這類連結還可能被別處引用，在這裡轉到對應的頁。
 (function () {
-    var ROLES = ['guest', 'teacher', 'student', 'parent', 'all'];
-    var chapters = document.querySelectorAll('.m-chapter[data-role]');
-    var cards = document.querySelectorAll('[data-pick]');
-
-    function show(role, fromUser) {
-        var guided = role !== 'all';
-        document.body.classList.toggle('m-guided', guided);
-        for (var i = 0; i < chapters.length; i++) {
-            var r = chapters[i].getAttribute('data-role');
-            var ok = !guided || r === '*' || r.split(' ').indexOf(role) >= 0;
-            chapters[i].hidden = !ok;
-        }
-        for (var c = 0; c < cards.length; c++) cards[c].classList.toggle('is-on', cards[c].getAttribute('data-pick') === role);
-        try {
-            var u = new URL(location.href);
-            if (guided) u.searchParams.set('role', role); else u.searchParams.delete('role');
-            history.replaceState(null, '', u.pathname + u.search + u.hash);
-        } catch (e) { /* 網址列改不了就算了 */ }
-        if (fromUser && guided) {
-            var first = document.querySelector('.m-chapter:not([hidden])');
-            if (first && first.scrollIntoView) first.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }
-
-    document.addEventListener('click', function (e) {
-        var el = e.target.closest ? e.target.closest('[data-pick]') : null;
-        if (el) show(el.getAttribute('data-pick'), true);
-    });
-
-    var want = '';
-    try { want = new URL(location.href).searchParams.get('role') || ''; } catch (e) { /* 舊瀏覽器 */ }
-    if (ROLES.indexOf(want) >= 0) show(want, false);
-    else if (location.hash && document.getElementById(location.hash.slice(1))) show('all', false);
-    else {
-        // 第一次進來：先只給「你是誰」，章節收起來，選了再展開
-        document.body.classList.add('m-guided', 'm-nopick');
-        for (var i = 0; i < chapters.length; i++) chapters[i].hidden = true;
-        var onPick = function (e) {
-            if (e.target.closest && e.target.closest('[data-pick]')) {
-                document.body.classList.remove('m-nopick');
-                document.removeEventListener('click', onPick, true);
-            }
-        };
-        document.addEventListener('click', onPick, true);
-    }
+    var PAGE_OF_ROLE = { guest: 'manual-guest', teacher: 'manual-teacher', student: 'manual-student', parent: 'manual-parent' };
+    var PAGE_OF_ANCHOR = {
+        'guest': 'manual-guest',
+        't-make': 'manual-teacher', 't-check': 'manual-teacher', 't-send': 'manual-teacher', 't-more': 'manual-teacher',
+        'student': 'manual-student', 'parent': 'manual-parent', 'admin': 'manual-admin'
+    };
+    var target = '';
+    try {
+        var role = new URL(location.href).searchParams.get('role');
+        if (role && PAGE_OF_ROLE[role]) target = PAGE_OF_ROLE[role];
+    } catch (e) { /* 舊瀏覽器沒有 URL，就留在首頁 */ }
+    var id = location.hash ? location.hash.slice(1) : '';
+    if (!target && PAGE_OF_ANCHOR[id]) target = PAGE_OF_ANCHOR[id] + location.hash;
+    if (target) location.replace(target);
 })();

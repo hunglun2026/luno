@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>刻度 使用說明書（老師）｜鴻綸科技</title>
+    <meta name="description" content="刻度互動式評量的使用說明（老師）：出題、發給全班、看進度。手機、平板、電腦都能用。">
+    <link rel="icon" href="favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/brand.css">
+    <!-- 改 manual.css 時 ?v= 一起升 -->
+    <link rel="stylesheet" href="css/manual.css?v=7">
+<link rel="canonical" href="https://kedu.hunglun.com/manual-teacher">
+</head>
+<body>
+
+<header class="m-top">
+    <img src="assets/app-mark.webp" alt="">
+    <b>刻度</b><span>使用說明書</span>
+    <span class="m-grow"></span>
+    <button type="button" class="m-btn m-print-hide" onclick="window.print()">列印／存成 PDF</button>
+    <a class="m-btn is-primary" href="./">回到刻度</a>
+</header>
+
+<div class="m-wrap">
+<main class="m-main">
+<nav class="m-roles m-print-hide" aria-label="換身分看說明"><span>你是：</span><a href="manual-guest">訪客</a><a href="manual-teacher" class="is-on" aria-current="page">老師</a><a href="manual-student">學生</a><a href="manual-parent">家長</a><a href="manual" class="m-roles-home">說明書首頁</a></nav>
+<section class="m-hero">
+    <h1>刻度 使用說明：老師</h1>
+    <p>出題、發給全班、看進度。不是你的身分？點上面換一個。</p>
+</section>
+
+<section class="m-chapter" id="t-make">
+    <h2>老師 1：出一份考卷</h2>
+    <ol class="m-steps">
+        <li>選「我是教師」。免登入就能先出題試用，登入後題數不限。</li>
+        <li>第 1 步選方式：<b>AI 出題</b>、<b>依課本或講義出</b>（上傳檔案、拍照或貼文字）、<b>派現成的紙本卷</b>。</li>
+        <li>選年級和科目（一定要選），版本和範圍可以不填，再選題數、題型、難度。</li>
+        <li>按「開始出題」。題數多會分批出，要多等一下。</li>
+    </ol>
+    <details class="m-more"><summary>題型、難度、限制</summary>
+        <ul>
+            <li><b>題型</b>：單選、複選、是非、克漏字、填充、簡答、配合題、排序題，也能自訂。</li>
+            <li><b>難度</b>：基礎、普通、進階、挑戰，都不會超出該年級課綱。</li>
+            <li><b>間隔</b>：同一台裝置每次出題要隔 30 秒；沒登入又沒自備 Google API Key，每天最多出 6 次。</li>
+            <li><b>省時間</b>：第 4 步下方「記住這些條件」，下次可以直接套用。</li>
+        </ul>
+    </details>
+</section>
+
+<section class="m-chapter" id="t-check">
+    <h2>老師 2：出好之後先看題目</h2>
+    <p>畫面會列出每一題，綠色是正確答案，學生看不到。AI 偶爾會出錯，發出去前請先看過一遍。</p>
+    <ul>
+        <li><b>改題目</b>：按「編輯」，可以改題目、選項、答案、解析、配分，也能調順序、刪題、加題。</li>
+        <li><b>只換一題</b>：「更多」→「看 A4 題目卷」→ 該題的「換這題」。</li>
+        <li><b>要印</b>：按「要印？轉成 Word／PDF」。</li>
+    </ul>
+</section>
+
+<section class="m-chapter" id="t-send">
+    <h2>老師 3：發給學生、看進度</h2>
+    <p>按底部「給學生寫」，選「傳連結或代碼給全班」（要登入教師帳號），一次給你四種發法，連結和代碼都 30 天內有效：</p>
+    <div class="m-table-wrap"><table class="m-table"><thead><tr><th>發法</th><th>怎麼用</th></tr></thead><tbody>
+        <tr><td>6 位數代碼</td><td>按「投影大字」放在螢幕上，學生在學生首頁輸入，最快</td></tr>
+        <tr><td>學生作答連結</td><td>貼到 LINE 或 Google Classroom，學生點開就寫，免登入</td></tr>
+        <tr><td>家長答案連結</td><td>家長可以看題目、答案和解析，只能看</td></tr>
+        <tr><td>老師進度儀表板</td><td>你自己看全班進度，不要轉給學生</td></tr>
+    </tbody></table></div>
+    <figure class="m-fig"><img src="manual/img/send.webp" alt="發送這份測驗視窗：6 位數代碼、學生作答連結、家長答案連結、老師即時進度儀表板" loading="lazy" width="512" height="672"><figcaption>發送測驗視窗</figcaption></figure>
+    <ul>
+        <li><b>學生看不到答案</b>：學生版連結不含答案，交卷或按「檢查這題」時才由伺服器判分、公布。</li>
+        <li><b>看進度</b>：按「更多」→「看全班寫到哪」（或在發送視窗點進度儀表板），每 8 到 10 秒更新，點學生可看他每題寫了什麼；還有「最需要檢討的題目」排行。進度保留 8 小時。</li>
+        <li><b>停止監看</b>：會讓儀表板連結失效。</li>
+    </ul>
+    <p class="m-note">2026 年 11 月 11 日以前發出的舊連結，學生版仍含答案，請重新發送。</p>
+</section>
+
+<section class="m-chapter" id="t-more">
+    <h2>老師 4：其他</h2>
+    <details class="m-more"><summary>手上已經有紙本考卷</summary>
+        <ol>
+            <li>第 1 步選「派現成的紙本卷」（要登入）。</li>
+            <li>上傳題目卷（拍照或 PDF，最多 12 頁）。有答案卷也一起上傳，沒有的話 AI 會自己解題並標註。</li>
+            <li>按「開始辨識」，每批約 10 到 40 秒。</li>
+            <li>逐題核對，標紅的是 AI 不確定的題目。勾「我已逐題對照原卷檢查過」才能發布。</li>
+        </ol>
+        <p>題目裡的圖形會盡量裁下來附在題目旁，裁不到的會標紅。照片只在辨識時傳給 Google Gemini，我們不保存，請避免拍到學生姓名。</p>
+    </details>
+    <details class="m-more"><summary>同一支手機輪流給學生寫</summary>
+        <p>按「給學生寫」，選「這支手機直接遞給學生」，設 4 位數密碼，做法和訪客一樣。</p>
+    </details>
+    <details class="m-more"><summary>帳號與班級</summary>
+        <ul>
+            <li><b>註冊</b>：登入畫面按「還沒有帳號？點此註冊」，顯示名稱寫自己的名字就好。</li>
+            <li><b>班級代碼</b>：4 到 10 碼英文或數字，不分大小寫，全站不能重複；不設系統會給一組。學生加入班級時輸入它。</li>
+            <li><b>帳號與密碼</b>：最多 16 字，只能用英文、數字、符號，不分大小寫，密碼至少 6 碼。</li>
+            <li><b>存入班級歷史</b>：登入後出題，在「更多」裡存入，全班共用，最多 50 份。</li>
+            <li><b>登入狀態</b>保留 30 天。目前沒有自助重設密碼，請聯絡我們。</li>
+        </ul>
+    </details>
+</section>
+
+<section class="m-chapter m-faq" id="faq">
+    <h2>常見問題</h2>
+    <details><summary>手機、平板可以用嗎？</summary><p>可以。手機、平板、電腦的瀏覽器都能出題、作答、看進度，不用安裝。</p></details>
+    <details><summary>為什麼出題要等 30 秒？</summary><p>AI 額度是大家共用的，同一台裝置每次出題要間隔 30 秒。有自己的 Google API Key 就不受限制。</p></details>
+    <details><summary>AI 出的題目有錯怎麼辦？</summary><p>按「編輯」直接改，或用「換這題」重出那一題。發給學生前請先看過。</p></details>
+    <details><summary>連結打不開了？</summary><p>學生連結、代碼、結果連結都是 30 天有效，即時進度保留 8 小時。過期請老師重新按一次「發送測驗」。</p></details>
+    <details><summary>換裝置後出題紀錄不見了？</summary><p>出題紀錄只存在原本那台裝置的瀏覽器。要跨裝置保留，請下載 Word／PDF，或登入教師帳號存進班級歷史。</p></details>
+    <details><summary>怎麼換身分？</summary><p>畫面最上方的「換身分」可以隨時回到選身分頁。</p></details>
+    <details><summary>忘記密碼怎麼辦？</summary><p>目前沒有自助重設密碼，請聯絡我們，由管理員幫你重設。</p></details>
+</section>
+
+<section class="m-chapter" id="contact">
+    <h2>聯絡我們</h2>
+    <ul>
+        <!-- Cloudflare 的信箱混淆會把信箱改寫成亂碼（爬蟲與 AI 讀到的是亂碼），這段豁免 -->
+        <!--email_off--><li>作者信箱：<a href="https://mail.google.com/mail/?view=cm&fs=1&to=gfeh@hunglun.com" target="_blank" rel="noopener noreferrer">gfeh@hunglun.com</a></li><!--/email_off-->
+        <li>作者 LINE：<a href="https://line.me/R/ti/p/%40gdm6961p" target="_blank" rel="noopener noreferrer">加入好友</a>（電腦版請在 LINE 搜尋 ID：safezone0619）</li>
+        <li>鴻綸科技官方網站：<a href="https://hunglun.com/" target="_blank" rel="noopener noreferrer">hunglun.com</a></li>
+    </ul>
+    <p class="m-foot">© 鴻綸科技　刻度 互動式評量　<a href="privacy.html">個人資料蒐集告知</a></p>
+</section>
+</main>
+</div>
+</body>
+</html>

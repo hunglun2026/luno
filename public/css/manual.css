@@ -118,20 +118,25 @@ img { max-width: 100%; height: auto; }
 .m-pick-card { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; padding: 0.9rem 1rem; text-align: left; font: inherit; color: inherit; background: #f8fafd; border: 2px solid #dbe3ef; border-radius: 0.9rem; cursor: pointer; transition: border-color .15s, background .15s; }
 .m-pick-card b { font-size: 1.15rem; }
 .m-pick-card span { color: #5f6368; font-size: 0.85rem; line-height: 1.5; }
+a.m-pick-card { text-decoration: none; }
 .m-pick-card:hover { border-color: var(--hl-blue, #1A73E8); }
 .m-pick-card:focus-visible { outline: 3px solid var(--hl-blue, #1A73E8); outline-offset: 2px; }
-.m-pick-card.is-on { border-color: var(--hl-blue, #1A73E8); background: #e8f0fe; }
 .m-pick-all { margin: 0.8rem 0 0; font-size: 0.9rem; }
 .m-link { padding: 0; border: 0; background: none; color: var(--hl-blue, #1A73E8); font: inherit; text-decoration: underline; cursor: pointer; }
 .m-link.is-on { font-weight: 700; }
+/* 各身分頁頂端的換身分列（獨立網頁，點了就換頁） */
+.m-roles { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin: 0 0 1rem; }
+.m-roles span { color: #5f6368; font-size: 0.9rem; margin-right: 0.25rem; }
+.m-roles a { padding: 0.45rem 1rem; border-radius: 999px; border: 2px solid #dbe3ef; background: #fff; color: #374151; text-decoration: none; font-weight: 500; }
+.m-roles a:hover { border-color: var(--hl-blue, #1A73E8); }
+.m-roles a.is-on { border-color: var(--hl-blue, #1A73E8); background: #e8f0fe; color: #1a56c8; font-weight: 700; }
+.m-roles a.m-roles-home { border-style: dashed; margin-left: auto; font-size: 0.9rem; }
 @media (max-width: 640px) {
     .m-pick { padding: 1.1rem; }
     .m-pick-cards { grid-template-columns: 1fr 1fr; }
 }
-/* 列印一律印整份，不管選了哪個身分 */
 @media print {
     .m-pick { display: none !important; }
-    .m-chapter[hidden] { display: block !important; }
 }
 
 /* 步驟清單（每個身分最短路徑）：大一點的編號圓圈，一眼看出順序 */

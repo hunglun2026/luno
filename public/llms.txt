@@ -7,4 +7,8 @@
 ## 頁面
 - [刻度 隨手出題 隨時小測](https://kedu.hunglun.com/): 刻度 隨手出題 隨時小測
 - [個人資料蒐集告知](https://kedu.hunglun.com/privacy): 蒐集機關、目的、資料類別、保存期間、當事人權利。
-- [刻度 使用說明書](https://kedu.hunglun.com/manual): 刻度互動式評量的完整使用說明：老師出題、發測驗、看全班進度，學生作答與練習，家長查看，一步一步配實際畫面。
+- [刻度 使用說明書](https://kedu.hunglun.com/manual): 刻度互動式評量的使用說明首頁，依身分分頁：老師出題、發測驗、看全班進度，學生作答與練習，家長查看。
+- [使用說明：老師](https://kedu.hunglun.com/manual-teacher): 出題、發給全班、看全班進度
+- [使用說明：學生](https://kedu.hunglun.com/manual-student): 寫測驗、自己練習
+- [使用說明：家長](https://kedu.hunglun.com/manual-parent): 看答案、看孩子寫到哪
+- [使用說明：訪客](https://kedu.hunglun.com/manual-guest): 一支手機，免登入先用
