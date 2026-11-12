@@ -41,7 +41,10 @@ function matchBoxHtml(q, i, value) {
             "<b>" + QT_LABELS[p] + "</b><span class='qt-text'>" + escapeHtml(q.r[j]) + "</span>" +
             (li !== undefined ? "<span class='qt-tag'>" + (li + 1) + "</span>" : "") + "</button>";
     });
-    return "<div class='lq-typed-hint'>先點左邊一個，再點右邊對應的，配成一對。點已配好的可以取消。</div>" +
+    const hint = (sel !== null && sel !== undefined)
+        ? "<div class='lq-typed-hint is-active' role='status'>第 " + (i + 1) + " 題：已選左邊第 " + (sel + 1) + " 項，請點右邊對應的（再點一次左邊可取消）</div>"
+        : "<div class='lq-typed-hint'>先點左邊一個，再點右邊對應的，配成一對。點已配好的可以取消。</div>";
+    return hint +
         "<div class='lq-typed-cols'><div class='lq-typed-col'>" + left + "</div><div class='lq-typed-col'>" + right + "</div></div>" +
         "<button type='button' class='lq-typed-btn lq-typed-clear' onclick='qtMatchClear(" + i + ")'>全部清除</button>";
 }
@@ -115,6 +118,15 @@ function qtOrderMove(i, p, dir) {
     if (k < 0 || k >= arr.length) return;
     const t = arr[p]; arr[p] = arr[k]; arr[k] = t;
     qtCommit(i, arr.join(','));
+    // 重畫會讓按鈕焦點消失：把焦點還給移動後同一列的同方向按鈕（到頭了就給另一個方向），連按才不用重找
+    const rows = document.querySelectorAll('#qt-box-' + i + ' .lq-typed-row');
+    const row = rows[k];
+    if (row) {
+        const mv = row.querySelectorAll('.qt-mv');
+        const want = dir < 0 ? mv[0] : mv[1];
+        const t2 = (want && !want.disabled) ? want : (dir < 0 ? mv[1] : mv[0]);
+        if (t2) t2.focus({ preventScroll: true });
+    }
 }
 
 // 即時模式按「確認這題」後鎖住這題的按鈕

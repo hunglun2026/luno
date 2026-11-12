@@ -49,13 +49,17 @@ function classManagerHtml() {
             "<div class='font-black' style='font-size:2rem; letter-spacing:0.18em; color:var(--hl-blue);'>" + escapeHtml(c.code || '') + "</div>" +
             "<div class='text-xs text-gray-500 mt-1'>" + c.studentCount + " 位學生已加入</div>" +
             "<div class='flex gap-2 justify-center flex-wrap mt-2'>" +
-            "<button type='button' onclick=\"copyClassCode(" + jsArg(c.code) + ", this)\" class='lq-btn lq-btn-secondary text-xs px-3 py-1'>複製代碼</button>" +
-            "<button type='button' onclick='editClassCode(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-1'>自己設定</button>" +
-            "<button type='button' onclick='randomClassCode(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-1'>換一組好唸的</button>" +
-            "<button type='button' onclick='renameClass(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-1'>改名</button>" +
-            (isCur ? "" : "<button type='button' onclick='selectClass(" + c.id + ")' class='lq-btn lq-btn-primary text-xs px-3 py-1'>設為目前班</button>") +
-            (classes.length > 1 ? "<button type='button' onclick='deleteClass(" + c.id + ")' class='lq-btn lq-btn-danger text-xs px-3 py-1'>刪除</button>" : "") +
-            "</div></div>";
+            "<button type='button' onclick=\"copyClassCode(" + jsArg(c.code) + ", this)\" class='lq-btn lq-btn-secondary text-sm px-4 py-2' style='min-height:44px;'>複製代碼</button>" +
+            (isCur ? "" : "<button type='button' onclick='selectClass(" + c.id + ")' class='lq-btn lq-btn-primary text-sm px-4 py-2' style='min-height:44px;'>設為目前班</button>") +
+            "</div>" +
+            // 次要動作收起來（2026-11-13）：手機上六顆小按鈕折成三排很容易按錯
+            "<details class='lq-class-more'><summary>更多設定</summary><div class='flex gap-2 justify-center flex-wrap mt-2'>" +
+            "<button type='button' onclick='editClassCode(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-2'>自己設定代碼</button>" +
+            "<button type='button' onclick='randomClassCode(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-2'>換一組好唸的</button>" +
+            "<button type='button' onclick='renameClass(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-2'>改名</button>" +
+            (classes.length > 1 ? "<button type='button' onclick='deleteClass(" + c.id + ")' class='lq-btn lq-btn-danger text-xs px-3 py-2'>刪除</button>" : "") +
+            "</div></details>" +
+            "</div>";
     });
     html += "<button type='button' onclick='addClass()' class='lq-btn lq-btn-secondary w-full py-2'>＋ 新增班級</button>";
     html += "<button onclick=\"closeAccountModal(); openClassHistory();\" class='lq-btn lq-btn-secondary w-full py-2'>📚 查看班級歷史</button>";
@@ -117,16 +121,26 @@ async function randomClassCode(id) {
     if (ok) saveClassCode({ classId: id, random: true });
 }
 
-// 老師登入後每次開啟都先跳一次大字班級代碼（同一個分頁只跳一次），報給學生用
-function showClassCodeOnce() {
+// 老師的班級代碼常駐在頂列（2026-11-13 取代登入時跳一次的阻斷式視窗）：點一下複製，目前班的代碼
+function updateClassCodeChip() {
+    const chip = document.getElementById('classCodeChip');
+    if (!chip) return;
     const u = window.currentUser;
-    const classes = lqClasses();
-    if (!u || u.role !== 'teacher' || classes.length === 0) return;
-    try { if (sessionStorage.getItem('lun_code_seen')) return; sessionStorage.setItem('lun_code_seen', '1'); } catch (e) { return; }
-    const lines = classes.length === 1
-        ? '你的班級代碼：' + classes[0].code
-        : '你的班級代碼：\n' + classes.map(function (c) { return c.name + '　' + c.code; }).join('\n');
-    lqAlert(lines + '\n\n學生註冊或加入班級時輸入對應班級的代碼。\n到「我的帳號」可以複製、自己改、新增班級。');
+    const show = !!(u && u.role === 'teacher' && u.classCode);
+    chip.classList.toggle('hidden', !show);
+    if (!show) return;
+    chip.dataset.code = u.classCode;
+    chip.textContent = (lqClasses().length > 1 && u.className ? u.className + '・' : '') + '代碼 ' + u.classCode + ' 📋';
+    chip.title = '點一下複製班級代碼，報給學生註冊或加入班級用';
+}
+function copyClassCodeChip(btn) {
+    const code = btn.dataset.code;
+    if (!code || !(navigator.clipboard && navigator.clipboard.writeText)) return;
+    const old = btn.textContent;
+    navigator.clipboard.writeText(code).then(function () {
+        btn.textContent = '已複製 ✓';
+        setTimeout(function () { updateClassCodeChip(); }, 1500);
+    }, function () {});
 }
 
 // 複製班級代碼：瀏覽器不給剪貼簿權限時不假裝成功

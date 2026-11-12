@@ -18,6 +18,7 @@
 [data-theme="dark"] .lq-appbar-tag { color: var(--ld-muted); border-left-color: var(--ld-line); }
 [data-theme="dark"] .lq-appbar-visits, [data-theme="dark"] .lq-appbar-sub { color: var(--ld-muted); }
 [data-theme="dark"] .lq-appbar-btn:not(.is-primary) { color: var(--ld-muted); }
+[data-theme="dark"] .lq-code-chip { background: rgba(76,143,240,0.16); color: #8ab4f8; }
 [data-theme="dark"] .lq-appbar-btn:not(.is-primary):hover { background: var(--ld-hover); color: var(--ld-text); }
 [data-theme="dark"] .lq-role-chip.is-guest { background: rgba(251, 191, 36, 0.15); color: #fcd34d; border-color: rgba(251, 191, 36, 0.4); }
 

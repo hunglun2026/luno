@@ -42,12 +42,11 @@
             const loginBtn = document.getElementById('lqLoginBtn');
             if (loginBtn) loginBtn.classList.toggle('hidden', !!window.currentUser);
             if (window.currentUser) {
-                statusEl.textContent = window.currentUser.displayName + '（' + (roleLabel[window.currentUser.role] || window.currentUser.role) + '）' +
-                    (window.currentUser.role === 'teacher' && window.currentUser.classCode
-                        ? (lqClasses().length > 1 ? '　' + window.currentUser.className + '・代碼 ' : '　班級代碼 ') + window.currentUser.classCode : '');
-                showClassCodeOnce();
+                statusEl.textContent = window.currentUser.displayName + '（' + (roleLabel[window.currentUser.role] || window.currentUser.role) + '）';
+                updateClassCodeChip();
             } else {
                 statusEl.textContent = '';
+                updateClassCodeChip();
             }
             const saveBtn = document.getElementById('btnSaveHistory');
             // 老師看得到「存入班級歷史」；沒登入的也顯示，但按下去是帶去註冊（註冊成功會把這台裝置的試卷一起存進去）

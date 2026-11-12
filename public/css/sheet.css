@@ -337,3 +337,41 @@ body:has(#ansQuizBody:not(.hidden)) .lq-quiz-bottombar { padding-left: 7.2rem; }
 #resultSection .sticky-header #btnAnswerMode,
 #resultSection .sticky-header #shareBtnsWrap { display: none; }
 body.guest-mode .lq-more-live { display: none; }
+
+/* 即時回饋後的「下一題」按鈕（2026-11-13，取代自動捲動）：手機整排寬、好按 */
+.lq-next-q { display: block; margin: 0.6rem 0 0 auto; min-height: 44px; padding: 0.5rem 1.2rem; font-weight: 700; }
+@media (max-width: 640px) { .lq-next-q { width: 100%; margin-left: 0; } }
+
+/* 配合題選住左項後，提示條吸在畫面上方（頂列下面），往下找右項時也看得到目前選了哪一項（2026-11-13） */
+.lq-typed-hint.is-active { position: sticky; top: 3.4rem; z-index: 5; background: #fff7d6; color: #7a5a00; border: 1px solid #f2d36b; border-radius: 10px; padding: 0.5rem 0.75rem; font-weight: 700; }
+.ans-card { scroll-margin-top: 4.5rem; }
+
+/* 老師審閱：吸頂操作列＋每題換題／編輯鈕（2026-11-13） */
+.lq-tp-bar { position: sticky; top: 0; z-index: 30; display: flex; gap: 0.5rem; padding: 0.5rem 0; margin-bottom: 0.5rem; background: #f3f4f6; box-shadow: 0 6px 8px -6px rgba(0,0,0,0.12); }
+.lq-tp-main { flex: 1 1 60%; min-height: 44px; font-size: 1rem; border-radius: 12px; }
+.lq-tp-side { flex: 1 1 40%; min-height: 44px; font-size: 0.85rem; border-radius: 12px; }
+.lq-tp-qhead { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.5rem; }
+.lq-tp-acts { display: flex; gap: 0.35rem; flex: none; }
+.lq-tp-act { min-height: 36px; padding: 0.25rem 0.6rem; font-size: 0.78rem; white-space: nowrap; }
+.lq-tp-q.is-flash { animation: lqTpFlash 1.2s ease; }
+@keyframes lqTpFlash { 0% { box-shadow: 0 0 0 3px #fbbc04; } 100% { box-shadow: none; } }
+@media (max-width: 640px) {
+    .lq-tp-qhead { flex-direction: column; }
+    .lq-tp-acts { align-self: flex-end; }
+    .lq-tp-act { min-height: 44px; }
+}
+
+/* 桌機作答：寬螢幕放寬並在右側放題號導覽（2026-11-13）；手機與窄螢幕不顯示側欄，維持原單欄 */
+.lq-quiz-side { display: none; }
+@media (min-width: 1024px) {
+    .lq-ans-wrap:has(#ansQuizBody:not(.hidden)) { max-width: 60rem; }
+    .lq-quiz-cols { display: grid; grid-template-columns: minmax(0, 1fr) 13rem; gap: 1.5rem; align-items: start; }
+    .lq-quiz-side { display: block; position: sticky; top: 5rem; background: #fff; border: 1px solid #eef0f3; border-radius: 14px; padding: 0.9rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+    .lq-quiz-side-title { font-size: 0.8rem; font-weight: 800; color: #5f6368; margin-bottom: 0.5rem; }
+    .lq-quiz-nav { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.35rem; }
+    .lq-qnav { height: 2.1rem; border-radius: 8px; border: 1.5px solid #dadce0; background: #fff; font-weight: 700; font-size: 0.8rem; color: #3c4043; cursor: pointer; }
+    .lq-qnav:hover { border-color: var(--hl-blue, #1a73e8); }
+    .lq-qnav.is-done { background: #e6f4ea; border-color: #81c995; color: #0d652d; }
+}
+@media print { .lq-quiz-side { display: none !important; } }
+.lq-tp-q { scroll-margin-top: 9rem; }

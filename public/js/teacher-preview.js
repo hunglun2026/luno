@@ -5,9 +5,13 @@
 
 function teacherPreviewItemHtml(q, i) {
     const kind = qKind(q);
-    let h = "<div class='lq-card p-4 mb-3 lq-tp-q'>";
-    h += "<div class='font-bold mb-2'>" + (i + 1) + ". " + escapeHtml(q.q) +
-        " <span class='text-xs text-gray-400'>(" + (Number(q.s) || 0) + "分)</span></div>" + qImgHtml(q);
+    let h = "<div class='lq-card p-4 mb-3 lq-tp-q' id='tp-q-" + i + "'>";
+    h += "<div class='lq-tp-qhead'><div class='font-bold'>" + (i + 1) + ". " + escapeHtml(q.q) +
+        " <span class='text-xs text-gray-400'>(" + (Number(q.s) || 0) + "分)</span></div>" +
+        "<div class='lq-tp-acts no-print'>" +
+        "<button type='button' class='lq-btn lq-btn-secondary lq-tp-act' onclick='tpRegen(" + i + ", this)' aria-label='只換第 " + (i + 1) + " 題'>🎲 換這題</button>" +
+        "<button type='button' class='lq-btn lq-btn-secondary lq-tp-act' onclick='tpEdit(" + i + ")' aria-label='編輯第 " + (i + 1) + " 題'>✏️ 編輯</button>" +
+        "</div></div>" + qImgHtml(q);
     if (kind === 'choice') {
         const letters = getCorrectLetters(q) || [];
         q.o.forEach(function (o, oi) {
@@ -38,6 +42,39 @@ function teacherPreviewListHtml(items) {
     let h = "<div class='lq-tp-list'><div class='lq-tp-head'>共 " + items.length + " 題（綠色是正確答案，學生看不到）</div>";
     items.forEach(function (q, i) { h += teacherPreviewItemHtml(q, i); });
     return h + "</div>";
+}
+
+// 吸頂操作列（2026-11-13）：題目再多，「給學生寫」都在手邊，不用捲到最底
+function teacherPreviewBarHtml() {
+    return "<div class='lq-tp-bar no-print' id='tpBar'>" +
+        "<button onclick='openGiveToStudents()' class='lq-btn lq-cta lq-btn-primary lq-tp-main'>📤 給學生寫</button>" +
+        "<button onclick='startAnswerQuiz()' class='lq-btn lq-btn-secondary lq-tp-side'>▶ 自己先試寫</button></div>";
+}
+// 吸頂位置：上面若有釘住的深色工具列就接在它下面（它在手機的某些情況會整組藏起來，所以量實際高度）
+function placeTeacherPreviewBar() {
+    const bar = document.getElementById('tpBar');
+    if (!bar) return;
+    const hdr = document.querySelector('#resultSection .sticky-header');
+    const vis = hdr && hdr.offsetParent !== null && getComputedStyle(hdr).position === 'sticky';
+    bar.style.top = (vis ? Math.round(hdr.getBoundingClientRect().height) : 0) + 'px';
+}
+if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('resize', placeTeacherPreviewBar);
+
+// 單題換題：沿用 sheet.js 的 regenerateQuestion（會問確認、處理冷卻與失敗），成功後重畫預覽
+async function tpRegen(i, btn) {
+    const before = window.itemsVersion || 0;
+    await regenerateQuestion(i, btn);
+    if ((window.itemsVersion || 0) !== before) {
+        renderAnswerMode();
+        const card = document.getElementById('tp-q-' + i);
+        if (card) { card.classList.add('is-flash'); card.scrollIntoView({ block: 'nearest' }); }
+    }
+}
+// 單題編輯：開編輯視窗並把游標帶到那一題
+function tpEdit(i) {
+    openEditItems();
+    const q = document.querySelectorAll('#editItemsModal .ei-q')[i];
+    if (q) { q.scrollIntoView({ block: 'center' }); try { q.focus({ preventScroll: true }); } catch (e) { } }
 }
 
 // 「給學生寫」二選一：老師不用先分辨「發送測驗」與「交給學生作答」，在這裡選一次就好。

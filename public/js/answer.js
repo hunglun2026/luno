@@ -81,11 +81,20 @@
             if (typed) lockTypedCard(i);
             const btn = document.getElementById('ans-confirm-' + i);
             if (btn) btn.style.display = 'none';
-            // 確認後稍等讓學生看到對錯回饋，再把下一題帶進視線（沒有下一題就不動；偏好減少動態的人用瞬間跳）
+            // 2026-11-13：不再自動捲到下一題（手機上一題加解析就佔滿一屏，學生還沒看完就被捲走）。
+            // 改在回饋後面放「下一題」按鈕，捲動交給學生；沒有下一題就不放
+            const card = document.getElementById('ans-card-' + i);
             const next = document.getElementById('ans-card-' + (i + 1));
-            if (next) {
-                const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-                setTimeout(function () { next.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' }); }, 1400);
+            if (card && next && !card.querySelector('.lq-next-q')) {
+                const nb = document.createElement('button');
+                nb.type = 'button';
+                nb.className = 'lq-btn lq-btn-secondary lq-next-q no-print';
+                nb.textContent = '下一題 ↓';
+                nb.onclick = function () {
+                    const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    next.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+                };
+                (document.getElementById('ans-feedback-' + i) || card).insertAdjacentElement('afterend', nb);
             }
         }
 
@@ -204,9 +213,11 @@
             // 老師／訪客自己出完題看到的就是這個畫面，常被誤會成「要我自己填座號寫考卷」（2026-11-10 Steve 試用回報不夠直觀）。
             // 保留「出完題預設進線上作答」，只在最上面說明身分並給發送出口；學生從連結進來、自己練習、交接給學生時不顯示。
             const teacherPreview = !window.isSharedView && !isSelfStudent() && !(typeof handoffActive === 'function' && handoffActive());
+            let previewList = '';
             if (teacherPreview) {
                 // 2026-11-11 精簡：拿掉三步橫幅（發給學生同一個畫面出現三次），題目就是主角
-                html += teacherPreviewListHtml(window.currentItems || []);   // teacher-preview.js：先看到題目與答案
+                html += teacherPreviewBarHtml();   // teacher-preview.js：吸頂的「給學生寫」，題目再多也在手邊
+                previewList = teacherPreviewListHtml(window.currentItems || []);   // 題目與答案，排在作答方式下面
             } else {
                 html += "<div class='lq-card p-6 mb-4 text-center'><h2 class='font-bold text-lg mb-1'>📱 線上作答</h2><p class='text-sm text-gray-500'>選擇/複選題會自動判分；填空/簡答題只能做文字比對，僅供參考，請自行核對。</p></div>";
             }
@@ -256,11 +267,7 @@
                 "</div>";
 
             if (teacherPreview) {
-                // 老師的主要出口是「給學生寫」（連結或這支手機二選一，見 teacher-preview.js）；自己試寫降為次要。
-                // 底下留白避免被左下角浮動的「回上一頁」蓋住
-                html += "<button onclick='openGiveToStudents()' class='lq-btn lq-cta lq-btn-primary w-full py-3 rounded-xl text-lg mb-2'>📤 給學生寫</button>" +
-                    "<button onclick='startAnswerQuiz()' class='lq-btn lq-btn-secondary w-full py-2 rounded-xl text-sm'>▶ 我自己先試寫一遍</button>" +
-                    "<div style='height:4.5rem'></div>";
+                html += previewList + "<div style='height:4.5rem'></div>";   // 底下留白避免被左下角浮動的「回上一頁」蓋住
             } else {
                 html += "<button onclick='startAnswerQuiz()' class='lq-btn lq-cta lq-btn-primary w-full py-3 rounded-xl text-lg'>🚀 開始測驗</button>";
             }
@@ -303,18 +310,22 @@
             const container = document.getElementById('answerModeContainer');
             if (!container) return;
             const items = window.currentItems || [];
-            let html = "<div class='max-w-2xl mx-auto p-4'>";
+            let html = "<div class='max-w-2xl mx-auto p-4 lq-ans-wrap'>";
             html += answerStartScreenHtml();
 
             // 題目本體：預設隱藏，確認模式並按下「開始測驗」後才顯示
-            html += "<div id='ansQuizBody' class='hidden'>";
+            html += "<div id='ansQuizBody' class='hidden'><div class='lq-quiz-cols'><div class='lq-quiz-main'>";
             items.forEach((q, i) => { html += answerCardHtml(q, i); });
             // 即時進度分享連結：只有透過分享連結進來作答的學生(有shareId)才需要，老師自己預覽不用
             if (window.isSharedView && window.sharedMode === 'student' && window.liveShareId) {
                 html += "<button type='button' onclick='shareLiveProgressLink(this)' class='lq-btn lq-btn-share w-full py-2 text-sm mb-3'>📤 分享即時監看連結給家長（家長不用註冊）</button>";
             }
             // 底部固定列（2026-11-05）：隨時看得到寫到哪、交卷鈕不用捲到最底
-            html += "<div id='scoreResult' class='mt-4'></div>";
+            html += "<div id='scoreResult' class='mt-4'></div></div>";
+            // 題號導覽（2026-11-13，桌機寬螢幕才顯示在右側）：一眼看到哪題還沒寫，點了直接跳過去
+            html += "<aside class='lq-quiz-side no-print' aria-label='題號導覽'><div class='lq-quiz-side-title'>題號</div><div class='lq-quiz-nav'>" +
+                items.map(function (q, i) { return "<button type='button' class='lq-qnav' id='ans-nav-" + i + "' onclick='jumpToQuestion(" + i + ")' aria-label='跳到第 " + (i + 1) + " 題'>" + (i + 1) + "</button>"; }).join('') +
+                "</div></aside></div>";
             html += "<nav class='lq-quiz-bottombar' aria-label='作答進度'>" +
                 "<div class='lq-bar-progress-box'><div class='lq-bar-meta'><span>已作答</span><b id='ansProgressText' aria-live='polite' aria-atomic='true'>0 / " + items.length + " 題</b></div>" +
                 "<div class='lq-bar-track'><div class='lq-bar-fill' id='ansProgressFill' style='width:0%'></div></div></div>" +
@@ -323,6 +334,7 @@
 
             html += "</div>";
             container.innerHTML = html;
+            if (typeof placeTeacherPreviewBar === 'function') placeTeacherPreviewBar();
             // 選項／選擇題用 change（點一下才觸發）；文字題用 input 但防抖 250 毫秒：
             // 以前每打一個字就掃過整份卷子的所有題目與選項並重設樣式，題數多的手機上打字會卡
             let progTimer = null;
@@ -340,17 +352,28 @@
             };
         }
 
+        function jumpToQuestion(i) {
+            const card = document.getElementById('ans-card-' + i);
+            if (!card) return;
+            const calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+            card.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'start' });
+        }
+
         // 已作答題數：選擇題有勾選、文字題有內容才算
         function updateAnsProgress() {
             const items = window.currentItems || [];
             let done = 0;
             items.forEach(function (q, i) {
+                let ok = false;
                 if (q.o && q.o.length > 0) {
-                    if (document.querySelector('input[name="ans-' + i + '"]:checked')) done++;
+                    ok = !!document.querySelector('input[name="ans-' + i + '"]:checked');
                 } else {
                     const t = document.getElementById('ans-text-' + i);
-                    if (t && t.value.trim()) done++;
+                    ok = !!(t && t.value.trim());
                 }
+                if (ok) done++;
+                const nav = document.getElementById('ans-nav-' + i);
+                if (nav) nav.classList.toggle('is-done', ok);
             });
             // 舊 iPad（iOS 15.4 以前）不支援 :has()，改用 class 標示選中的那一列
             document.querySelectorAll('#answerModeContainer .lq-ans-opt').forEach(function (lb) {
