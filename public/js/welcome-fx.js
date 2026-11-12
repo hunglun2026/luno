@@ -36,3 +36,21 @@
         aim(Math.max(-1, Math.min(1, e.gamma / 30)), Math.max(-1, Math.min(1, (e.beta - 45) / 30)));
     });
 })();
+
+// 頁尾的 LINE ID：點一下複製；複製不到（舊瀏覽器、非 https）就把字選起來讓人自己複製
+document.addEventListener('click', function (e) {
+    var btn = e.target.closest ? e.target.closest('[data-copy]') : null;
+    if (!btn) return;
+    var text = btn.getAttribute('data-copy');
+    var shown = btn.innerHTML;
+    function done() {
+        btn.classList.add('is-copied');
+        btn.textContent = '已複製 ✓';
+        setTimeout(function () { btn.classList.remove('is-copied'); btn.innerHTML = shown; }, 1600);
+    }
+    function select() {
+        try { var r = document.createRange(); r.selectNodeContents(btn); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (err) { /* 選不起來就算了 */ }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, select);
+    else select();
+});
