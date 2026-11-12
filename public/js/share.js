@@ -105,7 +105,7 @@
                         "</div></div>";
                 }
                 const panes = {
-                    student: "<div class='lq-card p-3 mb-3 text-sm' style='line-height:1.7;'><b>學生會這樣考（不用登入）</b><br>點開連結 → 填姓名座號（可以不填）→ 按「開始測驗」→ 寫完按「交卷看成績」，馬上看到分數與解析。</div>" + "<button onclick=\"copySendQuizItem('notice', this)\" class='lq-btn lq-btn-primary w-full py-3 mb-3 font-bold'>📋 複製班級公告（含代碼與連結）</button>" + "<div class='mb-3'></div>" + sendQuizRow('student', '🎓 學生作答連結', '傳給學生（LINE／Google Classroom）。開啟直接線上作答＋自動評分。適合練習與平時小考，不適合正式考試（會用開發者工具的學生查得到答案）。'),
+                    student: "<div class='lq-card p-3 mb-3 text-sm' style='line-height:1.7;'><b>學生會這樣考（不用登入）</b><br>點開連結 → 填姓名或暱稱（必填，座號可不填）→ 按「開始測驗」→ 寫完按「交卷看成績」，馬上看到分數與解析。</div>" + "<button onclick=\"copySendQuizItem('notice', this)\" class='lq-btn lq-btn-primary w-full py-3 mb-3 font-bold'>📋 複製班級公告（含代碼與連結）</button>" + "<div class='mb-3'></div>" + sendQuizRow('student', '🎓 學生作答連結', '傳給學生（LINE／Google Classroom）。開啟直接線上作答＋自動評分。適合練習與平時小考。題目不含答案，交卷後才公布；若要比較嚴謹，作答方式選「全部寫完再送出」，學生交卷前看不到任何答案。'),
                     class: cardHtml || "<div class='lq-card p-4 text-sm text-gray-500'>這次沒有產生測驗代碼（需要登入），請改用「傳給學生」的連結。</div>",
                     adult: sendQuizRow('parent', '👨‍👩‍👧 家長答案連結', '傳給家長。可以看題目、答案與解析，唯讀不能改。') + sendQuizRow('dash', '📊 老師即時進度儀表板', '你自己留著。開啟不用登入就能看全班進度，所以<b class="text-red-600">不要轉給學生或貼到班級群組</b>。')
                 };
