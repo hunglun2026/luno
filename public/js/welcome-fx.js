@@ -37,20 +37,23 @@
     });
 })();
 
-// 頁尾的 LINE ID：點一下複製；複製不到（舊瀏覽器、非 https）就把字選起來讓人自己複製
+// 頁尾的 LINE：手機點了照連結開 LINE；電腦（有滑鼠、開 line.me 沒用）改成複製 ID，跟鴻綸官網同一套做法。
+// 複製不到（舊瀏覽器、非 https）就把字選起來讓人自己複製
 document.addEventListener('click', function (e) {
-    var btn = e.target.closest ? e.target.closest('[data-copy]') : null;
-    if (!btn) return;
-    var text = btn.getAttribute('data-copy');
-    var shown = btn.innerHTML;
+    var a = e.target.closest ? e.target.closest('[data-line-id]') : null;
+    if (!a) return;
+    if (!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches)) return;   // 手機：照原本連結走
+    e.preventDefault();
+    var id = a.getAttribute('data-line-id');
+    var shown = a.innerHTML;
     function done() {
-        btn.classList.add('is-copied');
-        btn.textContent = '已複製 ✓';
-        setTimeout(function () { btn.classList.remove('is-copied'); btn.innerHTML = shown; }, 1600);
+        a.classList.add('is-copied');
+        a.textContent = '已複製 LINE ID ✓';
+        setTimeout(function () { a.classList.remove('is-copied'); a.innerHTML = shown; }, 1800);
     }
     function select() {
-        try { var r = document.createRange(); r.selectNodeContents(btn); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (err) { /* 選不起來就算了 */ }
+        try { var r = document.createRange(); r.selectNodeContents(a); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (err) { /* 選不起來就算了 */ }
     }
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, select);
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(id).then(done, select);
     else select();
 });
