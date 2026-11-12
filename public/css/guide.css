@@ -59,6 +59,11 @@
 
 .lg-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 1.5rem; }
 .lg-nav .lg-grow { flex: 1; }
+/* 手機：回上一頁、下一步等寬並排，不要疊成左對齊兩行 */
+@media (max-width: 480px) {
+    .lg-nav .lg-grow { display: none; }
+    .lg-nav .lq-btn { flex: 1 1 0; min-width: 0; padding-left: 0.5rem; padding-right: 0.5rem; white-space: nowrap; }
+}
 .lg-msg { width: 100%; margin: 0; color: var(--hl-red, #EA4335); font-weight: 700; font-size: 0.9rem; }
 
 /* 引導模式下，每一步上方已經有「第 N 步：…」標題，原本的區塊小標題就不重複出現 */
