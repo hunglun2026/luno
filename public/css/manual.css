@@ -47,14 +47,8 @@ img { max-width: 100%; height: auto; }
 .m-btn.is-primary { background: var(--hl-blue, #1A73E8); color: #fff; }
 .m-btn:focus-visible { outline: 3px solid #8ab4f8; outline-offset: 2px; }
 
-/* ---------- 版面：左目錄、右內文 ---------- */
-.m-wrap { display: grid; grid-template-columns: 15rem minmax(0, 1fr); gap: 2rem; max-width: 72rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
-.m-toc { position: sticky; top: 4.5rem; align-self: start; max-height: calc(100vh - 6rem); overflow: auto; font-size: 0.92rem; }
-.m-toc summary { font-weight: 700; cursor: pointer; padding: 0.4rem 0; }
-.m-toc ol { margin: 0.25rem 0 0; padding-left: 1.4rem; }
-.m-toc li { margin: 0.2rem 0; }
-.m-toc a { color: #374151; text-decoration: none; }
-.m-toc a:hover, .m-toc a:focus-visible { color: var(--hl-blue, #1A73E8); text-decoration: underline; }
+/* ---------- 版面：單欄置中（目錄欄 2026-11-11 重寫時已拿掉） ---------- */
+.m-wrap { max-width: 50rem; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 
 .m-main { min-width: 0; }
 .m-hero { padding: 2rem; border-radius: 1.25rem; background: #fff; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
@@ -97,8 +91,7 @@ img { max-width: 100%; height: auto; }
 
 /* ---------- 手機：目錄改到上方，可收合 ---------- */
 @media (max-width: 860px) {
-    .m-wrap { grid-template-columns: 1fr; gap: 1rem; }
-    .m-toc { position: static; max-height: none; padding: 0.75rem 1rem; background: #fff; border: 1px solid #e5e7eb; border-radius: 1rem; }
+    .m-wrap { padding-top: 1rem; }
     .m-hero, .m-chapter { padding: 1.25rem 1.1rem; }
     .m-top span, .m-top .m-print-hide { display: none; }
 }
@@ -107,7 +100,7 @@ img { max-width: 100%; height: auto; }
 @media print {
     @page { margin: 15mm; }
     body { background: #fff; font-size: 11pt; }
-    .m-top, .m-toc, .m-print-hide { display: none !important; }
+    .m-top, .m-print-hide { display: none !important; }
     .m-wrap { display: block; padding: 0; }
     .m-hero, .m-chapter { border: none; padding: 0; margin: 0 0 1rem; }
     .m-chapter { break-before: page; }
@@ -121,6 +114,7 @@ img { max-width: 100%; height: auto; }
 .m-pick { padding: 1.5rem 2rem; border-radius: 1.25rem; background: #fff; border: 1px solid #e5e7eb; margin-bottom: 1.5rem; }
 .m-pick h2 { margin: 0 0 0.9rem; font-size: 1.25rem; line-height: 1.4; }
 .m-pick-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+.m-pick-card span { text-wrap: balance; }
 .m-pick-card { display: flex; flex-direction: column; gap: 0.25rem; align-items: flex-start; padding: 0.9rem 1rem; text-align: left; font: inherit; color: inherit; background: #f8fafd; border: 2px solid #dbe3ef; border-radius: 0.9rem; cursor: pointer; transition: border-color .15s, background .15s; }
 .m-pick-card b { font-size: 1.15rem; }
 .m-pick-card span { color: #5f6368; font-size: 0.85rem; line-height: 1.5; }
