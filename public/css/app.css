@@ -66,8 +66,6 @@
             color: #fff; background: var(--hl-blue, #1a73e8); border-color: var(--hl-blue, #1a73e8);
         }
         /* 老師班級代碼膠囊（頂列常駐，點一下複製） */
-        .lq-code-chip { background: #e8f0fe; color: #174ea6; font-weight: 800; letter-spacing: 0.02em; border-radius: 999px; }
-        .lq-code-chip:hover { background: #d2e3fc; color: #174ea6; }
         .lq-appbar-btn.is-primary:hover { background: var(--hl-blue-hover, #1557b0); color: #fff; }
         .lq-appbar-visits { font-size: 0.75rem; color: #6b7280; font-weight: 700; white-space: nowrap; }
         /* 手機：只留 logo、登入與一顆「更多」，其餘收起來，避免擠成兩三行 */

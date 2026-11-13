@@ -15,7 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="刻度 隨手出題 隨時小測">
     <meta name="robots" content="noindex">
     <!-- 深淺色主題：同步載入，頁面畫出來之前就決定好顏色，不會先閃白再變黑 -->
-    <script src="js/theme.js?v=87"></script>
+    <script src="js/theme.js?v=88"></script>
     <!-- mammoth / SheetJS / html2canvas / jsPDF / docx 這五個加起來是首屏最重的一塊，
          但它們只有在「上傳檔案出題」跟「按下載」時才用得到。改成按需載入（見 loadScript()），
          首屏不再為了可能永遠不會按的按鈕付這筆流量。版本號都寫死，不用 @latest，
@@ -27,15 +27,15 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css" integrity="sha384-UVFvhZP7fWAENUPOoq61rJg5ef6QZW0k5vpAn71041/QS4STvUcJQCGNhStZLGx9" crossorigin="anonymous" />
     <link rel="stylesheet" href="assets/brand.css">
     <!-- 引導式出題（老師一步一頁）；改 guide.css／guide.js 時兩邊 ?v= 一起升 -->
-    <link rel="stylesheet" href="css/guide.css?v=87">
+    <link rel="stylesheet" href="css/guide.css?v=88">
     <!-- 原本的 <style> 整段搬到 css/，2026-10-21 -->
-    <link rel="stylesheet" href="css/app.css?v=87">
-    <link rel="stylesheet" href="css/sheet.css?v=87">
+    <link rel="stylesheet" href="css/app.css?v=88">
+    <link rel="stylesheet" href="css/sheet.css?v=88">
     <!-- Tailwind 預先建置的靜態檔（不再用 cdn.tailwindcss.com 在瀏覽器即時編譯）；重建方式見 ../tailwind/tailwind.config.js。放在其他樣式表之後，層疊順序跟原本 CDN 一致 -->
-    <link rel="stylesheet" href="css/tailwind.css?v=87">
+    <link rel="stylesheet" href="css/tailwind.css?v=88">
     <!-- 歡迎頁／身分頁（landing.css）與深色主題對主畫面的覆蓋（theme.css）；放最後，層疊上才蓋得過前面的寫死顏色 -->
-    <link rel="stylesheet" href="css/landing.css?v=87">
-    <link rel="stylesheet" href="css/theme.css?v=87">
+    <link rel="stylesheet" href="css/landing.css?v=88">
+    <link rel="stylesheet" href="css/theme.css?v=88">
 </head>
 <body class="text-slate-800">
 
@@ -71,7 +71,6 @@
                 <button type="button" onclick="openSuperadminPanel()" id="superadminBtn" class="hidden lq-appbar-btn">管理後台</button>
                 <button type="button" onclick="openAccountModal()" id="accountBtn" class="hidden lq-appbar-btn">我的帳號</button>
                 <span id="accountStatus" class="lq-appbar-visits"></span>
-                <button type="button" id="classCodeChip" onclick="copyClassCodeChip(this)" class="hidden lq-appbar-btn lq-code-chip" aria-label="複製班級代碼"></button>
                 <button type="button" class="lq-appbar-btn" data-theme-toggle onclick="toggleTheme()" aria-label="切換深淺色"><span class="ph-duotone ph-moon" style="font-size:1.1rem;"></span><span class="lab is-optional">深色</span></button>
                 <button type="button" onclick="openIdentitySplash()" id="lqLoginBtn" class="lq-appbar-btn is-primary">登入</button>
             </div>
@@ -499,36 +498,36 @@
     </div>
 
     <!-- 主程式：原本整段寫在這裡，2026-10-21 依功能拆成 js/ 底下的檔案；順序就是原本的先後，不能調換（後面的檔會用到前面宣告的變數） -->
-    <script src="js/common.js?v=87"></script>
-    <script src="js/mathtext.js?v=87"></script>
-    <script src="js/speak.js?v=87"></script>
-    <script src="js/live-stats.js?v=87"></script>
-    <script src="js/qtypes.js?v=87"></script>
-    <script src="js/core.js?v=87"></script>
-    <script src="js/dialog.js?v=87"></script>
-    <script src="js/entry.js?v=87"></script>
-    <script src="js/home.js?v=87"></script>
-    <script src="js/share.js?v=87"></script>
-    <script src="js/settings.js?v=87"></script>
-    <script src="js/generate.js?v=87"></script>
-    <script src="js/sheet.js?v=87"></script>
-    <script src="js/page-images.js?v=87"></script>
-    <script src="js/edit-items.js?v=87"></script>
-    <script src="js/ai-grade.js?v=87"></script>
-    <script src="js/answer.js?v=87"></script>
-    <script src="js/teacher-preview.js?v=87"></script>
-    <script src="js/answer-qtypes.js?v=87"></script>
-    <script src="js/server-grade.js?v=87"></script>
-    <script src="js/answer-draft.js?v=87"></script>
-    <script src="js/bank.js?v=87"></script>
-    <script src="js/handoff.js?v=87"></script>
-    <script src="js/router.js?v=87"></script>
-    <script src="js/export.js?v=87"></script>
-    <script src="js/account.js?v=87"></script>
-    <script src="js/classes.js?v=87"></script>
-    <script src="js/admin.js?v=87"></script>
+    <script src="js/common.js?v=88"></script>
+    <script src="js/mathtext.js?v=88"></script>
+    <script src="js/speak.js?v=88"></script>
+    <script src="js/live-stats.js?v=88"></script>
+    <script src="js/qtypes.js?v=88"></script>
+    <script src="js/core.js?v=88"></script>
+    <script src="js/dialog.js?v=88"></script>
+    <script src="js/entry.js?v=88"></script>
+    <script src="js/home.js?v=88"></script>
+    <script src="js/share.js?v=88"></script>
+    <script src="js/settings.js?v=88"></script>
+    <script src="js/generate.js?v=88"></script>
+    <script src="js/sheet.js?v=88"></script>
+    <script src="js/page-images.js?v=88"></script>
+    <script src="js/edit-items.js?v=88"></script>
+    <script src="js/ai-grade.js?v=88"></script>
+    <script src="js/answer.js?v=88"></script>
+    <script src="js/teacher-preview.js?v=88"></script>
+    <script src="js/answer-qtypes.js?v=88"></script>
+    <script src="js/server-grade.js?v=88"></script>
+    <script src="js/answer-draft.js?v=88"></script>
+    <script src="js/bank.js?v=88"></script>
+    <script src="js/handoff.js?v=88"></script>
+    <script src="js/router.js?v=88"></script>
+    <script src="js/export.js?v=88"></script>
+    <script src="js/account.js?v=88"></script>
+    <script src="js/classes.js?v=88"></script>
+    <script src="js/admin.js?v=88"></script>
 <!-- ==================== 紙本卷拍照轉題目（js/ocr-teacher.js） ==================== -->
-<link rel="stylesheet" href="css/ocr.css?v=87">
+<link rel="stylesheet" href="css/ocr.css?v=88">
 <div id="ocrApp" class="hidden min-h-screen bg-gray-50 no-print">
   <div class="max-w-3xl mx-auto p-4">
     <div class="flex flex-wrap items-center gap-2 mb-4">
@@ -576,7 +575,7 @@
 <!-- ==================== 原卷直上：老師編輯 / 學生作答 / 老師批改 ====================
      學 Kami 的「把靜態文件變成互動作業」，但 AI 大腦用我們自己的（Kami 的 Questions AI 要付費）。
      刻意做成獨立的三個畫面 + 獨立的 script，跟原本的出題流程互不干擾。 -->
-<link rel="stylesheet" href="css/paper.css?v=87">
+<link rel="stylesheet" href="css/paper.css?v=88">
 
 <div id="paperApp" class="hidden min-h-screen bg-gray-50 no-print">
   <!-- ---------- 老師：上傳原卷、調作答區 ---------- -->
@@ -671,12 +670,12 @@
   </div>
 </div>
 
-<script src="js/ocr-teacher.js?v=87"></script>
-<script src="js/paper-teacher.js?v=87"></script>
-<script src="js/paper-student.js?v=87"></script>
-<script src="js/paper-focus.js?v=87"></script>
+<script src="js/ocr-teacher.js?v=88"></script>
+<script src="js/paper-teacher.js?v=88"></script>
+<script src="js/paper-student.js?v=88"></script>
+<script src="js/paper-focus.js?v=88"></script>
     <!-- 引導式出題（要在 window.onload 之前載入，onload 會呼叫 Guide.start()） -->
-    <script src="js/guide.js?v=87"></script>
+    <script src="js/guide.js?v=88"></script>
 
 </body>
 </html>

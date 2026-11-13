@@ -121,28 +121,6 @@ async function randomClassCode(id) {
     if (ok) saveClassCode({ classId: id, random: true });
 }
 
-// 老師的班級代碼常駐在頂列（2026-11-13 取代登入時跳一次的阻斷式視窗）：點一下複製，目前班的代碼
-function updateClassCodeChip() {
-    const chip = document.getElementById('classCodeChip');
-    if (!chip) return;
-    const u = window.currentUser;
-    const show = !!(u && u.role === 'teacher' && u.classCode);
-    chip.classList.toggle('hidden', !show);
-    if (!show) return;
-    chip.dataset.code = u.classCode;
-    chip.textContent = (lqClasses().length > 1 && u.className ? u.className + '・' : '') + '代碼 ' + u.classCode + ' 📋';
-    chip.title = '點一下複製班級代碼，報給學生註冊或加入班級用';
-}
-function copyClassCodeChip(btn) {
-    const code = btn.dataset.code;
-    if (!code || !(navigator.clipboard && navigator.clipboard.writeText)) return;
-    const old = btn.textContent;
-    navigator.clipboard.writeText(code).then(function () {
-        btn.textContent = '已複製 ✓';
-        setTimeout(function () { updateClassCodeChip(); }, 1500);
-    }, function () {});
-}
-
 // 複製班級代碼：瀏覽器不給剪貼簿權限時不假裝成功
 function copyClassCode(code, btn) {
     if (!(navigator.clipboard && navigator.clipboard.writeText)) return;

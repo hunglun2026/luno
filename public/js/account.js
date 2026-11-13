@@ -43,11 +43,16 @@
             if (loginBtn) loginBtn.classList.toggle('hidden', !!window.currentUser);
             if (window.currentUser) {
                 statusEl.textContent = window.currentUser.displayName + '（' + (roleLabel[window.currentUser.role] || window.currentUser.role) + '）';
-                updateClassCodeChip();
             } else {
                 statusEl.textContent = '';
-                updateClassCodeChip();
             }
+            // 登入後頂列只留用得到的：解除冷卻是沒帳號時的管理者工具、人次是裝飾，都先藏起來
+            ['adminBtn'].forEach(function (id) {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', !!window.currentUser);
+            });
+            const visitsEl = document.querySelector('.lq-appbar-visits');
+            if (visitsEl && visitsEl.id !== 'accountStatus') visitsEl.classList.toggle('hidden', !!window.currentUser);
             const saveBtn = document.getElementById('btnSaveHistory');
             // 老師看得到「存入班級歷史」；沒登入的也顯示，但按下去是帶去註冊（註冊成功會把這台裝置的試卷一起存進去）
             const canSave = !window.currentUser || window.currentUser.role === 'teacher';
