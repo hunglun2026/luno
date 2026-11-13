@@ -77,6 +77,16 @@ function tpEdit(i) {
     if (q) { q.scrollIntoView({ block: 'center' }); try { q.focus({ preventScroll: true }); } catch (e) { } }
 }
 
+// 老師正要把東西給學生時，順手列出目前班的代碼（學生註冊或加入班級要用），取代原本頂列常駐的膠囊
+function giveClassCodeHtml() {
+    const u = window.currentUser;
+    if (!(u && u.role === 'teacher' && u.classCode)) return '';
+    const name = u.className ? escapeHtml(u.className) + ' 的班級代碼' : '班級代碼';
+    return "<div style='display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin:.25rem 0 .75rem;padding:.6rem .8rem;border-radius:.75rem;background:var(--ld-soft,#e8f0fe);'>" +
+        "<span style='font-size:.9rem;'>" + name + " <b style='letter-spacing:.15em;font-size:1.1rem;'>" + escapeHtml(u.classCode) + "</b></span>" +
+        "<button type='button' onclick=\"copyClassCode(" + jsArg(u.classCode) + ", this)\" class='lq-btn lq-btn-secondary text-sm px-3 py-1'>複製代碼</button></div>";
+}
+
 // 「給學生寫」二選一：老師不用先分辨「發送測驗」與「交給學生作答」，在這裡選一次就好。
 // 傳連結或代碼 → openSendQuizModal（share.js，要登入）；同一支手機 → openHandoffSetup（handoff.js，免登入）。
 function openGiveToStudents() {
@@ -90,6 +100,7 @@ function openGiveToStudents() {
     overlay.innerHTML =
         "<div class='lq-dlg-box'>" +
         "<div class='lq-dlg-msg' style='font-weight:700;font-size:1.05rem;'>要怎麼給學生寫？</div>" +
+        giveClassCodeHtml() +
         "<button type='button' data-give='link' class='lq-give-opt'><b>📤 傳連結或代碼給全班</b><span>" +
         (loggedIn ? "學生用自己的手機或電腦寫，你可以看全班進度" : "要先登入教師帳號；學生用自己的手機或電腦寫，你可以看全班進度") + "</span></button>" +
         "<button type='button' data-give='phone' class='lq-give-opt'><b>📱 這支手機直接遞給學生</b><span>不用登入，設一組 4 位數密碼，學生寫完你再解鎖看成績</span></button>" +
