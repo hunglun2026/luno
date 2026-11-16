@@ -161,13 +161,15 @@
             font-size: 0.8125rem; color: #6b7280; list-style: none;
         }
         .lq-disclaimer summary::-webkit-details-marker { display: none; }
-        .lq-disclaimer summary strong { color: #b45309; white-space: nowrap; }   /* 「送出前請自行校對」不拆開，擠不下就整句換行 */
+        .lq-disclaimer summary strong { color: #b45309; }
+        .lq-disclaimer-text { white-space: nowrap; }   /* 整句一行；手機上「使用規範」改排到下一行（見下） */
         .lq-disclaimer-more {
             margin-left: auto; font-size: 0.75rem; color: #9ca3af;
             border: 1px solid #e5e7eb; border-radius: 9999px; padding: 0.125rem 0.625rem;
             white-space: nowrap;
         }
         .lq-disclaimer[open] .lq-disclaimer-more { color: var(--hl-blue, #1a73e8); border-color: #c7d2fe; }
+        @media (max-width: 640px) { .lq-disclaimer summary { flex-direction: column; align-items: flex-start; gap: 0.5rem; } .lq-disclaimer-more { margin-left: 0; } }
 
         /* 三步流程說明列 */
         .lq-steps {
