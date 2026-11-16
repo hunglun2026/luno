@@ -433,3 +433,6 @@ body.guest-mode .lq-more-live { display: none; }
 .lq-reward-sub { font-size: 0.85rem; opacity: 0.85; }
 @keyframes lqRewardPop { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .lq-reward.is-got { animation: none; } }
+.lq-reward-ideas { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.7rem; }
+.lq-reward-idea { padding: 0.3rem 0.7rem; font: inherit; font-size: 0.85rem; color: var(--ld-text, #0b1b3a); background: transparent; border: 1px solid var(--ld-line, #dbe3ef); border-radius: 999px; cursor: pointer; }
+.lq-reward-idea:hover { border-color: var(--hl-blue, #1a73e8); color: var(--hl-blue, #1a73e8); }

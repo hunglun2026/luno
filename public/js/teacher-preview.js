@@ -122,6 +122,8 @@ function openGiveToStudents() {
     }
     function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } }
     overlay.addEventListener('click', function (e) {
+        const idea = e.target.closest ? e.target.closest('[data-idea]') : null;
+        if (idea) { lqRewardIdeaClick(overlay, idea.getAttribute('data-idea')); return; }
         const chip = e.target.closest ? e.target.closest('[data-kid]') : null;
         if (chip) {   // 家長選這份是給哪個孩子
             window._giveKid = chip.getAttribute('data-kid');
@@ -139,6 +141,7 @@ function openGiveToStudents() {
     document.addEventListener('keydown', onKey, true);
     document.body.appendChild(overlay);
     fillGiveKids(overlay);
+    overlay.addEventListener('focusin', function (e) { if (e.target.classList && e.target.classList.contains('lq-rw-text')) overlay._lqRwLast = e.target; });
     overlay.querySelector('[data-give=link]').focus();
 }
 

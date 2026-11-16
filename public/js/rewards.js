@@ -7,10 +7,12 @@
 
 var LQ_REWARD_KEY = 'lun_parent_rewards';
 var LQ_REWARD_DEFAULTS = [
-    { min: 90, text: '看 30 分鐘卡通' },
-    { min: 80, text: '週末選一部電影' },
-    { min: 60, text: '睡前多聽一個故事' }
+    { min: 90, text: '週末去公園玩' },
+    { min: 80, text: '選一個小禮物' },
+    { min: 60, text: '多玩 20 分鐘' }
 ];
+// 點一下帶入的常見獎勵（家長也可以完全自己輸入，什麼都行，最多 30 字）
+var LQ_REWARD_IDEAS = ['去公園玩', '買一本喜歡的書', '小禮物一份', '吃冰淇淋', '全家出去吃飯', '多玩 20 分鐘', '看一部電影', '貼紙一張'];
 
 // 清理：最多 3 條、門檻 0～100 整數、文字去頭尾空白限 30 字、沒文字的丟掉，依門檻由高到低排
 function lqRewardsClean(list) {
@@ -75,11 +77,14 @@ function lqRewardEditorHtml() {
     var st = lqRewardsLoad();
     var rows = st.list.map(function (r, i) {
         return "<div class='lq-reward-row'><span>≥</span><input type='number' min='0' max='100' inputmode='numeric' class='lq-rw-min' value='" + escapeHtml(String(r.min)) + "' aria-label='第 " + (i + 1) + " 條門檻分數'><span>分</span>" +
-            "<input type='text' maxlength='30' class='lq-rw-text' value='" + escapeHtml(r.text) + "' placeholder='獎勵內容' aria-label='第 " + (i + 1) + " 條獎勵'></div>";
+            "<input type='text' maxlength='30' class='lq-rw-text' value='" + escapeHtml(r.text) + "' placeholder='例如：去公園玩、小禮物' aria-label='第 " + (i + 1) + " 條獎勵'></div>";
     }).join('');
     return "<details class='lq-reward-edit'" + (st.on ? " open" : "") + "><summary>🎁 設定獎勵（選填）</summary>" +
         "<label class='lq-reward-on'><input type='checkbox' id='lqRwOn'" + (st.on ? " checked" : "") + "> 這次要給孩子獎勵</label>" +
-        "<div class='text-xs text-gray-500'>達到分數就有獎勵，取最高的一條。不想設的那一列把獎勵內容清空就好。</div>" + rows + "</details>";
+        "<div class='text-xs text-gray-500'>達到分數就有獎勵，取最高的一條。獎勵內容自己輸入，去公園玩、買禮物都可以；不想設的那一列清空就好。</div>" + rows +
+        "<div class='lq-reward-ideas' aria-label='常見獎勵，點一下帶入'>" + LQ_REWARD_IDEAS.map(function (t) {
+            return "<button type='button' class='lq-reward-idea' data-idea='" + escapeHtml(t) + "'>" + escapeHtml(t) + "</button>";
+        }).join('') + "</div></details>";
 }
 
 // 從視窗讀出目前設定並存起來；回傳清理後要送出的獎勵陣列（沒打開開關就是空陣列）
@@ -91,4 +96,11 @@ function lqRewardsReadEditor(root) {
     });
     lqRewardsSave(on.checked, list);
     return on.checked ? lqRewardsClean(list) : [];
+}
+
+// 點「常見獎勵」把文字帶進最近點過的那一格；還沒點過就帶進第一個空的（都有字就取代第一條）
+function lqRewardIdeaClick(root, text) {
+    var inputs = Array.prototype.slice.call(root.querySelectorAll('.lq-rw-text'));
+    var target = root._lqRwLast || inputs.filter(function (i) { return !i.value.trim(); })[0] || inputs[0];
+    if (target) { target.value = text; target.focus(); }
 }
