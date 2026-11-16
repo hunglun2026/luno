@@ -19,10 +19,11 @@
             const u = window.currentUser;
             // 沒登入但在身分頁選了「學生」（guide.js 記在 guestRole）也進學生首頁
             const isStudent = !!(u && u.role === 'student') || (!u && window.guestRole === 'student');
-            const isParent = u && u.role === 'parent';
+            const isParent = !!(u && u.role === 'parent') || (!u && window.guestRole === 'parent');
 
             document.getElementById('studentHome').classList.toggle('hidden', !isStudent);
-            document.getElementById('inputForm').classList.toggle('hidden', isStudent);
+            // 家長有自己的首頁（看孩子、幫孩子出練習卷），出題表單按了「幫孩子出練習卷」才出現
+            document.getElementById('inputForm').classList.toggle('hidden', isStudent || isParent);
             document.getElementById('parentPanel').classList.toggle('hidden', !isParent);
 
             if (isStudent) renderStudentHome();
@@ -269,15 +270,34 @@
             startGen();
         }
 
+        // 家長首頁（2026-11-16 Steve：家長和老師進去的畫面要不一樣）：看孩子寫到哪、幫孩子出練習卷。
+        // 沒登入：貼孩子傳來的監看連結即可（免登入），註冊家長帳號可以一次管好幾個孩子；登入後：孩子清單＋綁定碼。
         function renderParentPanel() {
             const box = document.getElementById('parentPanel');
-            box.innerHTML = "<div class='lq-card p-5'>" +
-                "<div class='font-bold text-lg mb-1'>👨‍👩‍👧 我的孩子</div>" +
-                "<div class='text-xs text-gray-500 mb-3'>請孩子登入自己的帳號，在「我的帳號」按「產生綁定碼」，再把 6 位數字輸入下面就能連結，之後可以即時看到他正在寫哪一題。下方出題工具跟老師版本完全相同，可以自己幫孩子出練習卷。</div>" +
-                "<div id='parentPanelChildren' class='mb-3'><div class='text-sm text-gray-400'>⏳ 載入中...</div></div>" +
-                "<div class='flex gap-2'><input id='parentPanelChildInput' class='lq-input text-sm' inputmode='numeric' maxlength='6' placeholder='孩子產生的 6 位數綁定碼'>" +
-                "<button onclick='parentPanelLinkChild(this)' class='lq-btn lq-btn-primary px-4 whitespace-nowrap'>連結</button></div></div>";
-            loadParentPanelChildren();
+            const u = window.currentUser;
+            const make = "<div class='lq-card p-5 mb-4'><div class='font-bold text-lg mb-1'>✏️ 幫孩子出練習卷</div>" +
+                "<div class='text-xs text-gray-500 mb-3'>選年級和科目，十幾秒就有一份，可以直接給孩子在手機上寫。</div>" +
+                "<button type='button' onclick='parentOpenMake()' class='lq-btn lq-btn-primary w-full py-2'>開始出題</button></div>";
+            let watch;
+            if (u) {
+                watch = "<div class='lq-card p-5 mb-4'>" +
+                    "<div class='font-bold text-lg mb-1'>👨‍👩‍👧 我的孩子</div>" +
+                    "<div class='text-xs text-gray-500 mb-3'>請孩子登入自己的帳號，在「我的帳號」按「產生綁定碼」，再把 6 位數字輸入下面就能連結，之後可以即時看到他正在寫哪一題。</div>" +
+                    "<div id='parentPanelChildren' class='mb-3'><div class='text-sm text-gray-400'>⏳ 載入中...</div></div>" +
+                    "<div class='flex gap-2'><input id='parentPanelChildInput' class='lq-input text-sm' inputmode='numeric' maxlength='6' placeholder='孩子產生的 6 位數綁定碼'>" +
+                    "<button onclick='parentPanelLinkChild(this)' class='lq-btn lq-btn-primary px-4 whitespace-nowrap'>連結</button></div></div>";
+            } else {
+                watch = "<div class='lq-card p-5 mb-4'>" +
+                    "<div class='font-bold text-lg mb-1'>👀 看孩子寫到哪</div>" +
+                    "<div class='text-xs text-gray-500 mb-3'>貼上孩子傳來的監看連結，不用註冊就能即時看他寫到第幾題。</div>" +
+                    "<input id='quizEntryParentLink' class='lq-input w-full mb-2' placeholder='貼上監看連結'>" +
+                    "<button onclick='quizEntryOpenParentLink()' class='lq-btn lq-btn-primary w-full py-2'>開始監看</button></div>" +
+                    "<div class='lq-card p-5 mb-4'><div class='font-bold text-lg mb-1'>🔑 註冊家長帳號</div>" +
+                    "<div class='text-xs text-gray-500 mb-3'>連結孩子的帳號後，不用每次貼連結，一次可以看好幾個孩子。</div>" +
+                    "<button type='button' onclick='openIdentitySplash(true)' class='lq-btn lq-btn-secondary w-full py-2'>註冊／登入</button></div>";
+            }
+            box.innerHTML = "<div class='max-w-2xl mx-auto'>" + watch + make + "</div>";
+            if (u) loadParentPanelChildren();
         }
 
         async function loadParentPanelChildren() {
@@ -373,7 +393,8 @@
             // 出題設定頁與學生首頁各自是該身分的主畫面，
             // 上方本來就有「換身分／登出」可以離開，不再多一顆返回鈕
             const onHome = isViewVisible(document.getElementById('inputForm'))
-                || isViewVisible(document.getElementById('studentHome'));
+                || isViewVisible(document.getElementById('studentHome'))
+                || isViewVisible(document.getElementById('parentPanel'));
             // 拍照轉題目那頁頂端自己有「回上一頁」，浮動的會蓋到底部連結
             const onOcr = isViewVisible(document.getElementById('ocrApp'));
             btn.classList.toggle('hidden', onHome || onOcr);
@@ -381,7 +402,7 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             const obs = new MutationObserver(updateGlobalBackBtn);
-            ['inputForm', 'studentHome', 'resultSection', 'ocrApp'].forEach(function (id) {
+            ['inputForm', 'studentHome', 'parentPanel', 'resultSection', 'ocrApp'].forEach(function (id) {
                 const el = document.getElementById(id);
                 if (el) obs.observe(el, { attributes: true, attributeFilter: ['class'] });
             });

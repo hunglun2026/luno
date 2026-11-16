@@ -46,7 +46,7 @@
         // 沒登入時記下這次是以什麼身分在用（home.js 判斷學生首頁、openIdentitySplash 決定登入頁用）
         window.guestRole = window.currentUser ? null : role;
         updateRoleLabel();
-        setGuest(role === 'guest');
+        setGuest(role === 'guest' || (role === 'parent' && !window.currentUser));   // 沒登入的家長出題同樣受訪客上限
         forceTeacher = role === 'teacher' || role === 'guest';
         cur = step || 1;
         enterMainApp();   // 已包過：出題表單顯示時會接上一步一頁；學生與家長由 enterMainApp 依登入身分分流
@@ -245,10 +245,35 @@
         if (i < list.length - 1) go(list[i + 1]);
     }
 
+    function isParentRole() {
+        var u = window.currentUser;
+        return !!((u && u.role === 'parent') || (!u && window.guestRole === 'parent'));
+    }
+    // 家長首頁（home.js renderParentPanel）與出題表單二選一顯示
+    function parentGoHome() {
+        $('inputForm').classList.add('hidden');
+        $('parentPanel').classList.remove('hidden');
+        if (typeof renderParentPanel === 'function') renderParentPanel();
+        window.scrollTo(0, 0);
+        updateGlobalBackBtn();
+    }
+    window.parentOpenMake = function () {
+        $('parentPanel').classList.add('hidden');
+        $('inputForm').classList.remove('hidden');
+        cur = 1;
+        startWizard(1);
+        window.scrollTo(0, 0);
+        updateGlobalBackBtn();
+    };
+
     function prev() {
         var list = steps();
         var i = list.indexOf(cur);
-        if (i <= 0) { toIdentity(); return; }
+        if (i <= 0) {
+            // 家長從「家長首頁」進來出題的，第 1 步回上一頁是回家長首頁，不是換身分
+            if (isParentRole()) { parentGoHome(); return; }
+            toIdentity(); return;
+        }
         go(list[i - 1]);
     }
 
@@ -365,7 +390,8 @@
         if (picked === 'guest') { enterAs('guest'); return; }
         // 2026-11-09：教師、家長、學生也能免登入先用。教師與家長沒登入時走訪客出題流程（家長功能與教師相同），
         // 學生沒登入進學生首頁（輸入代碼、自己練習）。已登入的人以帳號身分為準，不看分頁記的身分
-        if (!u && (picked === 'teacher' || picked === 'parent')) { enterAs('guest'); window.guestRole = picked; updateRoleLabel(); return; }
+        if (!u && picked === 'teacher') { enterAs('guest'); window.guestRole = picked; updateRoleLabel(); return; }
+        if (!u && picked === 'parent') { enterAs('parent'); return; }
         if (!u && picked === 'student') { enterAs('student'); return; }
         if (u) {
             if (u.role === 'student') enterAs('student');
