@@ -7,7 +7,7 @@ function teacherPreviewItemHtml(q, i) {
     const kind = qKind(q);
     let h = "<div class='lq-card p-4 mb-3 lq-tp-q' id='tp-q-" + i + "'>";
     h += "<div class='lq-tp-qhead'><div class='font-bold'>" + (i + 1) + ". " + escapeHtml(q.q) +
-        " <span class='text-xs text-gray-400'>(" + (Number(q.s) || 0) + "分)</span></div>" +
+        " <span class='lq-tp-score no-print'>(<input type='number' min='0' step='1' inputmode='numeric' value='" + (Number(q.s) || 0) + "' onchange='tpSetScore(" + i + ", this.value)' aria-label='第 " + (i + 1) + " 題配分'>分)</span></div>" +
         "<div class='lq-tp-acts no-print'>" +
         "<button type='button' class='lq-btn lq-btn-secondary lq-tp-act' onclick='tpRegen(" + i + ", this)' aria-label='只換第 " + (i + 1) + " 題'>🎲 換這題</button>" +
         "<button type='button' class='lq-btn lq-btn-secondary lq-tp-act' onclick='tpEdit(" + i + ")' aria-label='編輯第 " + (i + 1) + " 題'>✏️ 編輯</button>" +
@@ -39,7 +39,8 @@ function teacherPreviewItemHtml(q, i) {
 }
 
 function teacherPreviewListHtml(items) {
-    let h = "<div class='lq-tp-list'><div class='lq-tp-head'>共 " + items.length + " 題（綠色是正確答案，學生看不到）</div>";
+    let h = "<div class='lq-tp-list'><div class='lq-tp-head'>共 " + items.length + " 題（綠色是正確答案，學生看不到）" +
+        (typeof lqTotalScore === 'function' ? "・滿分 <b id='tpTotal'>" + lqTotalScore(items) + "</b> 分" : "") + "</div>" + tpScorePanelHtml();
     items.forEach(function (q, i) { h += teacherPreviewItemHtml(q, i); });
     return h + "</div>";
 }
@@ -104,10 +105,10 @@ function openGiveToStudents() {
         "<div class='lq-dlg-msg' style='font-weight:700;font-size:1.05rem;'>" + (isParent ? "要怎麼給孩子寫？" : "要怎麼給學生寫？") + "</div>" +
         giveClassCodeHtml() +
         "<div id='giveKidBox'></div>" +
-        "<button type='button' data-give='link' class='lq-give-opt'><b>📤 " + (isParent ? "傳連結給孩子" : "傳連結或代碼給全班") + "</b><span>" +
+        "<button type='button' data-give='link' class='lq-give-opt'><b>📤 " + (isParent ? "發送測驗給孩子" : "傳連結或代碼給全班") + "</b><span>" +
         (isParent ? (loggedIn ? "孩子用自己的手機或電腦寫，你可以看他寫到哪" : "要先登入家長帳號；孩子用自己的手機或電腦寫，你可以看他寫到哪") : loggedIn ? "學生用自己的手機或電腦寫，你可以看全班進度" : "要先登入教師帳號；學生用自己的手機或電腦寫，你可以看全班進度") + "</span></button>" +
-        "<button type='button' data-give='phone' class='lq-give-opt'><b>📱 這支手機直接遞給" + (isParent ? "孩子" : "學生") + "</b><span>不用登入，設一組 4 位數密碼，" + (isParent ? "孩子" : "學生") + "寫完你再解鎖看成績</span></button>" +
-        "<button type='button' data-give='project' class='lq-give-opt'><b>🖥️ 投影到大屏</b><span>接投影機或電視，一次一題、字放很大，大家一起看（可顯示答案）</span></button>" +
+        "<button type='button' data-give='phone' class='lq-give-opt'><b>📱 " + (isParent ? "直接拿手機給孩子寫" : "這支手機直接遞給學生") + "</b><span>不用登入，設一組 4 位數密碼，" + (isParent ? "孩子" : "學生") + "寫完你再解鎖看成績</span></button>" +
+        (isParent ? "" : "<button type='button' data-give='project' class='lq-give-opt'><b>🖥️ 投影到大屏</b><span>接投影機或電視，一次一題、字放很大，大家一起看（可顯示答案）</span></button>") +
         "<div class='lq-dlg-row'><button type='button' data-give='cancel' class='lq-btn lq-btn-ghost'>取消</button></div>" +
         "</div>";
     function close(next) {
@@ -156,4 +157,37 @@ async function fillGiveKids(overlay) {
     if (!box || !names.length) return;
     box.innerHTML = "<div class='text-sm font-bold mt-2'>這份是給哪個孩子？</div><div class='lq-kid-chips'>" +
         names.map(function (n) { return "<button type='button' class='lq-kid-chip' data-kid='" + escapeHtml(n) + "'>" + escapeHtml(n) + "</button>"; }).join('') + "</div>";
+}
+
+// ===== 配分設定（2026-11-16）：總分＋分配方式一鍵套用，每題旁邊的數字也能直接改 =====
+function tpScorePanelHtml() {
+    if (typeof lqSpreadScores !== 'function') return '';
+    return "<details class='lq-card p-3 mb-3 lq-tp-score-panel no-print'><summary class='font-bold cursor-pointer'>⚖️ 配分設定</summary>" +
+        "<div class='lq-tp-score-row'>" +
+        "<label>總分 <select id='tpTotalSel' onchange=\"document.getElementById('tpTotalCustom').style.display=this.value==='x'?'':'none'\"><option>100</option><option>50</option><option>20</option><option>10</option><option value='x'>自訂</option></select>" +
+        "<input id='tpTotalCustom' type='number' min='1' step='1' inputmode='numeric' style='display:none;width:5rem' placeholder='分數'></label>" +
+        "<label>分配方式 <select id='tpModeSel'><option value='even'>每題一樣</option><option value='ramp'>後面的題目加重</option><option value='typed'>填充、簡答加倍</option></select></label>" +
+        "<button type='button' onclick='tpApplyScores()' class='lq-btn lq-btn-primary px-4 py-1.5 text-sm'>套用</button></div>" +
+        "<div class='text-xs text-gray-500 mt-2'>套用後每題分數都是整數、加起來剛好是總分。想微調，直接改下面每題旁邊的數字。</div></details>";
+}
+function tpApplyScores() {
+    const items = window.currentItems || [];
+    let total = document.getElementById('tpTotalSel').value;
+    if (total === 'x') total = document.getElementById('tpTotalCustom').value;
+    const scores = lqSpreadScores(items, total, document.getElementById('tpModeSel').value);
+    if (!scores.length) { lqAlert('請輸入大於 0 的總分'); return; }
+    items.forEach(function (q, i) { q.s = scores[i]; });
+    touchItems();
+    if (typeof saveQuizToHistory === 'function') saveQuizToHistory(true);   // 改了配分，出題紀錄也要跟著更新
+    renderAnswerMode();
+}
+function tpSetScore(i, v) {
+    const items = window.currentItems || [];
+    const n = Number(v);
+    if (!items[i] || !(n >= 0)) { renderAnswerMode(); return; }
+    items[i].s = n;
+    touchItems();
+    if (typeof saveQuizToHistory === 'function') saveQuizToHistory(true);
+    const t = document.getElementById('tpTotal');
+    if (t) t.textContent = lqTotalScore(items);
 }

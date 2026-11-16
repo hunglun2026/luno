@@ -402,3 +402,9 @@ body.guest-mode .lq-more-live { display: none; }
 .lq-kid-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 0.25rem; }
 .lq-kid-chip { padding: 0.4rem 1rem; font: inherit; font-weight: 700; color: var(--ld-text, #0b1b3a); background: var(--ld-panel, #f1f5fb); border: 2px solid var(--ld-line, #dbe3ef); border-radius: 999px; cursor: pointer; min-height: 40px; }
 .lq-kid-chip.is-on { color: #fff; background: var(--hl-blue, #1a73e8); border-color: var(--hl-blue, #1a73e8); }
+
+/* 配分設定與每題配分輸入（js/teacher-preview.js、scoring.js） */
+.lq-tp-score { font-size: 0.75rem; color: #9ca3af; white-space: nowrap; }
+.lq-tp-score input { width: 3.2rem; padding: 0.1rem 0.3rem; font: inherit; text-align: center; border: 1px solid var(--ld-line, #dbe3ef); border-radius: 0.4rem; background: transparent; color: inherit; }
+.lq-tp-score-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
+.lq-tp-score-row select, .lq-tp-score-row input { padding: 0.3rem 0.5rem; border: 1px solid var(--ld-line, #dbe3ef); border-radius: 0.5rem; background: transparent; color: inherit; font: inherit; }
