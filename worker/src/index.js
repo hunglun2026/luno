@@ -20,6 +20,8 @@ import { newClassCode, findClassByCodeOrName, ensureClassCode, insertClass, hand
 import { handleClasses } from "./classes.js";
 import { buildStats } from "./livestats.js";
 import { buildScoreTable } from "./livescores.js";
+import { nextKeyStart, peekKeyCounter } from "./keypool.js";
+export { KeyCounter } from "./keypool.js";
 import { publicShare, gradeShareAnswers } from "./sharegrade.js";
 
 const COOLDOWN_MS = 30000;
@@ -997,18 +999,17 @@ async function handleKeysCheck(request, env) {
     }
   }
 
-  return new Response(JSON.stringify({ total: apiKeys.length, results }), {
+  // rotationCounter：全域輪流計數（Durable Object）；null 代表目前是退回「執行個體內輪流」
+  return new Response(JSON.stringify({ total: apiKeys.length, rotationCounter: await peekKeyCounter(env), results }), {
     status: 200,
     headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
   });
 }
 
+// 主池 GEMINI_API_KEYS（單組時退回 GEMINI_API_KEY）＋額外池 GEMINI_API_KEYS_EXTRA（2026-11-16，新增 key 不必讀出舊池就能加），合併後去重
 function getApiKeys(env) {
-  const raw = env.GEMINI_API_KEYS || env.GEMINI_API_KEY || "";
-  return raw
-    .split(",")
-    .map((k) => k.trim())
-    .filter(Boolean);
+  const raw = [env.GEMINI_API_KEYS || env.GEMINI_API_KEY || "", env.GEMINI_API_KEYS_EXTRA || ""].join(",");
+  return [...new Set(raw.split(",").map((k) => k.trim()).filter(Boolean))];
 }
 
 async function handleGenerate(request, env) {
@@ -1139,7 +1140,7 @@ async function handleGenerate(request, env) {
 
     // 每次請求隨機挑一個起始 Key，讓多組 Key 的用量平均分散，
     // 而不是永遠先打第一組（第一組額度用完前，後面的 Key 都閒置）。
-    const startIdx = Math.floor(Math.random() * apiKeys.length);
+    const startIdx = await nextKeyStart(apiKeys.length, env);
 
     let data = null;
     let lastError = null;
@@ -2039,7 +2040,7 @@ async function geminiJson(env, parts, maxOutputTokens) {
     },
   });
 
-  const startIdx = Math.floor(Math.random() * apiKeys.length);
+  const startIdx = await nextKeyStart(apiKeys.length, env);
   let lastError = null;
 
   for (const model of GEMINI_MODELS) {

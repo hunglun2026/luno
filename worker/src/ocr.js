@@ -1,3 +1,4 @@
+import { nextKeyStart } from "./keypool.js";
 // 刻度｜紙本考卷拍照 OCR（2026-11-05）。老師上傳題目卷（常是手機拍照）與選填的答案卷，
 // 由 Gemini 視覺模型「照抄」成整齊的題目，老師在前端審閱後變成線上測驗。
 //
@@ -158,7 +159,7 @@ async function callGemini(parts, deps, env, userKey, maxOutputTokens) {
     return await res.json();
   };
   const deadline = Date.now() + TOTAL_BUDGET_MS;
-  const start = Math.floor(Math.random() * keys.length);
+  const start = await nextKeyStart(keys.length, env);
   let lastErr = "沒有回應";
   const tried = [];   // 每次失敗的原因，備用模型救起來時一起回報，方便知道主模型為什麼掛
   const models = deps.GEMINI_MODELS;

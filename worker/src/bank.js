@@ -1,3 +1,4 @@
+import { nextKeyStart } from "./keypool.js";
 // 刻度｜題庫（2026-11-03）。AI 出過的選擇題依年級、科目、版本、範圍存進 D1，之後同條件直接抽，
 // 並用「另叫一次 AI 獨立作答」過濾答案標錯的題。資料表見 migrations/0006_question_bank.sql，設計取捨見該檔開頭。
 //
@@ -158,7 +159,7 @@ async function callVerifyModel(prompt, deps, env) {
       body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: cfg }) });
     return await res.json();
   };
-  const start = Math.floor(Math.random() * keys.length);
+  const start = await nextKeyStart(keys.length, env);
   const deadline = Date.now() + DEEP_BUDGET_MS;
   let lastErr = "no response";
   for (const model of deps.GEMINI_MODELS) {

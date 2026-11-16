@@ -484,7 +484,7 @@
 
 /* 插圖（2026-11-05，Gemini 帳號 A 生成，扁平向量、藍／琥珀／薄荷色盤）：圓角、不超出容器 */
 .lq-illust { display: block; max-width: 100%; height: auto; margin: 0 auto 0.75rem; border-radius: 1rem; }
-.lq-illust-hero { max-width: 20rem; margin-bottom: 0.5rem; }
+.lq-illust-hero { max-width: min(20rem, 100%); margin-bottom: 0.5rem; }
 .lq-photo-tip { margin: 0 0 0.9rem; text-align: center; }
 .lq-photo-tip .lq-illust { max-width: 15rem; margin-bottom: 0.4rem; }
 .lq-photo-tip figcaption { font-size: 0.8125rem; color: #6b7280; }

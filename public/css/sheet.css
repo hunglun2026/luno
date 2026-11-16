@@ -413,3 +413,7 @@ body.guest-mode .lq-more-live { display: none; }
 .lq-score-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .lq-score-table th, .lq-score-table td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid var(--ld-line, #e5e7eb); white-space: nowrap; }
 .lq-score-table th { color: #6b7280; font-weight: 700; font-size: 0.8rem; }
+
+/* 線上作答畫面是淺灰底的整頁，外層 #resultSection 的深灰底與 pb-20 底部留白（原本給 A4 試卷與頁底文字用）會在下方露出一條深灰帶。
+   作答畫面顯示時外層改成同色、不留白（有 :has 的瀏覽器才生效，沒有的只是維持原本的樣子） */
+#resultSection:has(#answerModeContainer[style*="block"]) { background: #f3f4f6; padding-bottom: 0; }

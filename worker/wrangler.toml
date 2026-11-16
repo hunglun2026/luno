@@ -29,3 +29,12 @@ bucket_name = "luno-papers"
 # 且 D1 的列也要一起清，否則會留下讀不到卻佔位的孤兒資料。
 [triggers]
 crons = ["20 20 * * *"]
+
+# 2026-11-16 Gemini key 全域輪流計數器（src/keypool.js）：SQLite 型 Durable Object，免費方案也能用
+[[durable_objects.bindings]]
+name = "KEY_COUNTER"
+class_name = "KeyCounter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["KeyCounter"]
