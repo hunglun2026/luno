@@ -224,7 +224,7 @@
             let html = '';
             if (isTeacher) {
                 html += "<div class='space-y-3 mb-5'><div class='font-bold'>🏫 我的班級</div>" + classManagerHtml() +
-                    "<button type='button' onclick='closeHistory(); openClassHistory();' class='lq-btn lq-btn-secondary w-full py-2'>📚 班級歷史（存在帳號，換裝置也看得到）</button></div>";
+                    "<button type='button' onclick='closeHistory(); openClassHistory();' class='lq-btn lq-btn-secondary w-full py-2'>📚 班級歷史</button></div>";
             }
             html += "<div class='font-bold mb-2'>🕘 這台裝置的出題紀錄" + (isTeacher ? "" : "（換裝置就看不到）") + "</div>";
             if (hist.length === 0) {

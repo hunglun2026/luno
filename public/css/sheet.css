@@ -382,3 +382,18 @@ body.guest-mode .lq-more-live { display: none; }
     #downloadMenuWrap, #moreMenuWrap { position: static; }
     #downloadMenu, #moreMenu { left: 0.75rem; right: 0.75rem; top: 100%; width: auto; margin-top: 0.25rem; }
 }
+
+/* 我的教室：班級條列（js/classes.js）。一班一列，點開才看到大字代碼與按鈕 */
+.lq-class-list { border: 1px solid var(--ld-line, #dbe3ef); border-radius: 0.8rem; overflow: hidden; background: #fff; }
+.lq-class-row + .lq-class-row { border-top: 1px solid var(--ld-line, #dbe3ef); }
+.lq-class-row summary { display: flex; align-items: center; gap: 0.6rem; padding: 0.75rem 0.9rem; cursor: pointer; list-style: none; min-height: 48px; }
+.lq-class-row summary::-webkit-details-marker { display: none; }
+.lq-class-row summary::after { content: "▾"; color: #9ca3af; margin-left: 0.2rem; }
+.lq-class-row[open] summary::after { content: "▴"; }
+.lq-class-name { flex: 1; min-width: 0; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lq-class-cur { flex: none; white-space: nowrap; padding: 0.05rem 0.45rem; font-style: normal; font-size: 0.7rem; font-weight: 700; color: #fff; background: var(--hl-blue, #1a73e8); border-radius: 999px; }
+.lq-class-code { font-family: ui-monospace, Consolas, monospace; font-weight: 700; letter-spacing: 0.08em; color: var(--hl-blue, #1a73e8); }
+.lq-class-n { font-size: 0.8rem; color: #6b7280; white-space: nowrap; }
+.lq-class-body { padding: 0.5rem 0.9rem 1rem; text-align: center; background: var(--ld-panel, #f8fafd); }
+.lq-class-row.is-cur { box-shadow: inset 3px 0 0 var(--hl-blue, #1a73e8); }
+@media (max-width: 420px) { .lq-class-n { display: none; } .lq-class-name { min-width: 4.5em; } }   /* 窄螢幕人數收進展開內容，班名才不會被切成「六…」 */

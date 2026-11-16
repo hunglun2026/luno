@@ -44,25 +44,29 @@ function classManagerHtml() {
     const u = window.currentUser;
     const classes = lqClasses();
     let html = "<div class='text-xs text-gray-500'>學生註冊或加入班級時，輸入該班的班級代碼。存試卷、看歷史都是一班一班分開。</div>";
+    // 條列式（2026-11-16 Steve）：一班一列（班名、代碼、人數），點開才看到大字代碼與按鈕
+    html += "<div class='lq-class-list'>";
     classes.forEach(function (c) {
         const isCur = c.id === u.classId;
-        html += "<div class='lq-card p-3 text-center'" + (isCur ? " style='border-color:var(--hl-blue);'" : "") + ">" +
-            "<div class='text-sm font-bold'>" + escapeHtml(c.name) + (isCur ? "　<span class='text-xs' style='color:var(--hl-blue);'>目前使用中</span>" : "") + "</div>" +
+        html += "<details class='lq-class-row" + (isCur ? " is-cur" : "") + "'>" +
+            "<summary><span class='lq-class-name'>" + escapeHtml(c.name) + "</span>" + (isCur ? "<em class='lq-class-cur'>使用中</em>" : "") +
+            "<span class='lq-class-code'>" + escapeHtml(c.code || '') + "</span>" +
+            "<span class='lq-class-n'>" + c.studentCount + " 人</span></summary>" +
+            "<div class='lq-class-body'>" +
             "<div class='font-black' style='font-size:2rem; letter-spacing:0.18em; color:var(--hl-blue);'>" + escapeHtml(c.code || '') + "</div>" +
             "<div class='text-xs text-gray-500 mt-1'>" + c.studentCount + " 位學生已加入</div>" +
             "<div class='flex gap-2 justify-center flex-wrap mt-2'>" +
             "<button type='button' onclick=\"copyClassCode(" + jsArg(c.code) + ", this)\" class='lq-btn lq-btn-secondary text-sm px-4 py-2' style='min-height:44px;'>複製代碼</button>" +
             (isCur ? "" : "<button type='button' onclick='selectClass(" + c.id + ")' class='lq-btn lq-btn-primary text-sm px-4 py-2' style='min-height:44px;'>設為目前班</button>") +
             "</div>" +
-            // 次要動作收起來（2026-11-13）：手機上六顆小按鈕折成三排很容易按錯
-            "<details class='lq-class-more'><summary>更多設定</summary><div class='flex gap-2 justify-center flex-wrap mt-2'>" +
+            "<div class='flex gap-2 justify-center flex-wrap mt-2'>" +
             "<button type='button' onclick='editClassCode(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-2'>自己設定代碼</button>" +
             "<button type='button' onclick='randomClassCode(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-2'>換一組好唸的</button>" +
             "<button type='button' onclick='renameClass(" + c.id + ")' class='lq-btn lq-btn-secondary text-xs px-3 py-2'>改名</button>" +
             (classes.length > 1 ? "<button type='button' onclick='deleteClass(" + c.id + ")' class='lq-btn lq-btn-danger text-xs px-3 py-2'>刪除</button>" : "") +
-            "</div></details>" +
-            "</div>";
+            "</div></div></details>";
     });
+    html += "</div>";
     html += "<button type='button' onclick='addClass()' class='lq-btn lq-btn-secondary w-full py-2'>＋ 新增班級</button>";
     return html;
 }
