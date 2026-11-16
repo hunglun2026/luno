@@ -375,3 +375,10 @@ body.guest-mode .lq-more-live { display: none; }
 }
 @media print { .lq-quiz-side { display: none !important; } }
 .lq-tp-q { scroll-margin-top: 9rem; }
+
+/* 手機：匯出、更多下拉選單原本貼著按鈕右緣、固定 14rem 寬，按鈕在畫面中間時左半邊會被切掉。
+   手機改成貼著頂列正下方、左右留邊的整排選單（頂列是 sticky，當定位基準） */
+@media (max-width: 639px) {
+    #downloadMenuWrap, #moreMenuWrap { position: static; }
+    #downloadMenu, #moreMenu { left: 0.75rem; right: 0.75rem; top: 100%; width: auto; margin-top: 0.25rem; }
+}

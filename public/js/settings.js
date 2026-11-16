@@ -214,22 +214,31 @@
             } catch(e) { console.error('儲存歷史紀錄失敗', e); }
         }
 
-        function openHistory() {
+        // 「我的教室」（原「出題紀錄」，2026-11-16 Steve）：老師的班級管理（新增、代碼、改名、切換）、班級歷史、這台裝置的出題紀錄都在這一個視窗。
+        // 班級卡片由 classes.js 的 classManagerHtml() 畫；班級有變動時 lqApplyClasses 會呼叫 renderMyRoom() 重畫。
+        function renderMyRoom() {
             let hist = [];
             try { hist = JSON.parse(localStorage.getItem('lun_history') || '[]'); } catch(e) {}
-            let list = document.getElementById('historyList');
+            const list = document.getElementById('historyList');
+            const isTeacher = !!(window.currentUser && window.currentUser.role === 'teacher');
+            let html = '';
+            if (isTeacher) {
+                html += "<div class='space-y-3 mb-5'><div class='font-bold'>🏫 我的班級</div>" + classManagerHtml() +
+                    "<button type='button' onclick='closeHistory(); openClassHistory();' class='lq-btn lq-btn-secondary w-full py-2'>📚 班級歷史（存在帳號，換裝置也看得到）</button></div>";
+            }
+            html += "<div class='font-bold mb-2'>🕘 這台裝置的出題紀錄" + (isTeacher ? "" : "（換裝置就看不到）") + "</div>";
             if (hist.length === 0) {
-                list.innerHTML = "<div class='lq-empty'>" +
+                html += "<div class='lq-empty'>" +
                     "<img src='assets/illust/empty-history.webp' alt='' class='lq-empty-art' onerror=\"this.style.display='none'\">" +
                     "<p class='lq-empty-title'>還沒有出題紀錄</p>" +
                     "<p class='lq-empty-sub'>出過的卷子會留在這台裝置，換一台就看不到了</p></div>";
             } else {
                 // 沒登入時提醒：註冊老師帳號就會把這些卷子一起存進帳號（login.js migrateGuestHistory）
-                const saveHint = window.currentUser ? '' :
+                if (!window.currentUser) html +=
                     "<div class='lq-card p-3 mb-3 text-xs text-gray-600' style='border-color:#fde68a;background:#fffbeb;'>" +
                     "這些卷子只留在這台裝置。註冊老師帳號，會自動把它們存進帳號，換裝置也看得到。" +
                     "<button onclick='openIdentitySplash(true)' class='underline font-bold' style='color:var(--hl-blue);'>註冊並保存</button></div>";
-                list.innerHTML = saveHint + hist.map((h, i) =>
+                html += hist.map((h, i) =>
                     "<div class='flex justify-between items-center bg-gray-50 p-3 rounded-xl mb-2 border border-gray-100'>" +
                     "<div class='truncate mr-2'><div class='font-bold truncate'>" + escapeHtml(h.title) + "</div><div class='text-xs text-gray-500'>" + escapeHtml(h.createdAt) + "・" + (h.items ? h.items.length : 0) + "題</div></div>" +
                     "<div class='flex gap-2 flex-shrink-0'>" +
@@ -238,6 +247,10 @@
                     "</div></div>"
                 ).join('');
             }
+            list.innerHTML = html;
+        }
+        function openHistory() {
+            renderMyRoom();
             document.getElementById('historyModal').classList.remove('hidden');
         }
         function closeHistory() { document.getElementById('historyModal').classList.add('hidden'); }
@@ -263,7 +276,7 @@
             try { hist = JSON.parse(localStorage.getItem('lun_history') || '[]'); } catch(e) {}
             hist.splice(i, 1);
             localStorage.setItem('lun_history', JSON.stringify(hist));
-            openHistory();
+            renderMyRoom();
         }
 
         window.forgetKey = async function() {

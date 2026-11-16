@@ -204,7 +204,9 @@
             let html = "<div class='space-y-3'>";
             html += "<div class='lq-card p-3 text-sm'><b>" + escapeHtml(u.displayName) + "</b>（" + escapeHtml(u.username) + "）</div>";
             if (u.role === 'teacher') {
-                html += classManagerHtml();   // 每個班一張卡（代碼、改名、設為目前班、刪除）＋新增班級＋看歷史
+                // 班級管理搬到「我的教室」（頂列按鈕）；這裡只留帳號資訊與登出
+                html += "<div class='text-sm text-gray-500'>目前班級：" + escapeHtml(u.className || '未設定') + "（新增班級、班級代碼、班級歷史都在頂列的「我的教室」）</div>" +
+                    "<button type='button' onclick='closeAccountModal(); openHistory();' class='lq-btn lq-btn-secondary w-full py-2'>🏫 前往我的教室</button>";
             } else if (u.role === 'student') {
                 html += "<div class='lq-card p-3'><div class='text-sm font-bold mb-1'>👨‍👩‍👧 讓家長看我的作答</div>" +
                     "<div class='text-xs text-gray-500 mb-2'>按下產生綁定碼，把 6 位數字告訴家長；家長登入後輸入就能連結。10 分鐘內有效，只能用一次。</div>" +

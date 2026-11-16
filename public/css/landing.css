@@ -54,10 +54,18 @@
 }
 .ld-contact a.ld-line { color: #06835c; background: #e6f9ed; border-color: #b3e8c9; }
 .ld-contact a.ld-line:hover { color: #fff; background: #06C755; border-color: #06C755; }
-.ld-line.is-copied, .ld-contact a.ld-line.is-copied { color: #fff; background: #06C755; border-color: #06C755; }
-.ld-line-id { display: none; }
-.ld-line-id b { font-family: ui-monospace, SFMono-Regular, "Cascadia Mono", Consolas, monospace; letter-spacing: 0.03em; }
-@media (hover: hover) and (pointer: fine) { .ld-line-id { display: inline; } }   /* 電腦：把 ID 顯示出來，點了複製 */
+.ld-contact { position: relative; }
+.ld-line-pop {
+    position: absolute; left: 0; bottom: calc(100% + 0.6rem); z-index: 20; width: 17rem; max-width: 90vw; padding: 1rem 1.1rem;
+    background: var(--ld-bg); color: var(--ld-text); border: 1px solid var(--ld-line); border-radius: 1rem; box-shadow: 0 14px 34px -10px rgba(11, 27, 58, 0.35);
+    text-align: left; font-size: 0.9rem;
+}
+.ld-line-pop .ld-line-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.ld-line-pop b { font-size: 1.15rem; letter-spacing: 0.01em; }
+.ld-line-pop button { padding: 0.3rem 0.7rem; font: inherit; font-size: 0.85rem; color: var(--ld-muted); background: transparent; border: 1px solid var(--ld-line); border-radius: 0.55rem; cursor: pointer; white-space: nowrap; }
+.ld-line-pop button:hover { color: #06835c; border-color: #06C755; }
+.ld-line-pop small { display: block; margin-top: 0.7rem; color: var(--ld-muted); font-size: 0.85rem; }
+.ld-contact .ld-line-pop a { display: inline-block; margin-top: 0.5rem; padding: 0; border: 0; border-radius: 0; background: none; color: var(--ld-text); text-decoration: underline; font-weight: 500; }
 [data-theme="dark"] .ld-contact a.ld-line { color: #5fd49a; background: rgba(6,199,85,0.12); border-color: rgba(6,199,85,0.35); }
 .ld-contact a:not(.ld-line):hover { background: var(--ld-hover); }
 .ld-legal { display: flex; gap: 1.5rem; justify-content: center; }

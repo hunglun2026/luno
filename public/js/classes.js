@@ -1,4 +1,4 @@
-// 刻度｜老師的多個班級（2026-11-11）：我的帳號裡的班級管理、切換目前班、改代碼、新增／改名／刪除。
+// 刻度｜老師的多個班級（2026-11-11）：班級管理（2026-11-16 起放在「我的教室」視窗，不在我的帳號）、切換目前班、改代碼、新增／改名／刪除。
 // 資料來源是登入與 /api/auth/me 回的 window.currentUser.classes（[{ id, name, code, studentCount }]），
 // users.class_id 對老師來說就是「目前班」（classId／className／classCode）。
 // 後端在 worker/src/classes.js；存班級歷史時選班級在 account.js 的 saveToClassHistory。
@@ -30,6 +30,8 @@ function lqApplyClasses(classes, currentId) {
     u.classCode = cur ? cur.code : null;
     updateAccountUI();
     renderAccountLoggedInBody();
+    const room = document.getElementById('historyModal');
+    if (room && !room.classList.contains('hidden')) renderMyRoom();   // 「我的教室」開著就跟著重畫
 }
 
 // 重新抓一次清單（改代碼、改名之後用）
@@ -62,7 +64,6 @@ function classManagerHtml() {
             "</div>";
     });
     html += "<button type='button' onclick='addClass()' class='lq-btn lq-btn-secondary w-full py-2'>＋ 新增班級</button>";
-    html += "<button onclick=\"closeAccountModal(); openClassHistory();\" class='lq-btn lq-btn-secondary w-full py-2'>📚 查看班級歷史</button>";
     return html;
 }
 

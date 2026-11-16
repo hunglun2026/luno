@@ -87,8 +87,9 @@ function giveClassCodeHtml() {
         "<button type='button' onclick=\"copyClassCode(" + jsArg(u.classCode) + ", this)\" class='lq-btn lq-btn-secondary text-sm px-3 py-1'>複製代碼</button></div>";
 }
 
-// 「給學生寫」二選一：老師不用先分辨「發送測驗」與「交給學生作答」，在這裡選一次就好。
-// 傳連結或代碼 → openSendQuizModal（share.js，要登入）；同一支手機 → openHandoffSetup（handoff.js，免登入）。
+// 「給學生寫」三選一：老師不用先分辨「發送測驗」與「交給學生作答」，在這裡選一次就好。
+// 傳連結或代碼 → openSendQuizModal（share.js，要登入）；同一支手機 → openHandoffSetup（handoff.js，免登入）；
+// 投影到大屏 → openProjector（projector.js，唯讀、不用登入）。
 function openGiveToStudents() {
     if (document.querySelector('.lq-give-overlay')) return;
     const loggedIn = !!window.currentUser;
@@ -104,6 +105,7 @@ function openGiveToStudents() {
         "<button type='button' data-give='link' class='lq-give-opt'><b>📤 傳連結或代碼給全班</b><span>" +
         (loggedIn ? "學生用自己的手機或電腦寫，你可以看全班進度" : "要先登入教師帳號；學生用自己的手機或電腦寫，你可以看全班進度") + "</span></button>" +
         "<button type='button' data-give='phone' class='lq-give-opt'><b>📱 這支手機直接遞給學生</b><span>不用登入，設一組 4 位數密碼，學生寫完你再解鎖看成績</span></button>" +
+        "<button type='button' data-give='project' class='lq-give-opt'><b>🖥️ 投影到大屏</b><span>接投影機或電視，一次一題、字放很大，全班一起看（可顯示答案）</span></button>" +
         "<div class='lq-dlg-row'><button type='button' data-give='cancel' class='lq-btn lq-btn-ghost'>取消</button></div>" +
         "</div>";
     function close(next) {
@@ -112,6 +114,7 @@ function openGiveToStudents() {
         if (prevFocus && prevFocus.focus) { try { prevFocus.focus(); } catch (e) { } }
         if (next === 'link') openSendQuizModal();
         else if (next === 'phone') openHandoffSetup();
+        else if (next === 'project') openProjector();
     }
     function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } }
     overlay.addEventListener('click', function (e) {

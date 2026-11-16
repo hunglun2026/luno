@@ -37,23 +37,35 @@
     });
 })();
 
-// 頁尾的 LINE：手機點了照連結開 LINE；電腦（有滑鼠、開 line.me 沒用）改成複製 ID，跟鴻綸官網同一套做法。
-// 複製不到（舊瀏覽器、非 https）就把字選起來讓人自己複製
-document.addEventListener('click', function (e) {
-    var a = e.target.closest ? e.target.closest('[data-line-id]') : null;
-    if (!a) return;
-    if (!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches)) return;   // 手機：照原本連結走
-    e.preventDefault();
-    var id = a.getAttribute('data-line-id');
-    var shown = a.innerHTML;
-    function done() {
-        a.classList.add('is-copied');
-        a.textContent = '已複製 LINE ID ✓';
-        setTimeout(function () { a.classList.remove('is-copied'); a.innerHTML = shown; }, 1800);
+// 頁尾的 LINE：手機點了照連結直接加好友；電腦（有滑鼠、開 line.me 沒用）改彈小卡片：ID＋複製鈕＋「或用手機開啟」，
+// 跟鴻綸官網右下角 LINE 鈕同一套。複製不到（舊瀏覽器、非 https）就把 ID 選起來讓人自己複製
+(function () {
+    var LINE_ID = '@gdm6961p', pop = null;
+    function close() { if (pop) { pop.remove(); pop = null; } }
+    function copyId(btn, idEl) {
+        function done() { btn.textContent = '已複製 ✓'; setTimeout(function () { btn.textContent = '複製 ID'; }, 1600); }
+        function select() {
+            try { var r = document.createRange(); r.selectNodeContents(idEl); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (err) { /* 選不起來就算了 */ }
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(LINE_ID).then(done, select);
+        else select();
     }
-    function select() {
-        try { var r = document.createRange(); r.selectNodeContents(a); var s = window.getSelection(); s.removeAllRanges(); s.addRange(r); } catch (err) { /* 選不起來就算了 */ }
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(id).then(done, select);
-    else select();
-});
+    document.addEventListener('click', function (e) {
+        var a = e.target.closest ? e.target.closest('[data-line-id]') : null;
+        if (!a) { if (pop && !e.target.closest('.ld-line-pop')) close(); return; }
+        if (!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches)) return;   // 手機：照原本連結走
+        e.preventDefault();
+        if (pop) return close();
+        pop = document.createElement('div');
+        pop.className = 'ld-line-pop';
+        pop.innerHTML = '<div class="ld-line-row"><b></b><button type="button">複製 ID</button></div>' +
+            '<small>電腦版請在 LINE 搜尋 ID 加入</small><a target="_blank" rel="noopener noreferrer">或用手機開啟</a>';
+        var idEl = pop.querySelector('b');
+        idEl.textContent = LINE_ID;
+        pop.querySelector('a').href = a.href;
+        pop.querySelector('button').addEventListener('click', function () { copyId(this, idEl); });
+        a.parentNode.appendChild(pop);
+        pop.style.left = Math.max(0, a.offsetLeft - 20) + 'px';
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+})();
