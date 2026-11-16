@@ -91,7 +91,7 @@
                     if (!data.error) code = String(data.code || '');
                 } catch (e) {}
 
-                window._sendQuizLinks = { shareId: shareId, code: code, student: studentUrl, parent: parentUrl, dash: dashUrl, title: window.docTitle || '測驗' };
+                window._sendQuizLinks = { shareId: shareId, code: code, student: studentUrl, parent: parentUrl, dash: dashUrl, title: (window._giveKid ? window._giveKid + ' 的 ' : '') + (window.docTitle || '測驗') };
 
                 // 三個情境頁籤（2026-11-05）：傳給學生／課堂投影／家長與老師，一次只看一種，不再堆四個出口
                 let cardHtml = "";

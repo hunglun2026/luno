@@ -28,7 +28,7 @@
                 "</div>" +
                 "<div>" +
                     "<label class='text-sm font-semibold block mb-1' for='handoffNameInput'>學生暱稱（選填）</label>" +
-                    "<input id='handoffNameInput' type='text' maxlength='10' autocomplete='off' class='lq-input w-full' placeholder='不填也可以，成績會標「學生1」'>" +
+                    "<input id='handoffNameInput' type='text' maxlength='10' autocomplete='off' value='" + escapeHtml(window._giveKid || '') + "' class='lq-input w-full' placeholder='不填也可以，成績會標「學生1」'>" +
                 "</div>" +
                 "<button onclick='startHandoff()' class='lq-btn lq-cta lq-btn-primary w-full py-3 text-lg'>📱 開始，交給學生</button>" +
                 "<button onclick='renderQuizEntryRoleChoice()' class='lq-btn lq-btn-ghost w-full py-2 text-sm'>其他身分（看孩子進度、老師儀表板）</button>" +

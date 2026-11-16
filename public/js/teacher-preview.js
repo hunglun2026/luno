@@ -93,6 +93,7 @@ function giveClassCodeHtml() {
 function openGiveToStudents() {
     if (document.querySelector('.lq-give-overlay')) return;
     const loggedIn = !!window.currentUser;
+    const isParent = (window.currentUser && window.currentUser.role === 'parent') || (!window.currentUser && window.guestRole === 'parent');
     const prevFocus = document.activeElement;
     const overlay = document.createElement('div');
     overlay.className = 'lq-dlg-overlay lq-give-overlay';
@@ -100,12 +101,13 @@ function openGiveToStudents() {
     overlay.setAttribute('aria-modal', 'true');
     overlay.innerHTML =
         "<div class='lq-dlg-box'>" +
-        "<div class='lq-dlg-msg' style='font-weight:700;font-size:1.05rem;'>要怎麼給學生寫？</div>" +
+        "<div class='lq-dlg-msg' style='font-weight:700;font-size:1.05rem;'>" + (isParent ? "要怎麼給孩子寫？" : "要怎麼給學生寫？") + "</div>" +
         giveClassCodeHtml() +
-        "<button type='button' data-give='link' class='lq-give-opt'><b>📤 傳連結或代碼給全班</b><span>" +
-        (loggedIn ? "學生用自己的手機或電腦寫，你可以看全班進度" : "要先登入教師帳號；學生用自己的手機或電腦寫，你可以看全班進度") + "</span></button>" +
-        "<button type='button' data-give='phone' class='lq-give-opt'><b>📱 這支手機直接遞給學生</b><span>不用登入，設一組 4 位數密碼，學生寫完你再解鎖看成績</span></button>" +
-        "<button type='button' data-give='project' class='lq-give-opt'><b>🖥️ 投影到大屏</b><span>接投影機或電視，一次一題、字放很大，全班一起看（可顯示答案）</span></button>" +
+        "<div id='giveKidBox'></div>" +
+        "<button type='button' data-give='link' class='lq-give-opt'><b>📤 " + (isParent ? "傳連結給孩子" : "傳連結或代碼給全班") + "</b><span>" +
+        (isParent ? (loggedIn ? "孩子用自己的手機或電腦寫，你可以看他寫到哪" : "要先登入家長帳號；孩子用自己的手機或電腦寫，你可以看他寫到哪") : loggedIn ? "學生用自己的手機或電腦寫，你可以看全班進度" : "要先登入教師帳號；學生用自己的手機或電腦寫，你可以看全班進度") + "</span></button>" +
+        "<button type='button' data-give='phone' class='lq-give-opt'><b>📱 這支手機直接遞給" + (isParent ? "孩子" : "學生") + "</b><span>不用登入，設一組 4 位數密碼，" + (isParent ? "孩子" : "學生") + "寫完你再解鎖看成績</span></button>" +
+        "<button type='button' data-give='project' class='lq-give-opt'><b>🖥️ 投影到大屏</b><span>接投影機或電視，一次一題、字放很大，大家一起看（可顯示答案）</span></button>" +
         "<div class='lq-dlg-row'><button type='button' data-give='cancel' class='lq-btn lq-btn-ghost'>取消</button></div>" +
         "</div>";
     function close(next) {
@@ -118,10 +120,40 @@ function openGiveToStudents() {
     }
     function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } }
     overlay.addEventListener('click', function (e) {
+        const chip = e.target.closest ? e.target.closest('[data-kid]') : null;
+        if (chip) {   // 家長選這份是給哪個孩子
+            window._giveKid = chip.getAttribute('data-kid');
+            overlay.querySelectorAll('[data-kid]').forEach(function (c) { c.classList.toggle('is-on', c === chip); });
+            return;
+        }
         const b = e.target.closest ? e.target.closest('[data-give]') : null;
         if (b) close(b.getAttribute('data-give'));   // 點遮罩外面不關，避免手指誤觸
     });
     document.addEventListener('keydown', onKey, true);
     document.body.appendChild(overlay);
+    fillGiveKids(overlay);
     overlay.querySelector('[data-give=link]').focus();
+}
+
+// 家長指定這份卷子是給哪個孩子（2026-11-16 Steve）：選了之後，交給孩子時暱稱自動帶入、發出去的公告標題前面加「孩子名字」。
+// 登入的家長用已連結的孩子帳號清單；沒登入的用這台裝置存的孩子（home.js parentKids）。老師、訪客不顯示。
+async function fillGiveKids(overlay) {
+    window._giveKid = '';
+    const u = window.currentUser;
+    const isParent = (u && u.role === 'parent') || (!u && window.guestRole === 'parent');
+    if (!isParent) return;
+    let names = [];
+    try {
+        if (u) {
+            const res = await fetch(API_BASE + "/api/parent/children", { headers: { 'X-Session-Token': lqGetToken() || '' } });
+            const data = await res.json();
+            names = (data.children || []).map(function (c) { return c.displayName || c.username; });
+        } else {
+            names = parentKids().map(function (k) { return k.name; });
+        }
+    } catch (e) { names = []; }
+    const box = overlay.querySelector('#giveKidBox');
+    if (!box || !names.length) return;
+    box.innerHTML = "<div class='text-sm font-bold mt-2'>這份是給哪個孩子？</div><div class='lq-kid-chips'>" +
+        names.map(function (n) { return "<button type='button' class='lq-kid-chip' data-kid='" + escapeHtml(n) + "'>" + escapeHtml(n) + "</button>"; }).join('') + "</div>";
 }

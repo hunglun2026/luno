@@ -397,3 +397,8 @@ body.guest-mode .lq-more-live { display: none; }
 .lq-class-body { padding: 0.5rem 0.9rem 1rem; text-align: center; background: var(--ld-panel, #f8fafd); }
 .lq-class-row.is-cur { box-shadow: inset 3px 0 0 var(--hl-blue, #1a73e8); }
 @media (max-width: 420px) { .lq-class-n { display: none; } .lq-class-name { min-width: 4.5em; } }   /* 窄螢幕人數收進展開內容，班名才不會被切成「六…」 */
+
+/* 家長「這份是給哪個孩子」選擇鈕（js/teacher-preview.js fillGiveKids） */
+.lq-kid-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.5rem 0 0.25rem; }
+.lq-kid-chip { padding: 0.4rem 1rem; font: inherit; font-weight: 700; color: var(--ld-text, #0b1b3a); background: var(--ld-panel, #f1f5fb); border: 2px solid var(--ld-line, #dbe3ef); border-radius: 999px; cursor: pointer; min-height: 40px; }
+.lq-kid-chip.is-on { color: #fff; background: var(--hl-blue, #1a73e8); border-color: var(--hl-blue, #1a73e8); }
