@@ -370,6 +370,9 @@
         var u = window.currentUser;
         var r = (u && u.role) || window.guestRole || '';
         b.textContent = names[r] || '身分';
+        // 「我的教室」是老師的班級與出題紀錄，家長用不到
+        var room = $('historyBtn');
+        if (room) room.classList.toggle('hidden', r === 'parent');
     }
     window.lqUpdateRoleLabel = updateRoleLabel;
 

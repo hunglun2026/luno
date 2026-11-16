@@ -287,17 +287,58 @@
                     "<div class='flex gap-2'><input id='parentPanelChildInput' class='lq-input text-sm' inputmode='numeric' maxlength='6' placeholder='孩子產生的 6 位數綁定碼'>" +
                     "<button onclick='parentPanelLinkChild(this)' class='lq-btn lq-btn-primary px-4 whitespace-nowrap'>連結</button></div></div>";
             } else {
+                // 沒登入：孩子的監看連結存在這台裝置，可以存好幾個、各取名字；要跨裝置或自動連結才需要註冊
                 watch = "<div class='lq-card p-5 mb-4'>" +
                     "<div class='font-bold text-lg mb-1'>👀 看孩子寫到哪</div>" +
-                    "<div class='text-xs text-gray-500 mb-3'>貼上孩子傳來的監看連結，不用註冊就能即時看他寫到第幾題。</div>" +
-                    "<input id='quizEntryParentLink' class='lq-input w-full mb-2' placeholder='貼上監看連結'>" +
-                    "<button onclick='quizEntryOpenParentLink()' class='lq-btn lq-btn-primary w-full py-2'>開始監看</button></div>" +
+                    "<div class='text-xs text-gray-500 mb-3'>貼上孩子傳來的監看連結，不用註冊。有好幾個孩子就一個一個加，之後直接按名字就能看。</div>" +
+                    "<div id='parentKidList' class='mb-3'></div>" +
+                    "<input id='parentKidName' class='lq-input w-full mb-2' maxlength='12' placeholder='孩子的名字或暱稱（例如：小明）'>" +
+                    "<input id='parentKidLink' class='lq-input w-full mb-2' placeholder='貼上監看連結'>" +
+                    "<button onclick='parentAddKid()' class='lq-btn lq-btn-primary w-full py-2'>＋ 加入這個孩子</button></div>" +
                     "<div class='lq-card p-5 mb-4'><div class='font-bold text-lg mb-1'>🔑 註冊家長帳號</div>" +
-                    "<div class='text-xs text-gray-500 mb-3'>連結孩子的帳號後，不用每次貼連結，一次可以看好幾個孩子。</div>" +
+                    "<div class='text-xs text-gray-500 mb-3'>孩子用自己的帳號產生綁定碼，你輸入後就連結好了，不用再貼連結，換手機也不會不見。一個帳號可以連結好幾個孩子。</div>" +
                     "<button type='button' onclick='openIdentitySplash(true)' class='lq-btn lq-btn-secondary w-full py-2'>註冊／登入</button></div>";
             }
             box.innerHTML = "<div class='max-w-2xl mx-auto'>" + watch + make + "</div>";
-            if (u) loadParentPanelChildren();
+            if (u) loadParentPanelChildren(); else renderParentKids();
+        }
+
+        // 沒登入家長的孩子清單（localStorage lun_parent_kids：[{name, url}]）
+        function parentKids() {
+            try { return JSON.parse(localStorage.getItem('lun_parent_kids') || '[]'); } catch (e) { return []; }
+        }
+        function renderParentKids() {
+            const box = document.getElementById('parentKidList');
+            if (!box) return;
+            const kids = parentKids();
+            box.innerHTML = kids.map(function (k, i) {
+                return "<div class='flex justify-between items-center bg-gray-50 p-2 rounded-lg mb-2 gap-2'>" +
+                    "<span class='text-sm font-semibold truncate'>" + escapeHtml(k.name) + "</span>" +
+                    "<span class='flex gap-2 flex-none'><button onclick='parentOpenKid(" + i + ")' class='lq-btn lq-btn-primary text-xs px-3 py-1'>🔍 即時監看</button>" +
+                    "<button onclick='parentRemoveKid(" + i + ")' class='lq-btn lq-btn-ghost text-xs px-2 py-1' aria-label='移除'>移除</button></span></div>";
+            }).join('');
+        }
+        function parentAddKid() {
+            const name = (document.getElementById('parentKidName').value || '').trim();
+            const raw = (document.getElementById('parentKidLink').value || '').trim();
+            if (!name) { lqAlert('請先幫孩子取個名字，之後才分得出來'); return; }
+            let u;
+            try { u = new URL(raw, location.href); } catch (e) { lqAlert('連結格式看起來不對，請整條複製貼上'); return; }
+            if (!u.searchParams.get('live')) { lqAlert('這不是即時監看連結（網址裡要有 live=）'); return; }
+            const kids = parentKids();
+            kids.push({ name: name, url: u.href });
+            localStorage.setItem('lun_parent_kids', JSON.stringify(kids.slice(-10)));
+            document.getElementById('parentKidName').value = '';
+            document.getElementById('parentKidLink').value = '';
+            renderParentKids();
+        }
+        function parentOpenKid(i) { const k = parentKids()[i]; if (k) window.open(k.url, '_blank'); }
+        async function parentRemoveKid(i) {
+            const k = parentKids()[i];
+            if (!k || !(await askConfirm('移除「' + k.name + '」？（只是從這台裝置的清單拿掉）', { danger: true }))) return;
+            const kids = parentKids(); kids.splice(i, 1);
+            localStorage.setItem('lun_parent_kids', JSON.stringify(kids));
+            renderParentKids();
         }
 
         async function loadParentPanelChildren() {
