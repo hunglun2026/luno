@@ -161,7 +161,7 @@
             font-size: 0.8125rem; color: #6b7280; list-style: none;
         }
         .lq-disclaimer summary::-webkit-details-marker { display: none; }
-        .lq-disclaimer summary strong { color: #b45309; }
+        .lq-disclaimer summary strong { color: #b45309; white-space: nowrap; }   /* 「送出前請自行校對」不拆開，擠不下就整句換行 */
         .lq-disclaimer-more {
             margin-left: auto; font-size: 0.75rem; color: #9ca3af;
             border: 1px solid #e5e7eb; border-radius: 9999px; padding: 0.125rem 0.625rem;
