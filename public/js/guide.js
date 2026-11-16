@@ -45,6 +45,7 @@
     function enterAs(role, step) {
         // 沒登入時記下這次是以什麼身分在用（home.js 判斷學生首頁、openIdentitySplash 決定登入頁用）
         window.guestRole = window.currentUser ? null : role;
+        updateRoleLabel();
         setGuest(role === 'guest');
         forceTeacher = role === 'teacher' || role === 'guest';
         cur = step || 1;
@@ -329,10 +330,23 @@
         b.type = 'button';
         b.id = 'lgSwitchRole';
         b.className = 'lq-appbar-btn';
-        b.textContent = '換身分';
+        b.textContent = '身分';
+        b.title = '點一下可換身分';
         b.onclick = toIdentity;
         login.insertAdjacentElement('beforebegin', b);
+        updateRoleLabel();
     }
+
+    // 頂列顯示目前身分（訪客／老師／學生／家長），點了換身分（2026-11-16 Steve）
+    function updateRoleLabel() {
+        var b = $('lgSwitchRole');
+        if (!b) return;
+        var names = { guest: '訪客', teacher: '老師', student: '學生', parent: '家長', superadmin: '管理員' };
+        var u = window.currentUser;
+        var r = (u && u.role) || window.guestRole || '';
+        b.textContent = names[r] || '身分';
+    }
+    window.lqUpdateRoleLabel = updateRoleLabel;
 
     // ========== 入口 ==========
     // 依序判斷：設定連結 → 這個分頁選了訪客 → 已登入 → 都不是就回選身分頁（分享、監看、原卷連結在 core.js 先處理掉，不會走到這裡）
@@ -351,7 +365,7 @@
         if (picked === 'guest') { enterAs('guest'); return; }
         // 2026-11-09：教師、家長、學生也能免登入先用。教師與家長沒登入時走訪客出題流程（家長功能與教師相同），
         // 學生沒登入進學生首頁（輸入代碼、自己練習）。已登入的人以帳號身分為準，不看分頁記的身分
-        if (!u && (picked === 'teacher' || picked === 'parent')) { enterAs('guest'); window.guestRole = picked; return; }
+        if (!u && (picked === 'teacher' || picked === 'parent')) { enterAs('guest'); window.guestRole = picked; updateRoleLabel(); return; }
         if (!u && picked === 'student') { enterAs('student'); return; }
         if (u) {
             if (u.role === 'student') enterAs('student');

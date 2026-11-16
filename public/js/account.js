@@ -61,6 +61,7 @@
             if (saveLabel) saveLabel.textContent = window.currentUser ? '存入班級歷史' : '註冊帳號，把試卷存起來';
             const adminPanelBtn = document.getElementById('superadminBtn');
             if (adminPanelBtn) adminPanelBtn.classList.toggle('hidden', !(window.currentUser && window.currentUser.role === 'superadmin'));
+            if (window.lqUpdateRoleLabel) window.lqUpdateRoleLabel();
             refreshAnswerLoginBox();
         }
 
