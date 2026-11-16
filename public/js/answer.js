@@ -565,6 +565,7 @@
             } else {
                 resultHTML += "<div class='text-3xl font-bold mb-1' style='color:var(--hl-blue);'>" + totalScore + " / " + maxScore + " 分</div>";
                 resultHTML += "<div class='text-sm text-gray-500 mb-3'>約 " + pct + " 分" + (needReview > 0 ? "（含填空/簡答題的文字比對估算，建議自行核對）" : (aiCount > 0 ? "（填空與簡答題由 AI 依參考答案批改）" : "（選擇/複選題自動判分）")) + "</div>";
+                if (window.isSharedView && window.sharedMode === 'student' && typeof lqRewardCardHtml === 'function') resultHTML += lqRewardCardHtml(window.shareRewards, pct);
                 resultHTML += "<button onclick='shareResult(this)' class='lq-btn lq-btn-share px-4 py-2 text-sm'>📤 分享結果給家長/老師</button>";
                 resultHTML += "<div id='shareResultMsg' class='text-xs text-gray-500 mt-2'></div>";
             }

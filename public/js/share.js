@@ -193,6 +193,7 @@
 
                 window.shareStripped = !!data.stripped;
                 window.currentItems = mathClean(data.items);
+                window.shareRewards = Array.isArray(data.rewards) ? data.rewards : [];   // 家長設的獎勵，交卷後顯示
                 window.sharedGradeMode = data.mode === 'instant' ? 'instant' : 'batch';   // 老師設定的作答方式，學生不能改
                 window.currentSettings = { sType: '1' };
 

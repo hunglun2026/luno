@@ -105,6 +105,7 @@ function openGiveToStudents() {
         "<div class='lq-dlg-msg' style='font-weight:700;font-size:1.05rem;'>" + (isParent ? "要怎麼給孩子寫？" : "要怎麼給學生寫？") + "</div>" +
         giveClassCodeHtml() +
         "<div id='giveKidBox'></div>" +
+        (isParent && typeof lqRewardEditorHtml === 'function' ? lqRewardEditorHtml() : "") +
         "<button type='button' data-give='link' class='lq-give-opt'><b>📤 " + (isParent ? "發送測驗給孩子" : "傳連結或代碼給全班") + "</b><span>" +
         (isParent ? (loggedIn ? "孩子用自己的手機或電腦寫，你可以看他寫到哪" : "要先登入家長帳號；孩子用自己的手機或電腦寫，你可以看他寫到哪") : loggedIn ? "學生用自己的手機或電腦寫，你可以看全班進度" : "要先登入教師帳號；學生用自己的手機或電腦寫，你可以看全班進度") + "</span></button>" +
         "<button type='button' data-give='phone' class='lq-give-opt'><b>📱 " + (isParent ? "直接拿手機給孩子寫" : "這支手機直接遞給學生") + "</b><span>不用登入，設一組 4 位數密碼，" + (isParent ? "孩子" : "學生") + "寫完你再解鎖看成績</span></button>" +
@@ -128,7 +129,12 @@ function openGiveToStudents() {
             return;
         }
         const b = e.target.closest ? e.target.closest('[data-give]') : null;
-        if (b) close(b.getAttribute('data-give'));   // 點遮罩外面不關，避免手指誤觸
+        if (b) {
+            const next = b.getAttribute('data-give');
+            // 家長選了發送或拿手機才把獎勵設定帶出去（取消不動）；順便存起來，下次自動帶出
+            if (isParent && (next === 'link' || next === 'phone') && typeof lqRewardsReadEditor === 'function') window.currentRewards = lqRewardsReadEditor(overlay);
+            close(next);
+        }   // 點遮罩外面不關，避免手指誤觸
     });
     document.addEventListener('keydown', onKey, true);
     document.body.appendChild(overlay);

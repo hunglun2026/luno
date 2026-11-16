@@ -417,3 +417,19 @@ body.guest-mode .lq-more-live { display: none; }
 /* 線上作答畫面是淺灰底的整頁，外層 #resultSection 的深灰底與 pb-20 底部留白（原本給 A4 試卷與頁底文字用）會在下方露出一條深灰帶。
    作答畫面顯示時外層改成同色、不留白（有 :has 的瀏覽器才生效，沒有的只是維持原本的樣子） */
 #resultSection:has(#answerModeContainer[style*="block"]) { background: #f3f4f6; padding-bottom: 0; }
+
+/* 家長獎勵（js/rewards.js）：設定區與孩子看到的獎勵卡 */
+.lq-reward-edit { margin: 0.75rem 0 0.25rem; padding: 0.6rem 0.8rem; border: 1px solid var(--ld-line, #dbe3ef); border-radius: 0.8rem; background: var(--ld-panel, #f8fafd); }
+.lq-reward-edit summary { cursor: pointer; font-weight: 700; }
+.lq-reward-on { display: flex; align-items: center; gap: 0.5rem; margin: 0.6rem 0 0.3rem; font-weight: 700; }
+.lq-reward-row { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.5rem; }
+.lq-reward-row .lq-rw-min { width: 4rem; flex: none; text-align: center; }
+.lq-reward-row .lq-rw-text { flex: 1; min-width: 0; }
+.lq-reward-row input { padding: 0.4rem 0.5rem; font: inherit; color: inherit; background: transparent; border: 1px solid var(--ld-line, #dbe3ef); border-radius: 0.5rem; }
+.lq-reward { margin: 0.9rem 0; padding: 0.9rem 1rem; border: 2px dashed var(--ld-line, #cbd5e1); border-radius: 1rem; background: var(--ld-panel, #f8fafd); text-align: center; }
+.lq-reward.is-got { border: 2px solid #f59e0b; background: #fffbeb; color: #78350f; animation: lqRewardPop 0.5s ease 1; }
+.lq-reward-title { font-size: 0.85rem; font-weight: 700; opacity: 0.85; }
+.lq-reward-text { margin: 0.25rem 0; font-size: 1.3rem; font-weight: 900; }
+.lq-reward-sub { font-size: 0.85rem; opacity: 0.85; }
+@keyframes lqRewardPop { 0% { transform: scale(0.9); opacity: 0; } 60% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .lq-reward.is-got { animation: none; } }

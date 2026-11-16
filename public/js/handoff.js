@@ -43,7 +43,7 @@
                 return;
             }
             const name = (document.getElementById('handoffNameInput').value || '').trim() || '學生1';
-            window.handoff = { active: true, pin: pin, name: name, records: [] };
+            window.handoff = { active: true, pin: pin, name: name, records: [], rewards: window.currentRewards || [] };
             closeQuizEntryModal();
             document.body.classList.add('handoff-mode');
             window.addEventListener('beforeunload', handoffBeforeUnload);
@@ -148,12 +148,17 @@
             const wrongCount = Object.keys(details).filter(function (k) { return details[k] && !details[k].isCorrect; }).length;
             const card = document.getElementById('scoreResult') && document.getElementById('scoreResult').firstElementChild;
             if (card && records.length > 0) {
+                const rw = window.handoff.rewards || [];
                 const rows = records.map(function (r, i) {
                     const last = i === records.length - 1;
+                    const got = typeof lqRewardPick === 'function' ? lqRewardPick(rw, r.pct) : null;
                     return "<div class='flex justify-between items-center text-sm py-1.5 border-b border-gray-100" + (last ? " font-bold" : "") + "'>" +
-                        "<span>" + escapeHtml(r.name) + (last ? "（下方為這位的詳解）" : "") + "</span>" +
+                        "<span>" + escapeHtml(r.name) + (last ? "（下方為這位的詳解）" : "") + (got ? " 🎁" : "") + "</span>" +
                         "<span style='color:var(--hl-blue);'>" + r.totalScore + " / " + r.maxScore + " 分</span></div>";
                 }).join('');
+                // 家長解鎖才看到：這位孩子這次拿到什麼獎勵（孩子交卷時只看到「已交卷」）
+                const lastRec = records[records.length - 1];
+                const rewardCard = (typeof lqRewardCardHtml === 'function' && rw.length) ? lqRewardCardHtml(rw, lastRec.pct).replace("你得了", escapeHtml(lastRec.name) + " 得了") : '';
                 let actions = '';
                 if (wrongCount > 0) {
                     actions += "<button onclick='handoffRetryWrong()' class='lq-btn lq-btn-primary w-full py-2 text-sm mt-3'>🔁 只重做錯題（" + wrongCount + " 題）</button>";
@@ -161,7 +166,7 @@
                 if (window._handoffOriginalItems && window.currentItems === window._handoffRetryItems) {
                     actions += "<button onclick='handoffRestoreItems()' class='lq-btn lq-btn-secondary w-full py-2 text-sm mt-2'>📋 還原成完整題目</button>";
                 }
-                card.innerHTML = "<div class='font-bold mb-2'>🔓 已解鎖，成績名單</div>" + rows +
+                card.innerHTML = "<div class='font-bold mb-2'>🔓 已解鎖，成績名單</div>" + rows + rewardCard +
                     "<div class='text-xs text-gray-500 mt-3'>填空／簡答為文字比對估算，請自行核對。每題下方是正確答案與解析，也可切到上方「答案卷」。</div>" + actions;
             }
             if (typeof updateGlobalBackBtn === 'function') updateGlobalBackBtn();

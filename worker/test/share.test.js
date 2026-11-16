@@ -162,3 +162,32 @@ describe("寫入限速與即時進度驗證分享存在", () => {
     expect((await env.DB.prepare("SELECT COUNT(*) c FROM live_progress").first()).c).toBe(0);
   });
 });
+
+describe("分享帶獎勵（家長設定）", () => {
+  const ITEM = [{ q: "1+1", o: ["1", "2"], a: "B", s: 100 }];
+  const make = async (env, rewards) => {
+    const r = await worker.fetch(req("/api/share", { method: "POST", body: { items: ITEM, title: "t", rewards } }), env, {});
+    const d = await r.json();
+    return (await (await worker.fetch(req("/api/share/" + d.id), env, {})).json());
+  };
+  it("獎勵存進分享，孩子打開時拿得到", async () => {
+    const env = makeEnv();
+    const got = await make(env, [{ min: 90, text: "看卡通" }]);
+    expect(got.rewards).toEqual([{ min: 90, text: "看卡通" }]);
+  });
+  it("清理：最多 5 條、門檻夾在 0～100、文字限 30 字、空文字與亂格式丟掉", async () => {
+    const env = makeEnv();
+    const got = await make(env, [
+      { min: 999, text: "  上限  " }, { min: -3, text: "下限" }, { min: 50, text: "" }, { min: "x", text: "壞" },
+      { min: 70, text: "字".repeat(60) }, 7, null, { min: 10, text: "多" }, { min: 20, text: "多2" },
+    ]);
+    expect(got.rewards.map((r) => r.min)).toEqual([100, 0, 70]);   // 只看前 5 筆；其中有效的是 999→100、-3→0、70
+    expect(got.rewards[0].text).toBe("上限");
+    expect(got.rewards[2].text.length).toBe(30);
+  });
+  it("沒帶獎勵的舊前端：rewards 是空陣列，不壞", async () => {
+    const env = makeEnv();
+    const got = await make(env, undefined);
+    expect(got.rewards).toEqual([]);
+  });
+});

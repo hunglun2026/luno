@@ -335,7 +335,13 @@ async function handleShareCreate(request, env) {
 
     // 學生作答方式由老師／家長決定（instant＝每題即時反饋，batch＝全部寫完再送出）；沒帶的舊分享一律當 batch
     const mode = body.mode === "instant" ? "instant" : "batch";
-    const payload = JSON.stringify({ items, title, mode, createdAt: Date.now() });
+    // 家長設的獎勵（2026-11-16）：達到幾分有什麼獎勵。任何人都能打這個端點、字串會顯示在孩子的畫面，
+    // 所以最多 5 條、門檻轉成 0～100 的整數、文字去頭尾空白並限長，其餘一律丟掉
+    const rewards = (Array.isArray(body.rewards) ? body.rewards : []).slice(0, 5).map((r) => ({
+      min: Math.max(0, Math.min(100, Math.round(Number(r && r.min)))),
+      text: String((r && r.text) || "").trim().slice(0, 30),
+    })).filter((r) => Number.isFinite(r.min) && r.text);
+    const payload = JSON.stringify({ items, title, mode, rewards, createdAt: Date.now() });
     const shareSession = payload.length > SHARE_MAX_BYTES ? await verifySession(request, env) : null;
     const shareLimit = shareSession && (shareSession.role === "teacher" || shareSession.role === "superadmin") ? SHARE_MAX_BYTES_TEACHER : SHARE_MAX_BYTES;
     if (payload.length > shareLimit) {
