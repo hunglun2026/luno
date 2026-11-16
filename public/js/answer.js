@@ -572,6 +572,8 @@
             resultHTML += "</div>";
             const scoreEl = document.getElementById('scoreResult');
             scoreEl.innerHTML = resultHTML;
+            // 交卷完成：底部的進度條與「交卷看成績」不用再出現（已經交了，按了也沒用）
+            document.querySelectorAll('.lq-quiz-bottombar').forEach(function (el) { el.style.display = 'none'; });
             if (handoffActive()) handoffLockAfterGrade();
             scoreEl.scrollIntoView({ behavior: 'smooth' });
         }
