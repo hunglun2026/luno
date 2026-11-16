@@ -408,3 +408,8 @@ body.guest-mode .lq-more-live { display: none; }
 .lq-tp-score input { width: 3.2rem; padding: 0.1rem 0.3rem; font: inherit; text-align: center; border: 1px solid var(--ld-line, #dbe3ef); border-radius: 0.4rem; background: transparent; color: inherit; }
 .lq-tp-score-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.6rem; }
 .lq-tp-score-row select, .lq-tp-score-row input { padding: 0.3rem 0.5rem; border: 1px solid var(--ld-line, #dbe3ef); border-radius: 0.5rem; background: transparent; color: inherit; font: inherit; }
+
+/* 儀表板：全班成績總表（js/live-scores.js） */
+.lq-score-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+.lq-score-table th, .lq-score-table td { padding: 0.45rem 0.6rem; text-align: left; border-bottom: 1px solid var(--ld-line, #e5e7eb); white-space: nowrap; }
+.lq-score-table th { color: #6b7280; font-weight: 700; font-size: 0.8rem; }

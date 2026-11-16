@@ -19,6 +19,7 @@ import { handleGradeAnswer } from "./grade.js";
 import { newClassCode, findClassByCodeOrName, ensureClassCode, insertClass, handleSetClassCode, validateCustomCode, codeIsFree, resolveTeacherClassId, listTeacherClasses } from "./classcode.js";
 import { handleClasses } from "./classes.js";
 import { buildStats } from "./livestats.js";
+import { buildScoreTable } from "./livescores.js";
 import { publicShare, gradeShareAnswers } from "./sharegrade.js";
 
 const COOLDOWN_MS = 30000;
@@ -172,6 +173,9 @@ export default {
     }
     if (url.pathname === "/api/auth/join-class") {
       return handleAuthJoinClass(request, env);
+    }
+    if (url.pathname.startsWith("/api/live-scores/")) {
+      return handleLiveScores(request, env, decodeURIComponent(url.pathname.slice("/api/live-scores/".length)));
     }
     if (url.pathname.startsWith("/api/live-stats/")) {
       return handleLiveStats(request, env, decodeURIComponent(url.pathname.slice("/api/live-stats/".length)));
@@ -803,6 +807,30 @@ async function handleLiveStats(request, env, shareId) {
     try { return { answers: JSON.parse(r.answers || "[]") }; } catch (e) { return { answers: [] }; }
   });
   return json(buildStats(items, parsed));
+}
+
+// 全班成績總表（livescores.js）：權限跟 live-stats 一樣（儀表板金鑰、老師帳號、管理者密碼），學生拿不到
+async function handleLiveScores(request, env, shareId) {
+  if (request.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
+  if (request.method !== "GET") return json({ error: { message: "Method Not Allowed" } }, 405);
+  if (!shareId || !ID_RE.test(shareId)) return json({ error: { message: "缺少或不正確的shareId" } }, 400);
+  const denied = await liveViewerDenied(request, env, shareId);
+  if (denied) return denied;
+
+  const raw = await env.COOLDOWN_KV.get("share:" + shareId);
+  if (!raw) return json({ error: { message: "找不到這份分享內容，可能已過期" } }, 404);
+  let items = [];
+  try { items = JSON.parse(raw).items || []; } catch (e) { items = []; }
+
+  const rows = await env.DB.prepare(
+    "SELECT student_id, grade, class_name, seat, name, answered, total, answers, updated_at FROM live_progress WHERE share_id = ? AND updated_at >= ?"
+  ).bind(shareId, Date.now() - LIVE_PROGRESS_TTL_SECONDS * 1000).all();
+  const parsed = (rows.results || []).map((r) => {
+    let answers = [];
+    try { answers = JSON.parse(r.answers || "[]"); } catch (e) { answers = []; }
+    return { studentId: r.student_id, grade: r.grade, className: r.class_name, seat: r.seat, name: r.name, answered: r.answered, total: r.total, answers, updatedAt: r.updated_at };
+  });
+  return json(buildScoreTable(items, parsed));
 }
 
 async function handleLiveProgressList(request, env, shareId) {

@@ -296,6 +296,7 @@
                 "<div id='liveCodeBox' class='hidden mt-3 text-sm'></div>" +
                 "<button id='btnRevokeDash' onclick='toggleRevokeDashboard()' class='lq-btn lq-btn-secondary text-xs px-3 py-1 mt-3'>⏹ 停止監看（讓這條連結失效）</button>" +
                 "</div>" +
+                "<div id='liveScoresBody'></div>" +
                 "<div id='liveStatsBody'></div>" +
                 "<div id='liveDashboardBody'><div class='text-center text-white py-10'>⏳ 載入中...</div></div></div>";
 
@@ -331,6 +332,7 @@
                         return;
                     }
                     renderLiveDashboardTable(body, data.students || [], shareId);
+                    liveRefreshScores(shareId, headers);   // 全班成績總表（每 8 秒最多更新一次）
                     liveRefreshStats(shareId, headers);   // 全班答題分析（每 10 秒最多更新一次）
                 } catch (e) {
                     body.innerHTML = "<div class='lq-card p-4 text-center text-red-600'>載入失敗：" + escapeHtml(e.message) + "</div>";
