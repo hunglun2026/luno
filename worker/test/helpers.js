@@ -69,7 +69,7 @@ export function geminiReply(text) {
 export async function registerUser(worker, env, over = {}) {
   const r = await worker.fetch(req("/api/auth/register", {
     method: "POST",
-    body: { username: "teacher1", password: "abc123", role: "teacher", className: "六年1班", privacyVersion: "2026-11-05", ...over },
+    body: { username: "teacher1", password: "abc1234567", role: "teacher", className: "六年1班", privacyVersion: "2026-11-05", ...over },
   }), env, {});
   return r.json();
 }

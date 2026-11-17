@@ -30,7 +30,7 @@ describe("批改提示詞與結果整理", () => {
 });
 
 describe("POST /api/grade-answer", () => {
-  const putShare = (env, items) => env.COOLDOWN_KV.put("share:abc12345", JSON.stringify({ items }));
+  const putShare = (env, items) => env.COOLDOWN_KV.put("share:abc123456745", JSON.stringify({ items }));
   const post = (env, body, headers = {}) => worker.fetch(req("/api/grade-answer", { method: "POST", body, headers }), env, {});
   const item = (over = {}) => ({ q: "光合作用的產物？", o: [], a: "葡萄糖", e: "", s: 5, g: 1, ...over });
   const stub = (reply) => vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(JSON.stringify(geminiReply(reply)))));
@@ -41,22 +41,22 @@ describe("POST /api/grade-answer", () => {
     expect((await worker.fetch(req("/api/grade-answer", { method: "OPTIONS" }), env, {})).status).toBe(200);
     expect((await post(env, "{壞")).status).toBe(400);
     expect((await post(env, { shareId: "../x", answers: [{ i: 0, t: "a" }] })).status).toBe(400);
-    expect((await post(env, { shareId: "abc12345", answers: [] })).status).toBe(400);
-    expect((await post(env, { shareId: "abc12345", answers: Array(31).fill({ i: 0, t: "a" }) })).status).toBe(400);
+    expect((await post(env, { shareId: "abc123456745", answers: [] })).status).toBe(400);
+    expect((await post(env, { shareId: "abc123456745", answers: Array(31).fill({ i: 0, t: "a" }) })).status).toBe(400);
   });
   it("內容太長回 413；找不到分享回 404；分享壞掉回 500", async () => {
     const env = makeEnv();
     expect((await post(env, "x".repeat(70000))).status).toBe(413);
-    expect((await post(env, { shareId: "abc12345", answers: [{ i: 0, t: "a" }] })).status).toBe(404);
-    await env.COOLDOWN_KV.put("share:abc12345", "{\"items\":123}");
-    expect((await post(env, { shareId: "abc12345", answers: [{ i: 0, t: "a" }] })).status).toBe(500);
+    expect((await post(env, { shareId: "abc123456745", answers: [{ i: 0, t: "a" }] })).status).toBe(404);
+    await env.COOLDOWN_KV.put("share:abc123456745", "{\"items\":123}");
+    expect((await post(env, { shareId: "abc123456745", answers: [{ i: 0, t: "a" }] })).status).toBe(500);
   });
   it("只批標了 g、沒有選項、有參考答案的題；其他題直接略過，不呼叫 AI", async () => {
     const env = makeEnv();
     const f = vi.fn();
     vi.stubGlobal("fetch", f);
     await putShare(env, [item({ g: 0 }), item({ o: ["甲", "乙"] }), item({ a: "" })]);
-    const r = await post(env, { shareId: "abc12345", answers: [{ i: 0, t: "x" }, { i: 1, t: "x" }, { i: 2, t: "x" }, { i: 9, t: "x" }, { i: 0, t: "  " }] });
+    const r = await post(env, { shareId: "abc123456745", answers: [{ i: 0, t: "x" }, { i: 1, t: "x" }, { i: 2, t: "x" }, { i: 9, t: "x" }, { i: 0, t: "  " }] });
     expect((await r.json()).grades).toEqual([]);
     expect(f).not.toHaveBeenCalled();
   });
@@ -65,7 +65,7 @@ describe("POST /api/grade-answer", () => {
     await putShare(env, [item()]);
     const f = vi.fn().mockResolvedValue(new Response(JSON.stringify(geminiReply(JSON.stringify([{ i: 0, score: 4, comment: "接近" }])))));
     vi.stubGlobal("fetch", f);
-    const r = await post(env, { shareId: "abc12345", answers: [{ i: 0, t: "糖", q: "偽造題幹", a: "偽造答案" }] });
+    const r = await post(env, { shareId: "abc123456745", answers: [{ i: 0, t: "糖", q: "偽造題幹", a: "偽造答案" }] });
     const d = await r.json();
     expect(d.grades).toEqual([{ i: 0, score: 4, max: 5, comment: "接近" }]);
     const prompt = JSON.parse(f.mock.calls[0][1].body).contents[0].parts[0].text;
@@ -78,7 +78,7 @@ describe("POST /api/grade-answer", () => {
     stub("[]");
     const hour = Math.floor(Date.now() / 3600000);
     env.COOLDOWN_KV._m.set("gr:c:dev1:" + hour, "20");
-    const r = await post(env, { shareId: "abc12345", answers: [{ i: 0, t: "糖" }] }, { "X-Client-Id": "dev1" });
+    const r = await post(env, { shareId: "abc123456745", answers: [{ i: 0, t: "糖" }] }, { "X-Client-Id": "dev1" });
     expect(r.status).toBe(429);
     expect((await r.json()).error.code).toBe("GRADE_LIMIT");
   });
@@ -86,7 +86,7 @@ describe("POST /api/grade-answer", () => {
     const env = makeEnv();
     await putShare(env, [item()]);
     vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => new Response(JSON.stringify({ error: { message: "x" } }))));
-    const r = await post(env, { shareId: "abc12345", answers: [{ i: 0, t: "糖" }] });
+    const r = await post(env, { shareId: "abc123456745", answers: [{ i: 0, t: "糖" }] });
     expect(r.status).toBe(502);
   });
 });

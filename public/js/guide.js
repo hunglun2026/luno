@@ -79,9 +79,13 @@
             parts.push((($('subject') || {}).value || '').trim() || '（未選科目）');
             parts.push((($('scope') || {}).value || '').trim() || '整冊');
         }
-        var count = valueOf('count', 'c_count');
-        parts.push((count || '?') + ' 題');
-        parts.push(valueOf('qType', 'c_qType'));
+        if (typeof cmIsOn === 'function' && cmIsOn()) {
+            parts.push(cmSummary());   // 自選題數：例「單選 5＋是非 3，共 8 題」，不另列題數與題型
+        } else {
+            var count = valueOf('count', 'c_count');
+            parts.push((count || '?') + ' 題');
+            parts.push(valueOf('qType', 'c_qType'));
+        }
         parts.push(valueOf('difficulty', 'c_diff'));
         return parts.join('・');
     }

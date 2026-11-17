@@ -9,7 +9,8 @@
     function bodyHtml(q) {
         var kind = qKind(q);
         var letters = (kind === 'choice' && getCorrectLetters(q)) || [];
-        var h = "<div class='pj-q'>" + escapeHtml(q.q) + "</div>" + qImgHtml(q);
+        var pt = (typeof ptTextFor === 'function') ? ptTextFor(window.currentItems || [], idx) : '';   // 閱讀題組：投影時文章放在題目上方（passage.js）
+        var h = (pt ? "<div class='pj-pt'>" + escapeHtml(pt) + "</div>" : "") + "<div class='pj-q'>" + escapeHtml(q.q) + "</div>" + qImgHtml(q);
         if (kind === 'choice') {
             q.o.forEach(function (o, oi) {
                 var label = String.fromCharCode(65 + oi);

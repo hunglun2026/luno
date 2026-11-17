@@ -13,12 +13,13 @@
             const isLogin = mode === 'login' || kind === 'admin';
             let html = "<h3 style='font-weight:900;font-size:1.1rem;margin-bottom:0.75rem;color:var(--hl-text);'>" +
                 (kind === 'admin' ? '🛡️ 管理員登入' : (isLogin ? ('🔑 ' + label + '登入') : ('📝 ' + label + '註冊'))) + "</h3>";
-            html += "<div class='space-y-3'>";
+            html += "<form class='space-y-3' onsubmit=\"event.preventDefault();" + (isLogin ? 'doSplashLogin()' : 'doSplashRegister()') + "\">";
+            // 用真的 <form>＋標準 autocomplete 值，瀏覽器才會跳出「儲存／帶入帳號密碼」
             const credAttrs = isLogin ? "" : CRED_INPUT_ATTRS;
-            html += "<input id='splashUsername' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs + ">";
-            html += lqPwField('splashPassword', isLogin ? '密碼' : CRED_PASS_HINT, credAttrs, isLogin ? '' : 'main');
+            html += "<input id='splashUsername' name='username' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs.replace("autocomplete='off'", "autocomplete='username'") + (isLogin ? " autocomplete='username'" : "") + ">";
+            html += lqPwField('splashPassword', isLogin ? '密碼' : CRED_PASS_HINT, isLogin ? " name='password' autocomplete='current-password'" : credAttrs.replace("autocomplete='off'", "autocomplete='new-password'"), isLogin ? '' : 'main');
             if (!isLogin) {
-                html += lqPwField('splashPasswordConfirm', '再輸入一次密碼', credAttrs, 'confirm');
+                html += lqPwField('splashPasswordConfirm', '再輸入一次密碼', credAttrs.replace("autocomplete='off'", "autocomplete='new-password'"), 'confirm');
                 const nameEg = kind === 'teacher' ? '劉德華 老師' : kind === 'parent' ? '王小明的媽媽' : '王小明';
                 html += "<input id='splashDisplayName' class='lq-input' placeholder='顯示名稱（例如：" + nameEg + "）'>";
                 if (kind === 'teacher') {
@@ -30,16 +31,17 @@
                 }
             }
             if (!isLogin) html += privacyConsentHtml();
+            if (isLogin) html += lqRememberHtml('splashRemember');
             html += "<div id='splashAuthError' class='text-sm text-red-600 hidden'></div>";
-            html += "<button onclick=\"" + (isLogin ? 'doSplashLogin()' : 'doSplashRegister()') + "\" class='lq-btn lq-btn-primary w-full py-2'>" + (isLogin ? '登入' : '註冊') + "</button>";
+            html += "<button type='submit' class='lq-btn lq-btn-primary w-full py-2'>" + (isLogin ? '登入' : '註冊') + "</button>";
             if (kind !== 'admin') {
-                html += "<button onclick=\"renderSplashAuthForm('" + (isLogin ? 'register' : 'login') + "')\" class='lq-btn lq-btn-ghost w-full text-sm'>" +
+                html += "<button type='button' onclick=\"renderSplashAuthForm('" + (isLogin ? 'register' : 'login') + "')\" class='lq-btn lq-btn-ghost w-full text-sm'>" +
                     (isLogin ? '還沒有帳號？點此註冊' : '已經有帳號？點此登入') + "</button>";
             }
             if (isLogin && kind !== 'admin') {
                 html += "<div class='text-xs text-gray-500 text-center'>忘記密碼？請聯絡你的老師或管理員協助重設。</div>";
             }
-            html += "</div>";
+            html += "</form>";
             document.getElementById('hlAuthFormBody').innerHTML = html;
         }
 
@@ -82,8 +84,8 @@
             return { ok, failed: left.length };
         }
 
-        async function splashLoginSuccess(data) {
-            lqSetToken(data.token);
+        async function splashLoginSuccess(data, remember) {
+            lqSetToken(data.token, !!remember);
             try { sessionStorage.removeItem(SS_ROLE); sessionStorage.removeItem('lun_code_seen'); } catch (e) {}
             if (data.user && data.user.role === 'teacher') {
                 const btn = document.querySelector('#hlAuthFormBody button.lq-btn-primary');
@@ -108,7 +110,7 @@
                 });
                 const data = await res.json();
                 if (data.error) { showSplashAuthError(data.error.message); return; }
-                splashLoginSuccess(data);
+                splashLoginSuccess(data, !!(document.getElementById('splashRemember') || {}).checked);
             } catch (e) { showSplashAuthError('登入失敗：' + e.message); }
         }
 

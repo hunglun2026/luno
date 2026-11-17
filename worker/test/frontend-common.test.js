@@ -86,9 +86,15 @@ describe("帳號密碼規則 credentialInputError", () => {
 describe("分頁各自的登入憑證", () => {
   let ctx;
   beforeEach(() => { ctx = load(); });
-  it("沒登入回空字串；登入後存兩邊；登出後本分頁讀到空字串", () => {
+  it("預設不記住：只存本分頁，不留 localStorage（公用電腦）", () => {
+    ctx.sandbox.localStorage.setItem("lun_session_token", "old");
+    ctx.api.lqSetToken("tok0");
+    expect(ctx.api.lqGetToken()).toBe("tok0");
+    expect(ctx.sandbox.localStorage.getItem("lun_session_token")).toBeNull();
+  });
+  it("沒登入回空字串；勾保持登入才存兩邊；登出後本分頁讀到空字串", () => {
     expect(ctx.api.lqGetToken()).toBe("");
-    ctx.api.lqSetToken("tok1");
+    ctx.api.lqSetToken("tok1", true);
     expect(ctx.api.lqGetToken()).toBe("tok1");
     expect(ctx.sandbox.localStorage.getItem("lun_session_token")).toBe("tok1");
     ctx.api.lqClearToken();
@@ -101,7 +107,7 @@ describe("分頁各自的登入憑證", () => {
   });
   it("這個分頁登出，不會把別的分頁的登入一起清掉", () => {
     ctx.sandbox.localStorage.setItem("lun_session_token", "other-tab");
-    ctx.api.lqSetToken("mine");            // 這個分頁登入，localStorage 變成 mine
+    ctx.api.lqSetToken("mine", true);      // 這個分頁登入，localStorage 變成 mine
     ctx.sandbox.localStorage.setItem("lun_session_token", "other-tab");   // 別的分頁隨後登入
     ctx.api.lqClearToken();
     expect(ctx.sandbox.localStorage.getItem("lun_session_token")).toBe("other-tab");

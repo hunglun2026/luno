@@ -195,7 +195,7 @@
                 const title = window.docTitle || '測驗';
                 const url = location.origin + location.pathname + "?live=" + window.liveShareId + "&student=" + getLiveStudentId();
                 const clipboardText = "【" + title + "】即時作答監看(給家長看)\n" + url;
-                const msg = "✅ 已複製即時監看連結！家長開啟後不用註冊、不用密碼，就能看到你答了幾題＋每題選了什麼。不想被看的時候可以按下面的「⏹ 停止監看」讓連結失效。";
+                const msg = "✅ 已複製即時監看連結！家長開啟後不用註冊、不用密碼，就能看到你答了幾題＋每題選了什麼。不想再讓人看的時候，請老師或家長在監看畫面按「⏹ 停止監看」，連結就會失效。";
                 let copied = false;
                 try { await navigator.clipboard.writeText(clipboardText); copied = true; } catch (e) {}
                 if (copied) { lqAlert(msg); } else { await askText(msg + '\n複製失敗，請手動複製以下內容：', { value: clipboardText, readonly: true }); }
@@ -234,14 +234,14 @@
             const stuClass = loggedStudent ? escapeHtml(window.currentUser.className || '') : '';
             // 老師預覽也不顯示（欄位還在 DOM，自己試寫與進度上報照樣讀得到空值）
             html += "<div class='lq-card p-4 mb-4" + (loggedStudent || teacherPreview ? " hidden" : "") + "' id='ansInfoBox' oninput='pushLiveProgress()'>" +
-                "<div class='text-sm mb-2' style='" + (window.isSharedView ? "font-weight:700;color:var(--hl-blue);" : "color:#6b7280;") + "'>👤 " + (window.isSharedView ? "先輸入你的姓名或暱稱（必填），老師才知道是誰在寫" : "填寫資料（選填，方便老師/家長核對是誰寫的）") + "</div>" +
+                "<div class='text-sm mb-2' style='" + (window.isSharedView ? "font-weight:700;color:var(--hl-blue);" : "color:#6b7280;") + "'>👤 " + (window.isSharedView ? "先輸入你的座號或暱稱（必填，不用寫全名），老師才知道是誰在寫" : "填寫資料（選填，方便老師/家長核對是誰寫的）") + "</div>" +
                 "<div class='grid grid-cols-2 sm:grid-cols-4 gap-2'>" +
                 "<input id='ansStuGrade' placeholder='年級' class='lq-input text-sm py-1.5'>" +
                 "<input id='ansStuClass' placeholder='班級' value='" + stuClass + "' class='lq-input text-sm py-1.5'>" +
                 "<input id='ansStuSeat' placeholder='座號' class='lq-input text-sm py-1.5'>" +
-                "<input id='ansStuName' placeholder='" + (window.isSharedView ? "姓名或暱稱（必填）" : "姓名") + "' maxlength='20' value='" + stuName + "' class='lq-input text-sm py-1.5'>" +
+                "<input id='ansStuName' placeholder='" + (window.isSharedView ? "座號或暱稱（必填）" : "姓名") + "' maxlength='20' value='" + stuName + "' class='lq-input text-sm py-1.5'>" +
                 "</div>" +
-                "<div style='font-size:0.75rem;color:#5f6368;margin-top:0.5rem;line-height:1.5;'>這些資料只給出這份測驗的老師或家長看，用途與保存期限見<a href='privacy.html' target='_blank' rel='noopener' style='color:#1A73E8;text-decoration:underline;'>個人資料蒐集告知</a>。不想填可以留空。</div></div>";
+                "<div style='font-size:0.75rem;color:#5f6368;margin-top:0.5rem;line-height:1.5;'>這些資料只給出這份測驗的老師或家長看，用途與保存期限見<a href='privacy.html' target='_blank' rel='noopener' style='color:#1A73E8;text-decoration:underline;'>個人資料蒐集告知</a>。</div></div>";
 
             // 「每題即時看結果」是需要登入的功能：即時回饋會一題一題回報到伺服器(老師/家長監看也靠這個)，
             // 未登入者只給「全部寫完再送出」，並直接告訴他登入就能解鎖
@@ -279,6 +279,8 @@
         function answerCardHtml(q, i) {
             const letters = getCorrectLetters(q);
             let html = "<div class='lq-card p-4 mb-3 ans-card' id='ans-card-" + i + "'>";
+            // 閱讀題組：這題上方放文章（組內第一題展開、其餘收合成「看閱讀文章」，passage.js）
+            if (typeof ptHtml === 'function') html += ptHtml(window.currentItems || [], i, escapeHtml);
             // 🔊 朗讀題目（瀏覽器內建語音，不送出任何資料；不支援的瀏覽器不顯示）
             const speakBtn = (typeof speakSupported === 'function' && speakSupported())
                 ? " <button type='button' class='ans-speak' onclick='speakQuestion(" + i + ")' aria-label='朗讀第 " + (i + 1) + " 題' title='朗讀題目'>🔊</button>" : "";
@@ -392,7 +394,7 @@
             if (window.isSharedView && window.sharedMode === 'student') {
                 const nameEl = document.getElementById('ansStuName');
                 if (nameEl && !nameEl.value.trim()) {
-                    lqAlert('請先輸入你的姓名或暱稱，老師才知道是誰在寫。');
+                    lqAlert('請先輸入你的座號或暱稱，老師才知道是誰在寫。');
                     nameEl.focus();
                     return;
                 }

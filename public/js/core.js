@@ -7,14 +7,14 @@
         window._loadedScripts = window._loadedScripts || {};
         // 2026-11-06 商用檢查：CDN 函式庫加 SRI 雜湊，CDN 被竄改時瀏覽器會拒絕執行。
         // 換版本或換網址時要重算（openssl dgst -sha384 -binary 檔 | openssl base64 -A）。
-        // pdf.worker 是 pdf.js 自己用 Worker 載入的，沒有 script 標籤可以加，不在表內
+        // 2026-11-17 起函式庫都放本站 /vendor/（不再依賴 cdnjs／unpkg），SRI 雜湊與原版相同；pdf.worker 是 pdf.js 自己用 Worker 載入的，沒有 script 標籤可以加，不在表內
         const LIB_SRI = {
-            "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js": "sha384-nFoSjZIoH3CCp8W639jJyQkuPHinJ2NHe7on1xvlUA7SuGfJAfvMldrsoAVm6ECz",
-            "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js": "sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H",
-            "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js": "sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk",
-            "https://unpkg.com/docx@9.7.1/dist/index.umd.cjs": "sha384-/NJTaOABVz2ALzgs0bTeadgMc5g3wrv9R9mr32g4W57hdKzHYt7MWDySJ1zhhPoi",
-            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js": "sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e",
-            "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js": "sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw"
+            "/vendor/mammoth.js": "sha384-nFoSjZIoH3CCp8W639jJyQkuPHinJ2NHe7on1xvlUA7SuGfJAfvMldrsoAVm6ECz",
+            "/vendor/html2canvas.js": "sha384-ZZ1pncU3bQe8y31yfZdMFdSpttDoPmOZg2wguVK9almUodir1PghgT0eY7Mrty8H",
+            "/vendor/jspdf.js": "sha384-JcnsjUPPylna1s1fvi1u12X5qjY5OL56iySh75FdtrwhO/SWXgMjoVqcKyIIWOLk",
+            "/vendor/docx.js": "sha384-/NJTaOABVz2ALzgs0bTeadgMc5g3wrv9R9mr32g4W57hdKzHYt7MWDySJ1zhhPoi",
+            "/vendor/pdf.js": "sha384-/1qUCSGwTur9vjf/z9lmu/eCUYbpOTgSjmpbMQZ1/CtX2v/WcAIKqRv+U1DUCG6e",
+            "/vendor/xlsx.js": "sha384-vtjasyidUo0kW94K5MXDXntzOJpQgBKXmE7e2Ga4LG0skTTLeBi97eFAXsqewJjw"
         };
         function loadScript(src) {
             if (window._loadedScripts[src]) return window._loadedScripts[src];
@@ -32,17 +32,17 @@
             return window._loadedScripts[src];
         }
         const LIB_URLS = {
-            mammoth: "https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js",
-            html2canvas: "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js",
-            jspdf: "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js",
+            mammoth: "/vendor/mammoth.js",
+            html2canvas: "/vendor/html2canvas.js",
+            jspdf: "/vendor/jspdf.js",
             // 真正的 .docx 產生器(Office Open XML)。CDN 必須用 unpkg：
             // jsdelivr 對 .cjs 回傳 application/node，瀏覽器會拒絕執行
-            docx: "https://unpkg.com/docx@9.7.1/dist/index.umd.cjs",
+            docx: "/vendor/docx.js",
             // 原卷直上：老師常常直接丟 PDF 考卷，得在瀏覽器端先轉成圖片再上傳
-            pdfjs: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",
-            pdfjsWorker: "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",
+            pdfjs: "/vendor/pdf.js",
+            pdfjsWorker: "/vendor/pdf.worker.js",
             // 成績總表匯出 Excel（SheetJS），按「匯出 Excel」才載入
-            xlsx: "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js",
+            xlsx: "/vendor/xlsx.js",
         };
 
         // 難度分級的實質定義：舊版只把「簡單/適中/困難」這個標籤原封不動塞給AI，

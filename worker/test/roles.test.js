@@ -234,13 +234,13 @@ describe("超級管理員後台", () => {
     const { env } = await world();
     const a = await admin(env);
     const make = (body) => call(env, "/api/admin/users", { method: "POST", body, headers: auth(a) });
-    expect((await make({ username: "x", password: "pw1234", role: "hacker" })).status).toBe(400);
-    expect((await make({ username: "王小明", password: "pw1234", role: "student" })).status).toBe(400);
-    expect((await make({ username: "t9", password: "pw1234", role: "teacher" })).status).toBe(400);
-    expect((await make({ username: "teacher1", password: "pw1234", role: "student" })).status).toBe(400);
-    expect((await make({ username: "t9", password: "pw1234", role: "teacher", className: "新班" })).status).toBe(200);
-    expect((await make({ username: "s9", password: "pw1234", role: "student" })).status).toBe(200);
-    expect((await call(env, "/api/admin/users", { method: "POST", body: { username: "s8", password: "pw1234", role: "student" } })).status).toBe(401);
+    expect((await make({ username: "x", password: "pw12345678", role: "hacker" })).status).toBe(400);
+    expect((await make({ username: "王小明", password: "pw12345678", role: "student" })).status).toBe(400);
+    expect((await make({ username: "t9", password: "pw12345678", role: "teacher" })).status).toBe(400);
+    expect((await make({ username: "teacher1", password: "pw12345678", role: "student" })).status).toBe(400);
+    expect((await make({ username: "t9", password: "pw12345678", role: "teacher", className: "新班" })).status).toBe(200);
+    expect((await make({ username: "s9", password: "pw12345678", role: "student" })).status).toBe(200);
+    expect((await call(env, "/api/admin/users", { method: "POST", body: { username: "s8", password: "pw12345678", role: "student" } })).status).toBe(401);
   });
 });
 

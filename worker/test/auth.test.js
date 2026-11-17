@@ -3,7 +3,7 @@ import worker from "../src/index.js";
 import { makeEnv, req } from "./helpers.js";
 
 const call = (env, path, opts) => worker.fetch(req(path, opts), env, {});
-const reg = (env, over = {}) => call(env, "/api/auth/register", { method: "POST", body: { username: "Teacher1", password: "Abc123", role: "teacher", className: "六年1班", privacyVersion: "2026-11-05", ...over } });
+const reg = (env, over = {}) => call(env, "/api/auth/register", { method: "POST", body: { username: "Teacher1", password: "Abc1234567", role: "teacher", className: "六年1班", privacyVersion: "2026-11-05", ...over } });
 const login = (env, username, password) => call(env, "/api/auth/login", { method: "POST", body: { username, password } });
 
 describe("註冊規則", () => {
@@ -67,7 +67,7 @@ describe("註冊規則", () => {
     const row = await env.DB.prepare("SELECT privacy_version, privacy_consent_at, password_hash FROM users WHERE username = ?").bind("teacher1").first();
     expect(row.privacy_version).toBe("2026-11-05");
     expect(row.privacy_consent_at).toBeGreaterThan(0);
-    expect(row.password_hash).not.toContain("abc123");
+    expect(row.password_hash).not.toContain("abc1234567");
   });
   it("學生用不存在的班級代碼註冊被擋，用老師的班級名稱可加入", async () => {
     const env = makeEnv();
@@ -90,7 +90,7 @@ describe("登入與 session", () => {
   it("密碼不分大小寫，帳號也不分", async () => {
     const env = makeEnv();
     await reg(env);
-    for (const [u, p] of [["teacher1", "abc123"], ["TEACHER1", "ABC123"]]) {
+    for (const [u, p] of [["teacher1", "abc1234567"], ["TEACHER1", "ABC1234567"]]) {
       expect((await login(env, u, p)).status).toBe(200);
     }
   });
@@ -100,14 +100,14 @@ describe("登入與 session", () => {
     for (let i = 0; i < 10; i++) {
       expect((await login(env, "teacher1", "wrong!" + i)).status).toBe(401);
     }
-    expect((await login(env, "teacher1", "abc123")).status).toBe(429);
+    expect((await login(env, "teacher1", "abc1234567")).status).toBe(429);
   });
   it("登入成功會清掉失敗計數", async () => {
     const env = makeEnv();
     await reg(env);
     await login(env, "teacher1", "nope123");
     expect(env.COOLDOWN_KV._m.get("loginfail:teacher1")).toBe("1");
-    await login(env, "teacher1", "abc123");
+    await login(env, "teacher1", "abc1234567");
     expect(env.COOLDOWN_KV._m.has("loginfail:teacher1")).toBe(false);
   });
   it("舊帳號（密碼含大寫）照原樣打對可登入，並自動遷移成小寫版", async () => {

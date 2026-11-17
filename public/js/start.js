@@ -9,7 +9,8 @@
     var q = new URLSearchParams(location.search);
     var token = null;
     try { token = lqGetToken(); } catch (e) {}
-    if (token && !q.has('switch')) { location.replace('/app'); return; }
+    // 2026-11-17 Steve：登入過的人也一律先到選身分、登入畫面，瀏覽器才能帶入記住的帳號密碼；不再自動進 App
+    void token; void q;
 
     // 訪客、教師、家長、學生都是免登入進 /app：把這個分頁記成對應身分（guide.js 讀同一個 key）
     document.querySelectorAll('[data-role]').forEach(function (el) {

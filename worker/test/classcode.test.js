@@ -23,7 +23,7 @@ describe("老師註冊拿到班級代碼", () => {
     const env = makeEnv();
     const t = await registerUser(worker, env);
     expect(t.user.classCode).toMatch(CODE);
-    const login = await (await call(env, "/api/auth/login", { method: "POST", body: { username: "teacher1", password: "abc123" } })).json();
+    const login = await (await call(env, "/api/auth/login", { method: "POST", body: { username: "teacher1", password: "abc1234567" } })).json();
     expect(login.user.classCode).toBe(t.user.classCode);
     const me = await (await call(env, "/api/auth/me", { headers: auth(t) })).json();
     expect(me.user.classCode).toBe(t.user.classCode);
@@ -69,7 +69,7 @@ describe("學生用代碼加入班級", () => {
     await registerUser(worker, env);
     const r = await worker.fetch(req("/api/auth/register", {
       method: "POST",
-      body: { username: "stu9", password: "abc123", role: "student", classCode: "ZZZZZZ", privacyVersion: "2026-11-05" },
+      body: { username: "stu9", password: "abc1234567", role: "student", classCode: "ZZZZZZ", privacyVersion: "2026-11-05" },
     }), env, {});
     expect(r.status).toBe(400);
   });
@@ -117,14 +117,14 @@ describe("老師自訂班級代碼", () => {
   });
   it("註冊時自訂的代碼不合格，整個註冊被擋，不會留下半個帳號", async () => {
     const env = makeEnv();
-    const r = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "teacher1", password: "abc123", role: "teacher", className: "六年1班", joinCode: "六年", privacyVersion: "2026-11-05" } }), env, {});
+    const r = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "teacher1", password: "abc1234567", role: "teacher", className: "六年1班", joinCode: "六年", privacyVersion: "2026-11-05" } }), env, {});
     expect(r.status).toBe(400);
     expect(env.DB._db.prepare("SELECT COUNT(*) c FROM users").get().c).toBe(0);
   });
   it("代碼全站唯一：註冊與修改都不能跟別班重複", async () => {
     const env = makeEnv();
     await registerUser(worker, env, { joinCode: "LIN602" });
-    const r = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "teacher2", password: "abc123", role: "teacher", className: "五年2班", joinCode: "lin602", privacyVersion: "2026-11-05" } }), env, {});
+    const r = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "teacher2", password: "abc1234567", role: "teacher", className: "五年2班", joinCode: "lin602", privacyVersion: "2026-11-05" } }), env, {});
     expect(r.status).toBe(400);
     const t2 = await registerUser(worker, env, { username: "teacher3", className: "四年3班" });
     const r2 = await call(env, "/api/class/code", { method: "POST", body: { code: "LIN602" }, headers: auth(t2) });
@@ -140,7 +140,7 @@ describe("老師自訂班級代碼", () => {
     expect((await r.json()).classCode).toBe("MYBEST7");
     expect((await call(env, "/api/auth/me", { headers: auth(t) }).then((x) => x.json())).user.classCode).toBe("MYBEST7");
     expect((await call(env, "/api/auth/me", { headers: auth(s) }).then((x) => x.json())).user.classId).toBe(t.user.classId);
-    const s2 = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "stu2", password: "abc123", role: "student", classCode: old, privacyVersion: "2026-11-05" } }), env, {});
+    const s2 = await worker.fetch(req("/api/auth/register", { method: "POST", body: { username: "stu2", password: "abc1234567", role: "student", classCode: old, privacyVersion: "2026-11-05" } }), env, {});
     expect(s2.status).toBe(400);
     const s3 = await registerUser(worker, env, { username: "stu3", role: "student", className: undefined, classCode: "MYBEST7" });
     expect(s3.user.classId).toBe(t.user.classId);

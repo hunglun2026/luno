@@ -106,6 +106,8 @@
             setSelectOrCustom('difficulty', 'c_diff', s.difficulty);
             if (s.lang) document.getElementById('lang').value = s.lang;
             syncChoiceChips();
+            // 程式直接改 select.value 不會觸發 change，題型若是「自選題數」要自己叫面板重畫（custom-mix.js）
+            if (typeof cmRender === 'function') cmRender();
         }
 
         function applySettingsFromURL() {

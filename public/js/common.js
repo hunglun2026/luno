@@ -120,9 +120,17 @@ const PRIVACY_VERSION = '2026-11-05';
                 return localStorage.getItem(LQ_TOKEN_KEY) || '';
             } catch (e) { return ''; }
         }
-        function lqSetToken(t) {
+        // remember=true（登入時勾「在此裝置保持登入」）才寫 localStorage；預設只放這個分頁，關掉就登出，公用電腦才不會被下一個人接手
+        function lqSetToken(t, remember) {
             try { sessionStorage.setItem(LQ_TOKEN_KEY, t); } catch (e) {}
-            try { localStorage.setItem(LQ_TOKEN_KEY, t); } catch (e) {}
+            try {
+                if (remember) localStorage.setItem(LQ_TOKEN_KEY, t);
+                else if (localStorage.getItem(LQ_TOKEN_KEY)) localStorage.removeItem(LQ_TOKEN_KEY);
+            } catch (e) {}
+        }
+        function lqRememberHtml(id) {
+            return "<label class='flex gap-2 items-center text-xs text-gray-600 cursor-pointer'><input type='checkbox' id='" + id + "'>" +
+                "<span>在這台裝置保持登入（學校公用電腦請不要勾）</span></label>";
         }
         function lqClearToken() {
             try {

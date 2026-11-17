@@ -1,0 +1,12 @@
+/* 閱讀題組的文章框（js/passage.js）。螢幕版用 landing.css 的 --ld-* 變數跟著深淺色走；A4 試卷永遠白底黑字。 */
+.pt-box { border: 1px solid var(--ld-line, #dbe4f0); background: var(--ld-panel, #f4f8ff); border-radius: 12px; padding: 12px 14px; margin: 0 0 12px; font-size: 15px; line-height: 1.8; color: var(--ld-text, #0f172a); }
+.pt-title { font-weight: 800; font-size: 13px; margin-bottom: 6px; color: var(--ld-accent-text, #1a56db); }
+.pt-body { white-space: pre-wrap; word-break: break-word; }
+/* 非第一題：收合成一行，手機不用往回捲；摘要列本身要夠大好點 */
+details.pt-more > summary { cursor: pointer; margin: 0; min-height: 28px; display: flex; align-items: center; list-style: none; }
+details.pt-more > summary::-webkit-details-marker { display: none; }
+details.pt-more[open] > summary { margin-bottom: 6px; }
+/* 紙本（題目卷）：白底黑字、細框，列印不吃色 */
+.a4-page .pt-box { background: #f7f7f7; border: 1px solid #aaa; border-radius: 4px; color: #000; font-size: 10.5pt; line-height: 1.7; margin: 0 0 8pt; padding: 8pt 10pt; }
+.a4-page .pt-title { color: #000; font-size: 10pt; }
+@media print { .pt-box { break-inside: avoid; } }

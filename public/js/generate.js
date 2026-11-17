@@ -93,8 +93,11 @@
 
             let countVal = document.getElementById('count').value;
             if (countVal === 'Custom') countVal = document.getElementById('c_count').value.trim();
-            const total = parseInt(countVal);
-            if (!total) { failGen("❌ 請設定【題數】！"); return null; }
+            // 題型選「自選題數」時，總題數是各題型加總（custom-mix.js），不看題數欄
+            const mixOn = typeof cmIsOn === 'function' && cmIsOn();
+            const total = mixOn ? cmTotal() : parseInt(countVal);
+            if (!total) { failGen(mixOn ? "❌ 請在【每種題型要幾題】至少選 1 題！" : "❌ 請設定【題數】！"); return null; }
+            if (mixOn && cmBatchCount() > CM_MAX_BATCHES) { failGen("❌ 題型加題數太多，一次出不完。請減少一些題數，或分成兩份卷出。"); return null; }
             // 訪客一份最多 20 題（選單已經藏掉超過的選項，這裡再擋一次，防止改畫面繞過）；上限數字見 guide.js 的 GUEST_MAX
             if (window.guestMode && total > 20) { failGen("❌ 訪客一份最多 20 題，要出更多題請登入教師帳號"); return null; }
 
@@ -188,13 +191,18 @@
                 "3. 選項格式一致、長度相近，每個選項只放一個答案（一個字或一個詞），不可同一題混著考不同的字或詞。\n" +
                 "4. 注音／字音／字形題，每個選項都要實際核對過；注音題一次只問一個字，不要在一個選項塞整串注音。不確定的字音不要出。\n" +
                 "5. 解析（e）只寫 1～2 句最終結論，直接說為什麼答案對、關鍵錯在哪；不可出現「應為」「（選項寫錯）」這類邊想邊修正的話，答案與解析必須一致。\n\n";
+            if (typeVal === '閱讀題組') {
+                taskDescription += ptPrompt(currentCount, i + 1, grade);   // 一批就是一組，i + 1 是組號（跟 ptNormalizeBatch 的 pg 一致）
+                if (sType === '2') taskDescription += "文章請依附件內容改寫成適合該程度的短文，題目也要根據附件的重點。\n";
+            }
             if (typeVal.includes('是非')) {
                 taskDescription += "【是非題格式】：是非題的 'o' 必須固定為 [\"正確\",\"錯誤\"]，'a' 只寫 \"A\"（正確）或 \"B\"（錯誤）；題幹寫成一個可以判斷對錯的完整敘述句，不可寫成問句，正確與錯誤的題數要大致各半。\n";
             }
             if (typeVal.includes('克漏字') || typeVal.includes('選擇式填空')) {
                 taskDescription += "【選擇式填空格式】：題幹是一句完整的句子，把要考的字詞換成「（　　）」；'o' 給 3～4 個詞語，只有一個放進去意思與文法都通順，其餘放進去明顯不通順。\n";
             }
-            if (typeVal.includes('綜合') || typeVal.includes('題填充')) {
+            // 自選題數併成一次呼叫的組法（前2題單選,接著1題是非,最後…）也要明講順序；只認這個樣式，不影響既有的智慧混搭
+            if (typeVal.includes('綜合') || typeVal.includes('題填充') || /^前\d+題[^,]+,(接著|最後)/.test(typeVal)) {
                 taskDescription += "【題型順序】：嚴格依題型要求的順序出題；單選與是非題的 'o' 給選項，填充題的 'o' 必須是空陣列 []。\n";
             }
             const formatRule = ' 【嚴格格式要求】：必須且只能回傳合法的 JSON Array。格式：[{"q":"題目內容","o":["選項1","選項2"],"a":"答案","e":"解析","s":' + scorePerQ + '}]。' + ' 【數學式寫法】：數學式一律用一般文字與符號直接寫，例如 a²+2ab+b²、(a+b)²、x²−5x+6、√2、1/2、30°、π、×、÷、≤、≥；絕對不要使用 LaTeX、$ 符號、反斜線寫法或 ^ 次方符號。';
@@ -280,7 +288,9 @@
             setProgressBar(100);
 
             const rawCount = allItems.length;
+            const beforeVet = allItems;
             allItems = vetItems(allItems, qtWantKind(plan.typeVal));
+            ptRehome(allItems, beforeVet);   // 閱讀題組的第一題若被剔除，文章要交給同組下一題
             if (allItems.length === 0) {
                 throw new Error("AI回傳的內容無法解析成題目格式，請重新嘗試出題一次（通常是暫時性問題）");
             }
@@ -325,26 +335,34 @@
             if (!cfg) return;
             setGenBusy(true);
 
-            const plan = planBatches(cfg.typeVal, cfg.total);
+            // 一般出題只有一段；題型選「自選題數」時每種題型各自一段（custom-mix.js），
+            // g 是「整份卷子所有批次」的流水號：進度、冷卻批次序號、重試記錄都看 g，不看段內的 i
+            const mix = typeof cmIsOn === 'function' && cmIsOn();
+            const plans = mix ? cmSegments().map(cmPlanFor) : [planBatches(cfg.typeVal, cfg.total)];
+            const plan = mix ? { typeVal: CM_VALUE, total: cfg.total } : plans[0];
+            const totalBatches = plans.reduce((sum, p) => sum + p.batches, 0);
             let allItems = [];
             const parseFailBatches = [];
             const batchRetried = {};
             let simTimer = null;
+            let g = 0;
 
             try {
-                for (let i = 0; i < plan.batches; i++) {
-                    document.getElementById('status').innerText = "生成中... " + (i+1) + "/" + plan.batches;
-                    const baseP = Math.round((i / plan.batches) * 100);
-                    const nextP = Math.round(((i + 1) / plan.batches) * 100);
+              for (const sp of plans) {
+                const segStart = allItems.length;
+                for (let i = 0; i < sp.batches; i++) {
+                    document.getElementById('status').innerText = "生成中... " + (g+1) + "/" + totalBatches;
+                    const baseP = Math.round((g / totalBatches) * 100);
+                    const nextP = Math.round(((g + 1) / totalBatches) * 100);
                     setProgressBar(baseP);
                     simTimer = startSimProgress(baseP, nextP);
 
-                    const currentCount = Math.min(plan.batchSize, plan.total - allItems.length);
-                    const parts = buildBatchParts(cfg, plan, i, currentCount);
+                    const currentCount = Math.min(sp.batchSize, sp.total - (allItems.length - segStart));
+                    const parts = buildBatchParts(cfg, sp, i, currentCount);
 
                     // 重試第 0 批時要送非 0 的批次序號：冷卻只算第 0 批，
                     // 重試若還報 0 會被自己 30 秒前那次擋成 429，整份考卷就沒了
-                    const geminiRes = await postGenerate(parts, batchRetried[i] ? i + 1 : i);
+                    const geminiRes = await postGenerate(parts, batchRetried[g] ? g + 1 : g);
 
                     clearInterval(simTimer);
                     setProgressBar(nextP);
@@ -369,23 +387,34 @@
 
                     const rawText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text || "";
                     const result = parseBatchJson(rawText);
-                    if (!result.error) {
-                        allItems = allItems.concat(result.items);
-                    } else if (result.items.length > 0) {
-                        allItems = allItems.concat(result.items);
+                    // 閱讀題組：一批就是一組，整理成「文章只在第一題、全部標同組代號」；沒有文章的整批不要（passage.js）
+                    const got = sp.passage ? ptNormalizeBatch(result.items, 'p' + (i + 1)) : result.items;
+                    if (!result.error && (got.length > 0 || !sp.passage)) {
+                        allItems = allItems.concat(got);
+                    } else if (result.error && got.length > 0) {
+                        allItems = allItems.concat(got);
                         console.warn("第 " + (i + 1) + " 批JSON解析失敗，但搶救回 " + result.items.length + " 題（可能是AI輸出被截斷）", result.error);
-                    } else if (!batchRetried[i]) {
+                    } else if (!batchRetried[g]) {
                         // 整批一題都救不回來(常見是這次回應根本沒有文字)，先自動重試一次同一批，
                         // 不要讓使用者看到「請重新嘗試出題一次」還得自己再按一輪、又要等冷卻
-                        batchRetried[i] = true;
-                        console.warn("第 " + (i + 1) + " 批完全無法解析，自動重試一次", result.error);
+                        batchRetried[g] = true;
+                        console.warn("第 " + (g + 1) + " 批完全無法解析，自動重試一次", result.error);
                         i--;
                         continue;
                     } else {
                         console.error(result.error);
-                        parseFailBatches.push(i + 1);
+                        parseFailBatches.push(g + 1);
                     }
+                    g++;
                 }
+                // 自選題數：這一段出完先用它自己的題型檢查，AI 在配合題那段回了單選題就會被剔除，不混進別段
+                if (mix) {
+                    const segRaw = allItems.slice(segStart);
+                    const segKept = vetItems(segRaw, qtWantKind(sp.typeVal));
+                    ptRehome(segKept, segRaw);
+                    allItems = allItems.slice(0, segStart).concat(segKept);
+                }
+              }
 
                 try { finishGen(cfg, plan, allItems, parseFailBatches); }
                 catch (fe) { fe.fromFinish = true; throw fe; }   // 整理題目時出的錯，不是缺批次，不問「先用已出好的」

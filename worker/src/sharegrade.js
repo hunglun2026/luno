@@ -42,6 +42,9 @@ export function publicItem(q) {
   const out = { q: q.q, s: Number(q.s) || 0 };
   if (q.img) out.img = q.img;
   if (q.g) out.g = q.g;
+  // 閱讀題組（2026-11-17）：pg 是組代號、pt 是文章（只在該組第一題），學生版要看得到文章；只收字串並限長
+  if (typeof q.pg === "string" && q.pg) out.pg = q.pg.slice(0, 20);
+  if (typeof q.pt === "string" && q.pt) out.pt = q.pt.slice(0, 2000);
   const kind = qKind(q);
   if (kind === "match" || kind === "order") {
     const perm = qtShuffle(q);

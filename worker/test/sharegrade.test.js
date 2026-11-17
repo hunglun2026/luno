@@ -151,3 +151,39 @@ describe("跟前端邏輯一致", () => {
     expect(gradeShareAnswers([], [{ i: 0, v: "A" }])).toEqual({});
   });
 });
+
+describe("閱讀題組欄位（pg、pt）", () => {
+  const PASSAGE_ITEMS = [
+    { q: "第一題", o: ["甲", "乙"], a: "A", e: "解析", pg: "p1", pt: "這是一篇關於水的短文。", s: 10 },
+    { q: "第二題", o: ["甲", "乙"], a: "B", e: "解析", pg: "p1", s: 10 },
+    { q: "獨立題", o: ["甲", "乙"], a: "A", e: "解析", s: 10 },
+  ];
+  it("學生版保留 pg、pt（文章只在第一題），仍不含答案與解析", async () => {
+    const env = makeEnv();
+    const { id } = await makeShare(env, PASSAGE_ITEMS);
+    const got = await (await call(env, "/api/share/" + id)).json();
+    expect(got.items[0].pg).toBe("p1");
+    expect(got.items[0].pt).toBe("這是一篇關於水的短文。");
+    expect(got.items[1].pg).toBe("p1");
+    expect(got.items[1].pt).toBeUndefined();
+    expect(got.items[2].pg).toBeUndefined();
+    got.items.forEach((it) => { expect(it.a).toBeUndefined(); expect(it.e).toBeUndefined(); });
+  });
+  it("publicItem 只收字串並限長：pt 超過 2000 字被截、非字串被丟掉", () => {
+    const long = publicItem({ q: "x", o: ["a", "b"], a: "A", pg: "p" + "9".repeat(50), pt: "字".repeat(5000), s: 1 });
+    expect(long.pt.length).toBe(2000);
+    expect(long.pg.length).toBe(20);
+    const bad = publicItem({ q: "x", o: ["a", "b"], a: "A", pg: 123, pt: { x: 1 }, s: 1 });
+    expect(bad.pg).toBeUndefined();
+    expect(bad.pt).toBeUndefined();
+  });
+  it("有文章的題照常判分（文章欄位不影響答案比對）", async () => {
+    const env = makeEnv();
+    const { id } = await makeShare(env, PASSAGE_ITEMS);
+    const res = await (await call(env, "/api/share-grade", { method: "POST", body: { shareId: id, answers: [{ i: 0, v: "A" }, { i: 1, v: "B" }, { i: 2, v: "B" }] } })).json();
+    expect(res.error).toBeUndefined();
+    expect(res.results[0]).toMatchObject({ isCorrect: true, score: 10 });
+    expect(res.results[1]).toMatchObject({ isCorrect: true, score: 10 });
+    expect(res.results[2]).toMatchObject({ isCorrect: false, score: 0 });
+  });
+});

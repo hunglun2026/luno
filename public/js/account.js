@@ -97,6 +97,7 @@
 
         function doLogout() {
             lqClearToken();
+            try { localStorage.removeItem('lun_key'); } catch (e) {}
             window.currentUser = null;
             updateAccountUI();
             // 畫面內容都是依身分算出來的，登出後直接回選身分頁（除了訪客，其他身分都要登入）
@@ -115,12 +116,12 @@
         function renderAccountAuthForm(mode) {
             document.getElementById('accountModalTitle').textContent = mode === 'login' ? '👤 登入' : '👤 註冊';
             const isLogin = mode === 'login';
-            let html = "<div class='space-y-3'>";
+            let html = "<form class='space-y-3' onsubmit=\"event.preventDefault();" + (isLogin ? 'doLogin()' : 'doRegister()') + "\">";
             const credAttrs = isLogin ? "" : CRED_INPUT_ATTRS;
-            html += "<input id='authUsername' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs + ">";
-            html += lqPwField('authPassword', isLogin ? '密碼' : CRED_PASS_HINT, credAttrs, isLogin ? '' : 'main');
+            html += "<input id='authUsername' name='username' class='lq-input' placeholder='" + (isLogin ? '帳號' : CRED_USER_HINT) + "'" + credAttrs.replace("autocomplete='off'", "autocomplete='username'") + (isLogin ? " autocomplete='username'" : "") + ">";
+            html += lqPwField('authPassword', isLogin ? '密碼' : CRED_PASS_HINT, isLogin ? " name='password' autocomplete='current-password'" : credAttrs.replace("autocomplete='off'", "autocomplete='new-password'"), isLogin ? '' : 'main');
             if (!isLogin) {
-                html += lqPwField('authPasswordConfirm', '再輸入一次密碼', credAttrs, 'confirm');
+                html += lqPwField('authPasswordConfirm', '再輸入一次密碼', credAttrs.replace("autocomplete='off'", "autocomplete='new-password'"), 'confirm');
                 html += "<input id='authDisplayName' class='lq-input' placeholder='顯示名稱（例如：王小明；老師可寫「劉德華 老師」）'>";
                 html += "<select id='authRole' class='lq-input' onchange='onAuthRoleChange()'>" +
                     "<option value=''>請選擇角色...</option>" +
@@ -134,11 +135,12 @@
                     "<div class='lq-field-note'>" + CLASS_CODE_RULE + "。現在不填，之後也可以在帳號頁面補填。</div></div>";
                 html += "<label class='flex gap-2 items-start text-xs text-gray-600 cursor-pointer'><input type='checkbox' id='authPrivacyOk' class='mt-1'><span>我已閱讀並同意<a href='privacy.html' target='_blank' rel='noopener' class='text-blue-600 underline'>《個人資料蒐集告知》</a>。未滿 18 歲請在家長或老師陪同下註冊。</span></label>";
             }
+            if (isLogin) html += lqRememberHtml('authRememberMe');
             html += "<div id='authErrorMsg' class='text-sm text-red-600 hidden'></div>";
-            html += "<button onclick=\"" + (isLogin ? 'doLogin()' : 'doRegister()') + "\" class='lq-btn lq-btn-primary w-full py-2'>" + (isLogin ? '登入' : '註冊') + "</button>";
-            html += "<button onclick=\"renderAccountAuthForm('" + (isLogin ? 'register' : 'login') + "')\" class='lq-btn lq-btn-ghost w-full text-sm'>" +
+            html += "<button type='submit' class='lq-btn lq-btn-primary w-full py-2'>" + (isLogin ? '登入' : '註冊') + "</button>";
+            html += "<button type='button' onclick=\"renderAccountAuthForm('" + (isLogin ? 'register' : 'login') + "')\" class='lq-btn lq-btn-ghost w-full text-sm'>" +
                 (isLogin ? '還沒有帳號？點此註冊' : '已經有帳號？點此登入') + "</button>";
-            html += "</div>";
+            html += "</form>";
             document.getElementById('accountModalBody').innerHTML = html;
         }
 
@@ -173,7 +175,7 @@
                 });
                 const data = await res.json();
                 if (data.error) { showAuthError(data.error.message); return; }
-                lqSetToken(data.token);
+                lqSetToken(data.token, false);
                 window.currentUser = data.user;
                 updateAccountUI();
                 renderAccountLoggedInBody();
@@ -190,7 +192,7 @@
                 });
                 const data = await res.json();
                 if (data.error) { showAuthError(data.error.message); return; }
-                lqSetToken(data.token);
+                lqSetToken(data.token, !!(document.getElementById('authRememberMe') || {}).checked);
                 window.currentUser = data.user;
                 updateAccountUI();
                 renderAccountLoggedInBody();

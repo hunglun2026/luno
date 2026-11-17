@@ -33,6 +33,11 @@
             }
             p += "- 題型：" + (kind === 'match' ? "配合題" : kind === 'order' ? "排序題" : isChoice ? ("選擇題，共" + orig.o.length + "個選項") : "填充題或簡答題(無選項)") + "\n";
             p += "- 配分：" + orig.s + "分\n";
+            const passageText = (typeof ptTextFor === 'function') ? ptTextFor(window.currentItems || [], idx) : '';
+            if (passageText) {
+                // 閱讀題組：新題必須還是這篇文章的題目，而且不能把文章放進回傳（文章已經存在這一組了）
+                p += "【這是閱讀題組的一題，新題目必須根據下面這篇文章出，答案要在文章裡找得到；回傳的物件不要包含文章欄位 pt】\n" + passageText + "\n";
+            }
             p += "【避免重複】：請勿與以下已存在的題目重複或雷同：\n";
             (window.currentItems || []).forEach((it, i) => { if (i !== idx && it && it.q) p += (i+1) + ". " + it.q + "\n"; });
             p += "\n【語言】：請務必使用「" + (s.lang || '繁體中文') + "」撰寫所有內容！\n";
@@ -83,12 +88,17 @@
             };
         }
 
+        // 閱讀題組：A4 試卷在每組第一題上方印一次文章（passage.js）；不是題組的題回空字串
+        function ptPaperHtml(idx) {
+            return (typeof ptHtml === 'function') ? ptHtml(window.currentItems || [], idx, escapeHtml, { paper: true }) : '';
+        }
+
         function updateQuestionDOM(idx, q) {
             let qItem = document.querySelector('.q-item[data-idx="' + idx + '"]');
             if (qItem) {
                 let box = qItem.querySelector('.q-content-box');
                 const parts = qBodyParts(q, idx + 1);
-                box.innerHTML = regenBtnHTML(idx) +
+                box.innerHTML = ptPaperHtml(idx) + regenBtnHTML(idx) +
                     "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + (Number(q.s) || 0) + "分)</span></div>" +
                     qImgHtml(q) +
                     parts.optsHTML + parts.answerSpace;
@@ -146,6 +156,7 @@
                     if (!newQ) throw new Error("AI 回傳的題目格式不合格（項目數或重複），請再試一次");
                 }
 
+                if (typeof ptKeep === 'function') ptKeep(window.currentItems[idx], newQ);   // 閱讀題組：新題要留在同一組、第一題要帶著文章
                 window.currentItems[idx] = newQ;
                 touchItems();   // 題目變了：分享連結、線上作答畫面都要重做
                 updateQuestionDOM(idx, newQ);
@@ -207,6 +218,7 @@
             return "<div class='q-item' data-idx='" + qIdx + "'>" +
                "<div class='q-num-box'>" + parts.prefix + "</div>" +
                "<div class='q-content-box'>" +
+                   ptPaperHtml(qIdx) +
                    regenBtnHTML(qIdx) +
                    "<div class='q-text'>" + escapeHtml(q.q) + " <span style='font-size:10pt; color:#666;'>(" + q.s + "分)</span></div>" +
                     qImgHtml(q) +

@@ -51,7 +51,7 @@ describe("老師多班級", () => {
     expect(t2.user.classCode).not.toBe(t1.user.classCode);
     const s = await registerUser(worker, env, { username: "stu1", role: "student", className: undefined, classCode: t2.user.classCode });
     expect(s.user.classId).toBe(t2.user.classId);
-    const byName = await call(env, "/api/auth/register", { method: "POST", body: { username: "stu2", password: "abc123", role: "student", classCode: "六年1班", privacyVersion: "2026-11-05" } });
+    const byName = await call(env, "/api/auth/register", { method: "POST", body: { username: "stu2", password: "abc1234567", role: "student", classCode: "六年1班", privacyVersion: "2026-11-05" } });
     expect(byName.status).toBe(400);   // 兩個班都叫六年1班，名稱對不到唯一一班
   });
 

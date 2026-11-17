@@ -6,6 +6,7 @@
 function teacherPreviewItemHtml(q, i) {
     const kind = qKind(q);
     let h = "<div class='lq-card p-4 mb-3 lq-tp-q' id='tp-q-" + i + "'>";
+    if (typeof ptHtml === 'function') h += ptHtml(window.currentItems || [], i, escapeHtml);   // 閱讀題組的文章（passage.js）
     h += "<div class='lq-tp-qhead'><div class='font-bold'>" + (i + 1) + ". " + escapeHtml(q.q) +
         " <span class='lq-tp-score no-print'>(<input type='number' min='0' step='1' inputmode='numeric' value='" + (Number(q.s) || 0) + "' onchange='tpSetScore(" + i + ", this.value)' aria-label='第 " + (i + 1) + " 題配分'>分)</span></div>" +
         "<div class='lq-tp-acts no-print'>" +

@@ -183,6 +183,13 @@
         function docxQuestionParas(D, run, q, i) {
             const { Paragraph, BorderStyle } = D;
             const paras = [];
+            // 閱讀題組：文章印在每組第一題前面（只印一次，後面的題靠位置對應；passage.js）
+            if (typeof ptIsFirst === 'function' && ptIsFirst(window.currentItems || [], i)) {
+                paras.push(new Paragraph({ spacing: { before: 200, after: 60 }, keepNext: true, children: [run('閱讀文章', { bold: true, size: 20, color: '555555' })] }));
+                String(q.pt).split(/\r?\n/).filter(function (line) { return line.trim() !== ''; }).forEach(function (line) {
+                    paras.push(new Paragraph({ spacing: { after: 60 }, indent: { left: 360, right: 360 }, children: [run(line)] }));
+                });
+            }
             const isChoice = q.o && q.o.length > 0;
             const prefix = isChoice ? ((i + 1) + '. (　　) ') : ((i + 1) + '. ');
             // 題號與題幹放同一段，靠首行凸排讓第二行對齊題幹起點，不用表格也能整齊

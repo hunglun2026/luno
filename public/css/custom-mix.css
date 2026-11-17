@@ -1,0 +1,18 @@
+/* 自選題數面板（js/custom-mix.js）。顏色用 landing.css 的 --ld-* 變數，深淺色都跟著走。 */
+#cmPanel { grid-column: 1 / -1; border: 1px solid var(--ld-line, #e2e8f0); border-radius: 14px; background: var(--ld-panel, #f8fafc); padding: 14px; }
+#cmPanel[hidden] { display: none; }
+#cmPanel .cm-title { font-weight: 800; font-size: 14px; color: var(--ld-text, #0f172a); margin-bottom: 10px; }
+#cmPanel .cm-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+#cmPanel .cm-row { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--ld-line, #e2e8f0); background: var(--ld-bg, #fff); }
+#cmPanel .cm-row.is-on { border-color: var(--ld-accent, #1a73e8); }
+#cmPanel .cm-label { flex: 1; font-size: 14px; font-weight: 700; color: var(--ld-text, #0f172a); white-space: nowrap; }
+#cmPanel .cm-btn { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--ld-line, #cbd5e1); background: var(--ld-hover, #f1f5f9); color: var(--ld-text, #0f172a); font-size: 20px; font-weight: 800; line-height: 1; cursor: pointer; }
+#cmPanel .cm-btn:disabled { opacity: .35; cursor: default; }
+#cmPanel .cm-num { width: 44px; height: 44px; text-align: center; font-size: 16px; font-weight: 800; border-radius: 10px; border: 1px solid var(--ld-line, #cbd5e1); background: var(--ld-bg, #fff); color: var(--ld-text, #0f172a); -moz-appearance: textfield; appearance: textfield; }
+#cmPanel .cm-num::-webkit-outer-spin-button, #cmPanel .cm-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+#cmPanel .cm-total { margin-top: 10px; font-size: 14px; font-weight: 800; color: var(--ld-accent-text, #1a73e8); }
+#cmPanel .cm-total.is-bad { color: #d93025; }
+/* 手機：整列只放得下加減鈕時改單欄，避免擠壞 */
+@media (max-width: 420px) { #cmPanel .cm-grid { grid-template-columns: 1fr; } }
+#cmPanel .cm-sub { margin-top: 10px; font-size: 13px; font-weight: 700; color: var(--ld-muted, #475569); }
+#cmPanel .cm-sub .cm-grid { grid-template-columns: 1fr; }

@@ -35,7 +35,7 @@
                     flag: (it.flag || []).slice(), page: it.page || '',
                     q: it.q || '', kind: kind,
                     optsText: typed ? qtToLines(it) : (hasOpts ? it.o.map(function (o, i) { return stripOptLabel(o, String.fromCharCode(65 + i)); }).join('\n') : ''),
-                    ans: ans, e: it.e || '', s: it.s == null ? '' : it.s, orig: it
+                    ans: ans, e: it.e || '', s: it.s == null ? '' : it.s, pt: it.pt || '', orig: it
                 };
             });
         }
@@ -59,6 +59,16 @@
                 "<input class='lq-input w-full ei-a' value='" + escapeHtml(d.ans) + "'></div>";
         }
 
+        // 閱讀題組（passage.js）：這題屬於哪一組；文章只放在組內第一題，在那一題的卡片上改，全組共用
+        function eiPassageHtml(d) {
+            if (!d.orig || !d.orig.pg) return '';
+            const head = "<span class='ei-src'>閱讀題組（" + escapeHtml(d.orig.pg) + "）</span>";
+            if (!d.orig.pt) return "<div class='mb-2'>" + head + "<div class='text-xs text-gray-500'>這一組的文章放在組內第一題，要改文章請到那一題。</div></div>";
+            return "<div class='mb-2'>" + head +
+                "<label class='text-xs text-gray-500 block'>閱讀文章（同一組的題目共用，改這裡整組都會變）</label>" +
+                "<textarea class='lq-input w-full ei-pt' rows='6' style='resize:vertical;'>" + escapeHtml(d.pt) + "</textarea></div>";
+        }
+
         function eiRender() {
             const body = document.getElementById('editItemsBody');
             if (!body) return;
@@ -74,6 +84,7 @@
                     "<button type='button' class='lq-btn lq-btn-ghost px-2 py-1 text-sm' style='color:#d93025;' onclick='eiDelete(" + i + ")'>刪除</button>" +
                     "</span></div>" +
                     (flagHtml ? "<div class='mb-2'>" + flagHtml + "</div>" : "") +
+                    eiPassageHtml(d) +
                     "<label class='text-xs text-gray-500'>題目</label>" +
                     "<textarea class='lq-input w-full mb-2 ei-q' rows='3' style='resize:vertical;'>" + escapeHtml(d.q) + "</textarea>" +
                     eiOptsHtml(d) +
@@ -98,6 +109,8 @@
                 d.ans = card.querySelector('.ei-a').value;
                 d.s = card.querySelector('.ei-s').value;
                 d.e = card.querySelector('.ei-e').value;
+                const ptBox = card.querySelector('.ei-pt');
+                if (ptBox) d.pt = ptBox.value;
             });
         }
 
@@ -148,6 +161,12 @@
             eiCollect();
             if (eiDraft.length <= 1) { lqAlert('至少要留一題'); return; }
             if (!(await askConfirm('確定刪除第 ' + (i + 1) + ' 題？', { danger: true, okText: '刪除' }))) return;
+            // 刪掉的是閱讀題組的第一題（帶文章）：文章交給同組下一題，不讓整組文章跟著消失（用複本，不動到還沒儲存的原題目）
+            const gone = eiDraft[i];
+            if (gone.orig && gone.orig.pg && gone.orig.pt) {
+                const heir = eiDraft.find(function (x, k) { return k !== i && x.orig && x.orig.pg === gone.orig.pg; });
+                if (heir) { heir.orig = Object.assign({}, heir.orig, { pt: gone.pt || gone.orig.pt }); heir.pt = gone.pt || gone.orig.pt; }
+            }
             eiDraft.splice(i, 1);
             eiRender();
         }
@@ -203,6 +222,11 @@
                     }
                 }
                 const next = Object.assign({}, d.orig || {}, { q: q, o: opts, a: a, e: d.e.trim(), s: score });
+                if (d.orig && d.orig.pt) {   // 閱讀題組的文章：不能改成空的，長度照出題時的上限
+                    const passage = String(d.pt || '').trim();
+                    if (!passage) return { error: '第 ' + n + ' 題：閱讀文章不能是空的（整組題目都靠它）' };
+                    next.pt = passage.slice(0, PT_MAX_CHARS);
+                }
                 if (eiOpts) { next.flag = d.flag || []; next.page = d.page || ''; }   // 只有 OCR 核對才帶旗標與來源頁，一般編輯不要把這些欄位塞進試卷
                 out.push(next);
             }
